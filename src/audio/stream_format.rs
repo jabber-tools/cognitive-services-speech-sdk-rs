@@ -8,7 +8,7 @@ use log::*;
 
 #[derive(Debug)]
 pub struct AudioStreamFormat {
-    handle: SmartHandle<SPXAUDIOSTREAMFORMATHANDLE>,
+    pub handle: SmartHandle<SPXAUDIOSTREAMFORMATHANDLE>,
 }
 
 pub fn get_wave_format_pcm(

@@ -33,7 +33,6 @@ impl<T: Copy + Debug> SmartHandle<T> {
     }
 
     #[inline(always)]
-    #[allow(dead_code)]
     fn get(&self) -> T {
         self.inner
     }
@@ -41,7 +40,7 @@ impl<T: Copy + Debug> SmartHandle<T> {
 
 impl<T: Copy + Debug> Drop for SmartHandle<T> {
     fn drop(&mut self) {
-        trace!("Drop SmartHandle {}.", self);
+        debug!("Drop SmartHandle {}.", self);
         let hr = unsafe { (self.release_fn)(self.inner) };
         if hr != ffi::SPX_NOERROR as usize {
             panic!("cannot release SmartHandle {}, err={}", self, hr);
