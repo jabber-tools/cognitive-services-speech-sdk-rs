@@ -1,0 +1,18 @@
+[package]
+name = "microsoft_speech"
+version = "0.5.4"
+authors = ["luyi <luyi@newtranx.com>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4.6"
+env_logger = "0.6.0"
+failure = "0.1.5"
+failure_derive = "0.1.5"
+tokio = "0.1.15"
+futures = "0.1.25"
+enum_primitive = "0.1.1"
+num = "0.2.0"
+
+[build-dependencies]
+bindgen = "0.47.1"
