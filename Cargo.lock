@@ -104,6 +104,8 @@ name = "cognitive-services-speech-sdk-rs"
 version = "0.1.0"
 dependencies = [
  "bindgen",
+ "env_logger",
+ "log",
 ]
 
 [[package]]

@@ -1,5 +1,0 @@
-/target
-**/*.rs.bk
-/.idea
-*.iml
-/c_api/bindings.rs
