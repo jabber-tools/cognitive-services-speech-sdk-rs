@@ -9,7 +9,7 @@ use log::*;
 
 #[derive(Debug)]
 pub struct AudioInputStream {
-    handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
+    pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
     // we need to keep format handle in this struct
     // otherwise it would be dropped after call of
     // create_push_stream_from_format!

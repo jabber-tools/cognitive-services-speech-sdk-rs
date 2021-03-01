@@ -1,5 +1,6 @@
 use cognitive_services_speech_sdk_rs::audio::{
     input_stream::create_push_stream_from_format, stream_format::get_wave_format_pcm,
+    config::from_stream_input,
 };
 use log::*;
 use std::env;
@@ -14,4 +15,8 @@ fn main() {
     info!("calling create_push_stream_from_format");
     let push_stream = create_push_stream_from_format(wave_format).unwrap();
     info!("called create_push_stream_from_format {:?}", push_stream);
+
+    info!("calling from_stream_input");
+    let audio_config = from_stream_input(push_stream).unwrap();
+    info!("called from_stream_input {:?}", audio_config);
 }
