@@ -16,23 +16,25 @@ pub struct AudioInputStream {
     format: AudioStreamFormat,
 }
 
-pub fn create_push_stream_from_format(format: AudioStreamFormat) -> Result<AudioInputStream> {
-    let mut handle = SPXHANDLE_EMPTY;
-    unsafe {
-        let ret = audio_stream_create_push_audio_input_stream(&mut handle, format.handle.get());
-        if ret != SPX_NOERROR as usize {
-            error!("create_push_stream_from_format error {}", ret);
-            Err(Error::new(
-                "create_push_stream_from_format error".into(),
-                ErrorRootCause::ApiError(ret),
-            ))
-        } else {
-            info!("create_push_stream_from_format ok");
-            let result = AudioInputStream {
-                handle: SmartHandle::create("AudioInputStream", handle, audio_stream_release),
-                format,
-            };
-            Ok(result)
+impl AudioInputStream {
+    pub fn create_push_stream_from_format(format: AudioStreamFormat) -> Result<AudioInputStream> {
+        let mut handle = SPXHANDLE_EMPTY;
+        unsafe {
+            let ret = audio_stream_create_push_audio_input_stream(&mut handle, format.handle.get());
+            if ret != SPX_NOERROR as usize {
+                error!("create_push_stream_from_format error {}", ret);
+                Err(Error::new(
+                    "create_push_stream_from_format error".into(),
+                    ErrorRootCause::ApiError(ret),
+                ))
+            } else {
+                info!("create_push_stream_from_format ok");
+                let result = AudioInputStream {
+                    handle: SmartHandle::create("AudioInputStream", handle, audio_stream_release),
+                    format,
+                };
+                Ok(result)
+            }
         }
     }
 }
