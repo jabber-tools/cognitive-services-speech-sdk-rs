@@ -2,6 +2,7 @@ use cognitive_services_speech_sdk_rs::audio::{
     input_stream::AudioInputStream, stream_format::AudioStreamFormat,
 };
 use cognitive_services_speech_sdk_rs::config::{AudioConfig, SpeechConfig};
+use cognitive_services_speech_sdk_rs::recognizer::SpeechRecognizer;
 use log::*;
 use std::env;
 
@@ -36,4 +37,11 @@ fn main() {
     )
     .unwrap();
     info!("called SpeechConfig::from_subscription {:?}", speech_config);
+
+    info!("calling SpeechRecognizer::from_config");
+    let speech_recognizer = SpeechRecognizer::from_config(speech_config, audio_config).unwrap();
+    info!(
+        "called SpeechRecognizer::from_confign {:?}",
+        speech_recognizer
+    );
 }

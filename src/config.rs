@@ -12,13 +12,13 @@ use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct AudioConfig {
-    handle: SmartHandle<SPXAUDIOCONFIGHANDLE>,
+    pub handle: SmartHandle<SPXAUDIOCONFIGHANDLE>,
     stream: AudioInputStream,
 }
 
 #[derive(Debug)]
 pub struct SpeechConfig {
-    handle: SmartHandle<SPXSPEECHCONFIGHANDLE>,
+    pub handle: SmartHandle<SPXSPEECHCONFIGHANDLE>,
     properties: PropertyBag,
 }
 
