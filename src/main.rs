@@ -41,7 +41,7 @@ fn main() {
     info!("calling SpeechRecognizer::from_config");
     let speech_recognizer = SpeechRecognizer::from_config(speech_config, audio_config).unwrap();
     info!(
-        "called SpeechRecognizer::from_confign {:?}",
+        "called SpeechRecognizer::from_config {:?}",
         speech_recognizer
     );
 }

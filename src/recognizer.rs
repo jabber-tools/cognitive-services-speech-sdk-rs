@@ -1,10 +1,11 @@
 use crate::config::{AudioConfig, SpeechConfig};
-use crate::error::{convert_err, Error, ErrorRootCause, Result};
+use crate::error::{convert_err, Result};
 use crate::ffi::{
-    recognizer_create_speech_recognizer_from_config, recognizer_handle_release, SPXRECOHANDLE,
-    SPX_NOERROR,
+    recognizer_create_speech_recognizer_from_config, recognizer_handle_release,
+    PRECOGNITION_CALLBACK_FUNC, SPXHR, SPXRECOHANDLE,
 };
 use crate::{SmartHandle, SPXHANDLE_EMPTY};
+use std::ffi::c_void;
 
 #[derive(Debug)]
 pub struct SpeechRecognizer {
@@ -35,5 +36,11 @@ impl SpeechRecognizer {
             speech_config,
             audio_config,
         })
+    }
+
+    pub fn set_recognizing(
+        _f: unsafe extern "C" fn(SPXRECOHANDLE, PRECOGNITION_CALLBACK_FUNC, *mut c_void) -> SPXHR,
+    ) {
+        unimplemented!();
     }
 }
