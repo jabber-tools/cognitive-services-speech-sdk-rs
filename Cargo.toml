@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 log = "0.4"
 env_logger = "0.8.3"
+tokio = {version = "1.2.0", features = ["full"]} 
 
 [build-dependencies]
 bindgen = "0.57.0"

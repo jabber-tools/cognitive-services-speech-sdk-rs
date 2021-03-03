@@ -5,6 +5,8 @@ use std::result;
 pub enum ErrorRootCause {
     ApiError(usize),
     FfiNulError,
+    InvalidCString,
+    FromUtf8Error,
 }
 
 #[derive(Debug)]
@@ -35,6 +37,15 @@ impl From<std::ffi::NulError> for Error {
         Error {
             message: format!("std::ffi::NulError: {}", error),
             caused_by: ErrorRootCause::FfiNulError,
+        }
+    }
+}
+
+impl From<std::string::FromUtf8Error> for Error {
+    fn from(error: std::string::FromUtf8Error) -> Error {
+        Error {
+            message: format!("std::string::FromUtf8Error: {}", error),
+            caused_by: ErrorRootCause::FromUtf8Error,
         }
     }
 }
