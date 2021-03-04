@@ -16,6 +16,8 @@ pub struct SpeechRecognizer {
     handle: SmartHandle<SPXRECOHANDLE>,
     speech_config: SpeechConfig,
     audio_config: AudioConfig,
+   // recognizing_sender: Option<Box<Sender<EventFactory>>>,
+   // recognized_sender: Option<Box<Sender<EventFactory>>>,
 }
 
 impl SpeechRecognizer {
@@ -39,6 +41,8 @@ impl SpeechRecognizer {
             handle: SmartHandle::create("SpeechRecognizer", handle, recognizer_handle_release),
             speech_config,
             audio_config,
+          //  recognizing_sender: None,
+          //  recognized_sender:None,
         })
     }
 
