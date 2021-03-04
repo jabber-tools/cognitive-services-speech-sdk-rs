@@ -3,8 +3,8 @@ use crate::error::{convert_err, Result};
 use crate::events::EventFactory;
 use crate::ffi::{
     recognizer_create_speech_recognizer_from_config, recognizer_handle_release,
-    recognizer_recognizing_set_callback, PRECOGNITION_CALLBACK_FUNC, SPXEVENTHANDLE, SPXHR,
-    SPXRECOHANDLE,
+    recognizer_recognized_set_callback, recognizer_recognizing_set_callback,
+    PRECOGNITION_CALLBACK_FUNC, SPXEVENTHANDLE, SPXHR, SPXRECOHANDLE,
 };
 use crate::{SmartHandle, SPXHANDLE_EMPTY};
 use log::*;
@@ -54,6 +54,24 @@ impl SpeechRecognizer {
                     &sender as *const _ as *mut c_void,
                 ),
                 "SpeechRecognizer.set_recognizing failed",
+            )?;
+        }
+
+        Ok(())
+    }
+
+    pub fn set_recognized<T>(&self, sender: Sender<T>) -> Result<()>
+    where
+        T: EventFactory,
+    {
+        unsafe {
+            convert_err(
+                recognizer_recognized_set_callback(
+                    self.handle.get(),
+                    Some(Self::cb_send::<T>),
+                    &sender as *const _ as *mut c_void,
+                ),
+                "SpeechRecognizer.set_recognized failed",
             )?;
         }
 
