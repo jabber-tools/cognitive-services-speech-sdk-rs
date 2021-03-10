@@ -2,7 +2,6 @@ use crate::error::Result;
 use crate::CancellationErrorCode;
 use crate::CancellationReason;
 use crate::FromHandle;
-use crate::SmartHandle;
 use crate::{spx_populate, spx_populate_string};
 use std::marker::PhantomData;
 use std::ops::Deref;
@@ -12,7 +11,7 @@ use crate::ffi::{
     recognizer_event_handle_release, recognizer_recognition_event_get_offset,
     recognizer_recognition_event_get_result, recognizer_result_handle_release,
     recognizer_session_event_get_session_id, result_get_canceled_error_code,
-    result_get_reason_canceled, SPXEVENTHANDLE, SPXRESULTHANDLE,
+    result_get_reason_canceled, SmartHandle, SPXEVENTHANDLE, SPXRESULTHANDLE,
 };
 
 const SESSION_ID_SIZE: usize = 32; // UUID

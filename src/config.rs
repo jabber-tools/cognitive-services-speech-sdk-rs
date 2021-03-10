@@ -4,10 +4,10 @@ use crate::ffi::{
     audio_config_create_audio_input_from_stream,
     audio_config_create_audio_input_from_wav_file_name, audio_config_release,
     speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
-    SPXAUDIOCONFIGHANDLE, SPXHANDLE, SPXSPEECHCONFIGHANDLE, SPX_NOERROR,
+    SmartHandle, SPXAUDIOCONFIGHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXSPEECHCONFIGHANDLE,
+    SPX_NOERROR,
 };
 use crate::property::PropertyBag;
-use crate::{SmartHandle, SPXHANDLE_EMPTY};
 use log::*;
 use std::ffi::CString;
 

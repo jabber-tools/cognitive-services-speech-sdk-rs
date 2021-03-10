@@ -1,7 +1,3 @@
-use log::*;
-use std::fmt::Debug;
-use std::fmt::Display;
-use std::fmt::Formatter;
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
 
@@ -12,8 +8,6 @@ pub mod events;
 pub mod ffi;
 pub mod property;
 pub mod recognizer;
-
-const SPXHANDLE_EMPTY: ffi::SPXHANDLE = 0 as ffi::SPXHANDLE;
 
 pub struct FfiObject {
     pub ptr: *mut u8,
@@ -50,51 +44,6 @@ impl FfiObject {
 impl Drop for FfiObject {
     fn drop(&mut self) {
         unsafe { std::mem::drop(Vec::from_raw_parts(self.ptr, 0, self.size)) };
-    }
-}
-
-#[derive(Debug)]
-pub struct SmartHandle<T: Copy + Debug> {
-    inner: T,
-    release_fn: unsafe extern "C" fn(T) -> ffi::SPXHR,
-    name: &'static str,
-}
-
-impl<T: Copy + Debug> SmartHandle<T> {
-    #[inline(always)]
-    fn create(
-        name: &'static str,
-        handle: T,
-        release_fn: unsafe extern "C" fn(T) -> ffi::SPXHR,
-    ) -> SmartHandle<T> {
-        let result = SmartHandle {
-            inner: handle,
-            release_fn,
-            name,
-        };
-        trace!("Create SmartHandle {}.", result);
-        return result;
-    }
-
-    #[inline(always)]
-    fn get(&self) -> T {
-        self.inner
-    }
-}
-
-impl<T: Copy + Debug> Drop for SmartHandle<T> {
-    fn drop(&mut self) {
-        debug!("Drop SmartHandle {}.", self);
-        let hr = unsafe { (self.release_fn)(self.inner) };
-        if hr != ffi::SPX_NOERROR as usize {
-            panic!("cannot release SmartHandle {}, err={}", self, hr);
-        }
-    }
-}
-
-impl<T: Copy + Debug> Display for SmartHandle<T> {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "{}{{{:?}}}", self.name, self.inner)
     }
 }
 

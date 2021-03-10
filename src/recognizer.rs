@@ -3,10 +3,9 @@ use crate::error::{convert_err, Result};
 use crate::events::EventFactory;
 use crate::ffi::{
     recognizer_create_speech_recognizer_from_config, recognizer_handle_release,
-    recognizer_recognized_set_callback, recognizer_recognizing_set_callback,
-    PRECOGNITION_CALLBACK_FUNC, SPXEVENTHANDLE, SPXHR, SPXRECOHANDLE,
+    recognizer_recognized_set_callback, recognizer_recognizing_set_callback, SmartHandle,
+    SPXEVENTHANDLE, SPXHANDLE_EMPTY, SPXRECOHANDLE,
 };
-use crate::{SmartHandle, SPXHANDLE_EMPTY};
 use log::*;
 use std::ffi::c_void;
 use tokio::sync::mpsc::Sender;

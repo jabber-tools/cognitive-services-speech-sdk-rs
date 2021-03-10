@@ -1,9 +1,9 @@
+use crate::error::convert_err;
 use crate::error::Result;
 use crate::ffi::{
-    property_bag_get_string, property_bag_release, property_bag_set_string, SPXHANDLE, SPXHR,
-    SPXPROPERTYBAGHANDLE,
+    property_bag_get_string, property_bag_release, property_bag_set_string, SmartHandle, SPXHANDLE,
+    SPXHR, SPXPROPERTYBAGHANDLE,
 };
-use crate::{error::convert_err, SmartHandle};
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;

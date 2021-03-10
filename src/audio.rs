@@ -1,10 +1,9 @@
-use crate::error::{convert_err, Error, ErrorRootCause, Result};
+use crate::error::{convert_err, Result};
 use crate::ffi::{
     audio_stream_create_push_audio_input_stream, audio_stream_format_create_from_waveformat_pcm,
-    audio_stream_format_release, audio_stream_release, SPXAUDIOSTREAMFORMATHANDLE,
-    SPXAUDIOSTREAMHANDLE, SPX_NOERROR,
+    audio_stream_format_release, audio_stream_release, SmartHandle, SPXAUDIOSTREAMFORMATHANDLE,
+    SPXAUDIOSTREAMHANDLE, SPXHANDLE_EMPTY,
 };
-use crate::{SmartHandle, SPXHANDLE_EMPTY};
 use log::*;
 
 #[derive(Debug)]
