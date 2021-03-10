@@ -1,4 +1,4 @@
-use crate::error::{Error, ErrorRootCause, Result};
+use crate::error::{convert_err, Error, ErrorRootCause, Result};
 use crate::ffi::{
     audio_stream_create_push_audio_input_stream, audio_stream_format_create_from_waveformat_pcm,
     audio_stream_format_release, audio_stream_release, SPXAUDIOSTREAMFORMATHANDLE,
@@ -21,20 +21,13 @@ impl AudioInputStream {
         let mut handle = SPXHANDLE_EMPTY;
         unsafe {
             let ret = audio_stream_create_push_audio_input_stream(&mut handle, format.handle.get());
-            if ret != SPX_NOERROR as usize {
-                error!("create_push_stream_from_format error {}", ret);
-                Err(Error::new(
-                    "create_push_stream_from_format error".into(),
-                    ErrorRootCause::ApiError(ret),
-                ))
-            } else {
-                info!("create_push_stream_from_format ok");
-                let result = AudioInputStream {
-                    handle: SmartHandle::create("AudioInputStream", handle, audio_stream_release),
-                    format,
-                };
-                Ok(result)
-            }
+            convert_err(ret, "create_push_stream_from_format error")?;
+            info!("create_push_stream_from_format ok");
+            let result = AudioInputStream {
+                handle: SmartHandle::create("AudioInputStream", handle, audio_stream_release),
+                format,
+            };
+            Ok(result)
         }
     }
 }
@@ -58,23 +51,16 @@ impl AudioStreamFormat {
                 bits_per_sample.unwrap_or(16),
                 channels.unwrap_or(1),
             );
-            if ret != SPX_NOERROR as usize {
-                error!("get_wave_format_pcm error {}", ret);
-                Err(Error::new(
-                    "get_wave_format_pcm error".into(),
-                    ErrorRootCause::ApiError(ret),
-                ))
-            } else {
-                info!("get_wave_format_pcm ok");
-                let result = AudioStreamFormat {
-                    handle: SmartHandle::create(
-                        "AudioStreamFormat",
-                        handle,
-                        audio_stream_format_release,
-                    ),
-                };
-                Ok(result)
-            }
+            convert_err(ret, "get_wave_format_pcm error")?;
+            info!("get_wave_format_pcm ok");
+            let result = AudioStreamFormat {
+                handle: SmartHandle::create(
+                    "AudioStreamFormat",
+                    handle,
+                    audio_stream_format_release,
+                ),
+            };
+            Ok(result)
         }
     }
 }
