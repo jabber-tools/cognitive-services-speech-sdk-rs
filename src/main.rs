@@ -1,6 +1,4 @@
-use cognitive_services_speech_sdk_rs::audio::{
-    input_stream::AudioInputStream, stream_format::AudioStreamFormat,
-};
+use cognitive_services_speech_sdk_rs::audio::{AudioInputStream, AudioStreamFormat};
 use cognitive_services_speech_sdk_rs::config::{AudioConfig, SpeechConfig};
 use cognitive_services_speech_sdk_rs::recognizer::SpeechRecognizer;
 use log::*;

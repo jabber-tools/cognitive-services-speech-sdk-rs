@@ -1,4 +1,4 @@
-use crate::audio::input_stream::AudioInputStream;
+use crate::audio::AudioInputStream;
 use crate::error::{convert_err, Error, ErrorRootCause, Result};
 use crate::ffi::{
     audio_config_create_audio_input_from_stream,
