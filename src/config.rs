@@ -1,68 +1,15 @@
-use crate::audio::AudioInputStream;
-use crate::error::{convert_err, Error, ErrorRootCause, Result};
+use crate::error::{convert_err, Result};
 use crate::ffi::{
-    audio_config_create_audio_input_from_stream,
-    audio_config_create_audio_input_from_wav_file_name, audio_config_release,
     speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
-    SmartHandle, SPXAUDIOCONFIGHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXSPEECHCONFIGHANDLE,
-    SPX_NOERROR,
+    SmartHandle, SPXHANDLE, SPXHANDLE_EMPTY, SPXSPEECHCONFIGHANDLE,
 };
 use crate::property::PropertyBag;
-use log::*;
 use std::ffi::CString;
-
-#[derive(Debug)]
-pub struct AudioConfig {
-    pub handle: SmartHandle<SPXAUDIOCONFIGHANDLE>,
-    stream: Option<AudioInputStream>,
-}
 
 #[derive(Debug)]
 pub struct SpeechConfig {
     pub handle: SmartHandle<SPXSPEECHCONFIGHANDLE>,
     properties: PropertyBag,
-}
-
-impl AudioConfig {
-    pub fn from_stream_input(stream: AudioInputStream) -> Result<AudioConfig> {
-        let mut handle = SPXHANDLE_EMPTY;
-        unsafe {
-            let ret = audio_config_create_audio_input_from_stream(&mut handle, stream.handle.get());
-            if ret != SPX_NOERROR as usize {
-                error!("from_stream_input error {}", ret);
-                Err(Error::new(
-                    "from_stream_input error".into(),
-                    ErrorRootCause::ApiError(ret),
-                ))
-            } else {
-                info!("from_stream_input ok");
-                let result = AudioConfig {
-                    handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
-                    stream: Some(stream),
-                };
-                Ok(result)
-            }
-        }
-    }
-
-    pub fn from_wav_file_input<NM: AsRef<str>>(file_name: NM) -> Result<AudioConfig> {
-        let mut handle = SPXHANDLE_EMPTY;
-        let c_file_name = CString::new(file_name.as_ref())?;
-        unsafe {
-            convert_err(
-                audio_config_create_audio_input_from_wav_file_name(
-                    &mut handle,
-                    c_file_name.as_ptr(),
-                ),
-                "AudioConfig.from_wav_file_input error",
-            )?;
-        }
-        let result = AudioConfig {
-            handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
-            stream: None,
-        };
-        Ok(result)
-    }
 }
 
 impl SpeechConfig {

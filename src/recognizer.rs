@@ -1,4 +1,5 @@
-use crate::config::{AudioConfig, SpeechConfig};
+use crate::audio::AudioConfig;
+use crate::config::SpeechConfig;
 use crate::error::{convert_err, Result};
 use crate::events::EventFactory;
 use crate::ffi::{
