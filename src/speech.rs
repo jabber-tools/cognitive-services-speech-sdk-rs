@@ -4,8 +4,8 @@ use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_release, recognizer_create_speech_recognizer_from_config,
     recognizer_get_property_bag, recognizer_handle_release, speech_config_from_subscription,
-    speech_config_get_property_bag, speech_config_release, SmartHandle, SPXHANDLE, SPXHANDLE_EMPTY,
-    SPXRECOHANDLE, SPXSPEECHCONFIGHANDLE,
+    speech_config_get_property_bag, speech_config_release, SmartHandle, SPXEVENTHANDLE, SPXHANDLE,
+    SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
 
@@ -108,4 +108,60 @@ impl SpeechRecognizer {
         }
         SpeechRecognizer::from_handle(handle, speech_config, audio_config)
     }
+}
+
+unsafe extern "C" fn cb_session_started(
+    hreco: SPXRECOHANDLE,
+    hevent: SPXEVENTHANDLE,
+    pvContext: *mut ::std::os::raw::c_void,
+) {
+    unimplemented!();
+}
+
+unsafe extern "C" fn cb_session_stopped(
+    hreco: SPXRECOHANDLE,
+    hevent: SPXEVENTHANDLE,
+    pvContext: *mut ::std::os::raw::c_void,
+) {
+    unimplemented!();
+}
+
+unsafe extern "C" fn cb_speech_start_detected(
+    hreco: SPXRECOHANDLE,
+    hevent: SPXEVENTHANDLE,
+    pvContext: *mut ::std::os::raw::c_void,
+) {
+    unimplemented!();
+}
+
+unsafe extern "C" fn cb_speech_end_detected(
+    hreco: SPXRECOHANDLE,
+    hevent: SPXEVENTHANDLE,
+    pvContext: *mut ::std::os::raw::c_void,
+) {
+    unimplemented!();
+}
+
+unsafe extern "C" fn cb_canceled(
+    hreco: SPXRECOHANDLE,
+    hevent: SPXEVENTHANDLE,
+    pvContext: *mut ::std::os::raw::c_void,
+) {
+    unimplemented!();
+}
+
+unsafe extern "C" fn cb_recognizing(
+    hreco: SPXRECOHANDLE,
+    hevent: SPXEVENTHANDLE,
+    pvContext: *mut ::std::os::raw::c_void,
+) {
+    unimplemented!();
+}
+
+unsafe extern "C" fn cb_recognized(
+    hreco: SPXRECOHANDLE,
+    hevent: SPXEVENTHANDLE,
+    pvContext: *mut ::std::os::raw::c_void,
+) {
+    unimplemented!();
 }

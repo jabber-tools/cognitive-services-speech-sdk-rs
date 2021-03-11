@@ -1,6 +1,5 @@
 use cognitive_services_speech_sdk_rs::audio::{AudioConfig, AudioInputStream, AudioStreamFormat};
-use cognitive_services_speech_sdk_rs::recognizer::SpeechRecognizer;
-use cognitive_services_speech_sdk_rs::speech::SpeechConfig;
+use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechRecognizer};
 use log::*;
 use std::env;
 
