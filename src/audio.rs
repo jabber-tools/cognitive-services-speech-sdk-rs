@@ -1,10 +1,12 @@
+use crate::common::PropertyCollection;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     audio_config_create_audio_input_from_stream,
-    audio_config_create_audio_input_from_wav_file_name, audio_config_release,
-    audio_stream_create_push_audio_input_stream, audio_stream_format_create_from_waveformat_pcm,
-    audio_stream_format_release, audio_stream_release, SmartHandle, SPXAUDIOCONFIGHANDLE,
-    SPXAUDIOSTREAMFORMATHANDLE, SPXAUDIOSTREAMHANDLE, SPXHANDLE_EMPTY,
+    audio_config_create_audio_input_from_wav_file_name, audio_config_get_property_bag,
+    audio_config_release, audio_stream_create_push_audio_input_stream,
+    audio_stream_format_create_from_waveformat_pcm, audio_stream_format_release,
+    audio_stream_release, property_bag_release, SmartHandle, SPXAUDIOCONFIGHANDLE,
+    SPXAUDIOSTREAMFORMATHANDLE, SPXAUDIOSTREAMHANDLE, SPXHANDLE, SPXHANDLE_EMPTY,
 };
 use log::*;
 use std::ffi::CString;
@@ -71,20 +73,40 @@ impl AudioStreamFormat {
 pub struct AudioConfig {
     pub handle: SmartHandle<SPXAUDIOCONFIGHANDLE>,
     stream: Option<AudioInputStream>,
+    pub properties: PropertyCollection,
 }
 
 impl AudioConfig {
+    // passing also stream, need to solve this more elegantly, do not want to use Option
+    fn from_handle(handle: SPXHANDLE, stream: Option<AudioInputStream>) -> Result<AudioConfig> {
+        let mut prop_bag_handle = SPXHANDLE_EMPTY;
+        unsafe {
+            let ret = audio_config_get_property_bag(handle, &mut prop_bag_handle);
+            convert_err(ret, "AudioConfig::from_handle error")?;
+        }
+        let property_bag = PropertyCollection {
+            handle: SmartHandle::create(
+                "PropertyCollection",
+                prop_bag_handle,
+                property_bag_release,
+            ),
+        };
+
+        let result = AudioConfig {
+            handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
+            stream: stream,
+            properties: property_bag,
+        };
+        Ok(result)
+    }
+
     pub fn from_stream_input(stream: AudioInputStream) -> Result<AudioConfig> {
         let mut handle = SPXHANDLE_EMPTY;
         unsafe {
             let ret = audio_config_create_audio_input_from_stream(&mut handle, stream.handle.get());
-            convert_err(ret, "from_stream_input error")?;
+            convert_err(ret, "AudioConfig::from_stream_input error")?;
             info!("from_stream_input ok");
-            let result = AudioConfig {
-                handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
-                stream: Some(stream),
-            };
-            Ok(result)
+            AudioConfig::from_handle(handle, Some(stream))
         }
     }
 
@@ -97,13 +119,9 @@ impl AudioConfig {
                     &mut handle,
                     c_file_name.as_ptr(),
                 ),
-                "AudioConfig.from_wav_file_input error",
+                "AudioConfig::from_wav_file_input error",
             )?;
         }
-        let result = AudioConfig {
-            handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
-            stream: None,
-        };
-        Ok(result)
+        AudioConfig::from_handle(handle, None)
     }
 }

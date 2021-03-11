@@ -2,6 +2,7 @@ use std::mem::MaybeUninit;
 use std::os::raw::c_char;
 
 pub mod audio;
+pub mod common;
 pub mod config;
 pub mod error;
 pub mod events;
