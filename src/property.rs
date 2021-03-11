@@ -1,8 +1,7 @@
 use crate::error::convert_err;
 use crate::error::Result;
 use crate::ffi::{
-    property_bag_get_string, property_bag_release, property_bag_set_string, SmartHandle, SPXHANDLE,
-    SPXHR, SPXPROPERTYBAGHANDLE,
+    property_bag_get_string, property_bag_set_string, SmartHandle, SPXPROPERTYBAGHANDLE,
 };
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -63,17 +62,6 @@ pub struct PropertyBag {
 }
 
 impl PropertyBag {
-    #[inline(always)]
-    pub(crate) fn create(
-        hcfg: SPXHANDLE,
-        f: unsafe extern "C" fn(SPXHANDLE, *mut SPXPROPERTYBAGHANDLE) -> SPXHR,
-    ) -> Result<PropertyBag> {
-        let handle = crate::spx_populate(hcfg, f)?;
-        Ok(PropertyBag {
-            handle: SmartHandle::create("PropertyBag", handle, property_bag_release),
-        })
-    }
-
     #[inline]
     pub fn get_handle(&self) -> SPXPROPERTYBAGHANDLE {
         self.handle.get()

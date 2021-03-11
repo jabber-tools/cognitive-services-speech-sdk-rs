@@ -1,5 +1,4 @@
 use crate::audio::AudioConfig;
-use crate::config::SpeechConfig;
 use crate::error::{convert_err, Result};
 use crate::events::EventFactory;
 use crate::ffi::{
@@ -7,6 +6,7 @@ use crate::ffi::{
     recognizer_recognized_set_callback, recognizer_recognizing_set_callback, SmartHandle,
     SPXEVENTHANDLE, SPXHANDLE_EMPTY, SPXRECOHANDLE,
 };
+use crate::speech::SpeechConfig;
 use log::*;
 use std::ffi::c_void;
 use tokio::sync::mpsc::Sender;

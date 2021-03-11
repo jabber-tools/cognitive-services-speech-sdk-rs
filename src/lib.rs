@@ -9,6 +9,7 @@ pub mod events;
 pub mod ffi;
 pub mod property;
 pub mod recognizer;
+pub mod speech;
 
 pub struct FfiObject {
     pub ptr: *mut u8,
