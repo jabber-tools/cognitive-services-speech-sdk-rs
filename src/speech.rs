@@ -4,11 +4,12 @@ use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_release, recognizer_create_speech_recognizer_from_config,
     recognizer_event_handle_release, recognizer_get_property_bag, recognizer_handle_release,
-    recognizer_session_event_get_session_id, speech_config_from_subscription,
-    speech_config_get_property_bag, speech_config_release, SmartHandle, SPXEVENTHANDLE, SPXHANDLE,
-    SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXSPEECHCONFIGHANDLE,
+    recognizer_recognition_event_get_offset, recognizer_session_event_get_session_id,
+    speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
+    SmartHandle, SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
+use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_void};
 
 #[derive(Debug)]
@@ -208,6 +209,27 @@ impl SessionEvent {
                     handle,
                     recognizer_event_handle_release,
                 ),
+            })
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct RecognitionEvent {
+    base: SessionEvent,
+    offset: u64,
+}
+
+impl RecognitionEvent {
+    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<RecognitionEvent> {
+        let base = SessionEvent::from_handle(handle)?;
+        unsafe {
+            let offset: *mut u64 = MaybeUninit::uninit().assume_init();
+            let ret = recognizer_recognition_event_get_offset(handle, offset);
+            convert_err(ret, "RecognitionEvent::from_handle error")?;
+            Ok(RecognitionEvent {
+                base,
+                offset: *offset,
             })
         }
     }
