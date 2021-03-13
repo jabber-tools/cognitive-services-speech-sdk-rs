@@ -3,11 +3,13 @@ use crate::common::PropertyCollection;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_release, recognizer_create_speech_recognizer_from_config,
-    recognizer_get_property_bag, recognizer_handle_release, speech_config_from_subscription,
+    recognizer_event_handle_release, recognizer_get_property_bag, recognizer_handle_release,
+    recognizer_session_event_get_session_id, speech_config_from_subscription,
     speech_config_get_property_bag, speech_config_release, SmartHandle, SPXEVENTHANDLE, SPXHANDLE,
     SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
+use std::os::raw::{c_char, c_void};
 
 #[derive(Debug)]
 pub struct SpeechConfig {
@@ -110,58 +112,103 @@ impl SpeechRecognizer {
     }
 }
 
+#[allow(dead_code)]
+#[allow(non_snake_case)]
 unsafe extern "C" fn cb_session_started(
-    hreco: SPXRECOHANDLE,
-    hevent: SPXEVENTHANDLE,
-    pvContext: *mut ::std::os::raw::c_void,
+    _hreco: SPXRECOHANDLE,
+    _hevent: SPXEVENTHANDLE,
+    _pvContext: *mut c_void,
 ) {
     unimplemented!();
 }
 
+#[allow(dead_code)]
+#[allow(non_snake_case)]
 unsafe extern "C" fn cb_session_stopped(
-    hreco: SPXRECOHANDLE,
-    hevent: SPXEVENTHANDLE,
-    pvContext: *mut ::std::os::raw::c_void,
+    _hreco: SPXRECOHANDLE,
+    _hevent: SPXEVENTHANDLE,
+    _pvContext: *mut c_void,
 ) {
     unimplemented!();
 }
 
+#[allow(dead_code)]
+#[allow(non_snake_case)]
 unsafe extern "C" fn cb_speech_start_detected(
-    hreco: SPXRECOHANDLE,
-    hevent: SPXEVENTHANDLE,
-    pvContext: *mut ::std::os::raw::c_void,
+    _hreco: SPXRECOHANDLE,
+    _hevent: SPXEVENTHANDLE,
+    _vpvContext: *mut c_void,
 ) {
     unimplemented!();
 }
 
+#[allow(dead_code)]
+#[allow(non_snake_case)]
 unsafe extern "C" fn cb_speech_end_detected(
-    hreco: SPXRECOHANDLE,
-    hevent: SPXEVENTHANDLE,
-    pvContext: *mut ::std::os::raw::c_void,
+    _hreco: SPXRECOHANDLE,
+    _hevent: SPXEVENTHANDLE,
+    _pvContext: *mut c_void,
 ) {
     unimplemented!();
 }
 
+#[allow(dead_code)]
+#[allow(non_snake_case)]
 unsafe extern "C" fn cb_canceled(
-    hreco: SPXRECOHANDLE,
-    hevent: SPXEVENTHANDLE,
-    pvContext: *mut ::std::os::raw::c_void,
+    _hreco: SPXRECOHANDLE,
+    _hevent: SPXEVENTHANDLE,
+    _pvContext: *mut c_void,
 ) {
     unimplemented!();
 }
 
+#[allow(dead_code)]
+#[allow(non_snake_case)]
 unsafe extern "C" fn cb_recognizing(
-    hreco: SPXRECOHANDLE,
-    hevent: SPXEVENTHANDLE,
-    pvContext: *mut ::std::os::raw::c_void,
+    _hreco: SPXRECOHANDLE,
+    _hevent: SPXEVENTHANDLE,
+    _pvContext: *mut c_void,
 ) {
     unimplemented!();
 }
 
+#[allow(dead_code)]
+#[allow(non_snake_case)]
 unsafe extern "C" fn cb_recognized(
-    hreco: SPXRECOHANDLE,
-    hevent: SPXEVENTHANDLE,
-    pvContext: *mut ::std::os::raw::c_void,
+    _hreco: SPXRECOHANDLE,
+    _hevent: SPXEVENTHANDLE,
+    _pvContext: *mut c_void,
 ) {
     unimplemented!();
+}
+
+#[derive(Debug)]
+pub struct SessionEvent {
+    session_id: String,
+    handle: SmartHandle<SPXEVENTHANDLE>,
+}
+
+impl SessionEvent {
+    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
+        //allocate zeroed buffer and convert to unsafe mutable ptr
+        let buffer: *mut u8 = vec![0u8; 37].as_mut_ptr();
+        unsafe {
+            let ret = recognizer_session_event_get_session_id(handle, buffer as *mut c_char, 37);
+            convert_err(ret, "SessionEvent::from_handle error")?;
+            // TBD:not sure whether recognizer_session_event_get_session_id will allocate
+            // 37 bytes exactly or it might allocate less? In that case we would have to
+            // offset pointer byte by byte until we find terminating nul char(0) of C string
+            // see also https://doc.rust-lang.org/std/ffi/struct.CStr.html#method.from_ptr
+            let session_id_slice = std::slice::from_raw_parts(buffer, 37);
+            let session_id = String::from_utf8(session_id_slice.to_vec())?;
+            Ok(SessionEvent {
+                session_id,
+                handle: SmartHandle::create(
+                    "SessionEvent",
+                    handle,
+                    recognizer_event_handle_release,
+                ),
+            })
+        }
+    }
 }
