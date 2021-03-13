@@ -1,12 +1,13 @@
 use crate::audio::AudioConfig;
-use crate::common::PropertyCollection;
+use crate::common::{PropertyCollection, ResultReason};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_release, recognizer_create_speech_recognizer_from_config,
     recognizer_event_handle_release, recognizer_get_property_bag, recognizer_handle_release,
-    recognizer_recognition_event_get_offset, recognizer_session_event_get_session_id,
-    speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
-    SmartHandle, SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXSPEECHCONFIGHANDLE,
+    recognizer_recognition_event_get_offset, recognizer_recognition_event_get_result,
+    recognizer_session_event_get_session_id, speech_config_from_subscription,
+    speech_config_get_property_bag, speech_config_release, SmartHandle, SPXEVENTHANDLE, SPXHANDLE,
+    SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
 use std::mem::MaybeUninit;
@@ -230,6 +231,45 @@ impl RecognitionEvent {
             Ok(RecognitionEvent {
                 base,
                 offset: *offset,
+            })
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct SpeechRecognitionResult {
+    handle: SmartHandle<SPXRESULTHANDLE>, // recognizer_result_handle_release
+    result_id: String,
+    reason: ResultReason,
+    text: String,
+    duration: String, //TBD: change
+    offset: String,   // TBD: change
+    properties: PropertyCollection,
+}
+
+impl SpeechRecognitionResult {
+    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionResult> {
+        unimplemented!();
+    }
+}
+
+#[derive(Debug)]
+pub struct SpeechRecognitionEvent {
+    base: RecognitionEvent,
+    result: SpeechRecognitionResult,
+}
+
+impl SpeechRecognitionEvent {
+    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionEvent> {
+        let base = RecognitionEvent::from_handle(handle)?;
+
+        unsafe {
+            let result_handle: *mut SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = recognizer_recognition_event_get_result(handle, result_handle);
+            let result = SpeechRecognitionResult::from_handle(*result_handle)?;
+            Ok(SpeechRecognitionEvent {
+                base,
+                result: result,
             })
         }
     }
