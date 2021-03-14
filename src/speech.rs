@@ -376,10 +376,10 @@ impl SpeechRecognitionCanceledEvent {
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_canceled_error_code) error",
             )?;
 
-            let error_details = base
-                .result
-                .properties
-                .get_property(PropertyId::SpeechServiceResponseJsonErrorDetails, "".into());
+            let error_details = base.result.properties.get_property(
+                PropertyId::SpeechServiceResponseJsonErrorDetails,
+                "".to_string(),
+            )?;
             Ok(SpeechRecognitionCanceledEvent {
                 base,
                 reason: CancellationReason::from_u32(*reason_ptr),

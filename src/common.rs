@@ -1,7 +1,7 @@
 use crate::error::{convert_err, Result};
-use crate::ffi::property_bag_set_string;
+use crate::ffi::{property_bag_get_string, property_bag_set_string};
 use crate::ffi::{SmartHandle, SPXPROPERTYBAGHANDLE};
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 
 // TODO: rename to PropertyBag
 #[derive(Debug)]
@@ -25,8 +25,20 @@ impl PropertyCollection {
         Ok(())
     }
 
-    pub fn get_property(&self, prop_id: PropertyId, default_val: String) -> String {
-        unimplemented!();
+    pub fn get_property<S>(&self, prop_id: PropertyId, default_val: S) -> Result<String>
+    where
+        S: Into<Vec<u8>>,
+    {
+        unsafe {
+            // TODO: see NULL_C_STR_PTR in orig solution
+            let ret = property_bag_get_string(
+                self.handle.get(),
+                prop_id.to_i32(),
+                std::ptr::null(),
+                CString::new(default_val)?.into_raw(),
+            );
+            Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+        }
     }
 
     pub fn get_property_by_string(&self, prop_name: String, default_val: String) -> String {
@@ -191,4 +203,56 @@ pub enum PropertyId {
     AudioConfigAudioSource = 8004,
 
     SpeechLogFilename = 9001,
+}
+
+impl PropertyId {
+    pub fn to_i32(&self) -> i32 {
+        return match self {
+            PropertyId::SpeechServiceConnectionKey => 1000,
+            PropertyId::SpeechServiceConnectionEndpoint => 1001,
+            PropertyId::SpeechServiceConnectionRegion => 1002,
+            PropertyId::SpeechServiceAuthorizationToken => 1003,
+            PropertyId::SpeechServiceAuthorizationType => 1004,
+            PropertyId::SpeechServiceConnectionEndpointId => 1005,
+
+            PropertyId::SpeechServiceConnectionProxyHostName => 1100,
+            PropertyId::SpeechServiceConnectionProxyPort => 1101,
+            PropertyId::SpeechServiceConnectionProxyUserName => 1102,
+            PropertyId::SpeechServiceConnectionProxyPassword => 1103,
+
+            PropertyId::SpeechServiceConnectionTranslationToLanguages => 2000,
+            PropertyId::SpeechServiceConnectionTranslationVoice => 2001,
+            PropertyId::SpeechServiceConnectionTranslationFeatures => 2002,
+            PropertyId::SpeechServiceConnectionIntentRegion => 2003,
+
+            PropertyId::SpeechServiceConnectionRecoMode => 3000,
+            PropertyId::SpeechServiceConnectionRecoLanguage => 3001,
+            PropertyId::SpeechSessionId => 3002,
+
+            PropertyId::SpeechServiceConnectionSynthLanguage => 3100,
+            PropertyId::SpeechServiceConnectionSynthVoice => 3101,
+            PropertyId::SpeechServiceConnectionSynthOutputFormat => 3102,
+
+            PropertyId::SpeechServiceResponseRequestDetailedResultTrueFalse => 4000,
+            PropertyId::SpeechServiceResponseRequestProfanityFilterTrueFalse => 4001,
+
+            PropertyId::SpeechServiceResponseJsonResult => 5000,
+            PropertyId::SpeechServiceResponseJsonErrorDetails => 5001,
+            PropertyId::SpeechServiceResponseRecognitionLatencyMs => 5002,
+
+            PropertyId::CancellationDetailsReason => 6000,
+            PropertyId::CancellationDetailsReasonText => 6001,
+            PropertyId::CancellationDetailsReasonDetailedText => 6002,
+
+            PropertyId::LanguageUnderstandingServiceResponseJsonResult => 7000,
+
+            PropertyId::AudioConfigDeviceNameForCapture => 8000,
+            PropertyId::AudioConfigNumberOfChannelsForCapture => 8001,
+            PropertyId::AudioConfigSampleRateForCapture => 8002,
+            PropertyId::AudioConfigBitsPerSampleForCapture => 8003,
+            PropertyId::AudioConfigAudioSource => 8004,
+
+            PropertyId::SpeechLogFilename => 9001,
+        };
+    }
 }

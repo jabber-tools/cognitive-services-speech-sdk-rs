@@ -7,6 +7,7 @@ pub enum ErrorRootCause {
     FfiNulError,
     InvalidCString,
     FromUtf8Error,
+    Utf8Error,
 }
 
 #[derive(Debug)]
@@ -46,6 +47,15 @@ impl From<std::string::FromUtf8Error> for Error {
         Error {
             message: format!("std::string::FromUtf8Error: {}", error),
             caused_by: ErrorRootCause::FromUtf8Error,
+        }
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(error: std::str::Utf8Error) -> Error {
+        Error {
+            message: format!("std::str::Utf8Error: {}", error),
+            caused_by: ErrorRootCause::Utf8Error,
         }
     }
 }
