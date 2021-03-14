@@ -70,3 +70,23 @@ pub enum ResultReason {
     // SynthesizingAudioStarted indicates the speech synthesis is now started
     SynthesizingAudioStarted = 12,
 }
+
+impl ResultReason {
+    pub fn from_u32(reason: u32) -> Self {
+        return match reason {
+            0 => ResultReason::NoMatch,
+            1 => ResultReason::Canceled,
+            2 => ResultReason::RecognizingSpeech,
+            3 => ResultReason::RecognizedSpeech,
+            4 => ResultReason::RecognizingIntent,
+            5 => ResultReason::RecognizedIntent,
+            6 => ResultReason::TranslatingSpeech,
+            7 => ResultReason::TranslatedSpeech,
+            8 => ResultReason::SynthesizingAudio,
+            9 => ResultReason::SynthesizingAudioCompleted,
+            10 => ResultReason::RecognizingKeyword,
+            11 => ResultReason::RecognizedKeyword,
+            _ => ResultReason::SynthesizingAudioStarted,
+        };
+    }
+}

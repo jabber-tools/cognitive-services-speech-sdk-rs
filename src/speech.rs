@@ -5,13 +5,15 @@ use crate::ffi::{
     property_bag_release, recognizer_create_speech_recognizer_from_config,
     recognizer_event_handle_release, recognizer_get_property_bag, recognizer_handle_release,
     recognizer_recognition_event_get_offset, recognizer_recognition_event_get_result,
-    recognizer_session_event_get_session_id, speech_config_from_subscription,
-    speech_config_get_property_bag, speech_config_release, SmartHandle, SPXEVENTHANDLE, SPXHANDLE,
-    SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
+    recognizer_result_handle_release, recognizer_session_event_get_session_id, result_get_duration,
+    result_get_offset, result_get_property_bag, result_get_reason, result_get_result_id,
+    result_get_text, speech_config_from_subscription, speech_config_get_property_bag,
+    speech_config_release, SmartHandle, SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY,
+    SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_void};
+use std::os::raw::{c_char, c_uint, c_void};
 
 #[derive(Debug)]
 pub struct SpeechConfig {
@@ -238,18 +240,85 @@ impl RecognitionEvent {
 
 #[derive(Debug)]
 pub struct SpeechRecognitionResult {
-    handle: SmartHandle<SPXRESULTHANDLE>, // recognizer_result_handle_release
+    handle: SmartHandle<SPXRESULTHANDLE>,
     result_id: String,
     reason: ResultReason,
     text: String,
-    duration: String, //TBD: change
-    offset: String,   // TBD: change
+    duration: String, //TBD: change to duration
+    offset: String,   // TBD: change to duration
     properties: PropertyCollection,
 }
 
 impl SpeechRecognitionResult {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionResult> {
-        unimplemented!();
+    pub fn from_handle(handle: SPXRESULTHANDLE) -> Result<SpeechRecognitionResult> {
+        unsafe {
+            let buffer: *mut u8 = vec![0u8; 1024].as_mut_ptr();
+            let mut ret = result_get_result_id(handle, buffer as *mut c_char, 1024);
+            convert_err(
+                ret,
+                "SpeechRecognitionResult::from_handle(result_get_result_id) error",
+            )?;
+            let result_id_slice = std::slice::from_raw_parts(buffer, 1024);
+            let result_id = String::from_utf8(result_id_slice.to_vec())?;
+
+            let reason: *mut c_uint = MaybeUninit::uninit().assume_init();
+            ret = result_get_reason(handle, reason);
+            convert_err(
+                ret,
+                "SpeechRecognitionResult::from_handle(result_get_reason) error",
+            )?;
+
+            let buffer2: *mut u8 = vec![0u8; 1024].as_mut_ptr();
+            ret = result_get_text(handle, buffer2 as *mut c_char, 1024);
+            convert_err(
+                ret,
+                "SpeechRecognitionResult::from_handle(result_get_text) error",
+            )?;
+            let result_text_slice = std::slice::from_raw_parts(buffer, 1024);
+            let result_text = String::from_utf8(result_text_slice.to_vec())?;
+
+            let duration: *mut u64 = MaybeUninit::uninit().assume_init();
+            ret = result_get_duration(handle, duration);
+            convert_err(
+                ret,
+                "SpeechRecognitionResult::from_handle(result_get_duration) error",
+            )?;
+
+            let offset: *mut u64 = MaybeUninit::uninit().assume_init();
+            ret = result_get_offset(handle, offset);
+            convert_err(
+                ret,
+                "SpeechRecognitionResult::from_handle(result_get_offset) error",
+            )?;
+
+            let properties_handle: *mut SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
+            ret = result_get_property_bag(handle, properties_handle);
+            convert_err(
+                ret,
+                "SpeechRecognitionResult::from_handle(result_get_property_bag) error",
+            )?;
+            let properties = PropertyCollection {
+                handle: SmartHandle::create(
+                    "PropertyCollection",
+                    *properties_handle,
+                    property_bag_release,
+                ),
+            };
+
+            Ok(SpeechRecognitionResult {
+                handle: SmartHandle::create(
+                    "SpeechRecognitionResult",
+                    handle,
+                    recognizer_result_handle_release,
+                ),
+                result_id,
+                reason: ResultReason::from_u32(*reason),
+                text: result_text,
+                duration: (*duration).to_string(),
+                offset: (*offset).to_string(),
+                properties,
+            })
+        }
     }
 }
 
@@ -266,6 +335,7 @@ impl SpeechRecognitionEvent {
         unsafe {
             let result_handle: *mut SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
             let ret = recognizer_recognition_event_get_result(handle, result_handle);
+            convert_err(ret, "SpeechRecognitionEvent::from_handle error")?;
             let result = SpeechRecognitionResult::from_handle(*result_handle)?;
             Ok(SpeechRecognitionEvent {
                 base,
