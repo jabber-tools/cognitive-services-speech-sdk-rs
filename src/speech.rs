@@ -1,15 +1,19 @@
 use crate::audio::AudioConfig;
-use crate::common::{PropertyCollection, ResultReason};
+use crate::common::{
+    CancellationErrorCode, CancellationReason, PropertyCollection, PropertyId, ResultReason,
+};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_release, recognizer_create_speech_recognizer_from_config,
     recognizer_event_handle_release, recognizer_get_property_bag, recognizer_handle_release,
     recognizer_recognition_event_get_offset, recognizer_recognition_event_get_result,
-    recognizer_result_handle_release, recognizer_session_event_get_session_id, result_get_duration,
-    result_get_offset, result_get_property_bag, result_get_reason, result_get_result_id,
+    recognizer_result_handle_release, recognizer_session_event_get_session_id,
+    result_get_canceled_error_code, result_get_duration, result_get_offset,
+    result_get_property_bag, result_get_reason, result_get_reason_canceled, result_get_result_id,
     result_get_text, speech_config_from_subscription, speech_config_get_property_bag,
-    speech_config_release, SmartHandle, SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY,
-    SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
+    speech_config_release, Result_CancellationErrorCode, Result_CancellationReason, SmartHandle,
+    SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
+    SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
 use std::mem::MaybeUninit;
@@ -340,6 +344,47 @@ impl SpeechRecognitionEvent {
             Ok(SpeechRecognitionEvent {
                 base,
                 result: result,
+            })
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct SpeechRecognitionCanceledEvent {
+    base: SpeechRecognitionEvent,
+    reason: CancellationReason,
+    error_code: CancellationErrorCode,
+    error_details: String,
+}
+
+impl SpeechRecognitionCanceledEvent {
+    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionCanceledEvent> {
+        let base = SpeechRecognitionEvent::from_handle(handle)?;
+        unsafe {
+            let reason_ptr: *mut Result_CancellationReason = MaybeUninit::uninit().assume_init();
+            let ret = result_get_reason_canceled(base.result.handle.get(), reason_ptr);
+            convert_err(
+                ret,
+                "SpeechRecognitionCanceledEvent::from_handle(result_get_reason_canceled) error",
+            )?;
+
+            let error_code_ptr: *mut Result_CancellationErrorCode =
+                MaybeUninit::uninit().assume_init();
+            let ret = result_get_canceled_error_code(base.result.handle.get(), error_code_ptr);
+            convert_err(
+                ret,
+                "SpeechRecognitionCanceledEvent::from_handle(result_get_canceled_error_code) error",
+            )?;
+
+            let error_details = base
+                .result
+                .properties
+                .get_property(PropertyId::SpeechServiceResponseJsonErrorDetails, "".into());
+            Ok(SpeechRecognitionCanceledEvent {
+                base,
+                reason: CancellationReason::from_u32(*reason_ptr),
+                error_code: CancellationErrorCode::from_u32(*error_code_ptr),
+                error_details,
             })
         }
     }

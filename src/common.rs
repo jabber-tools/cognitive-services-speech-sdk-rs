@@ -24,6 +24,14 @@ impl PropertyCollection {
 
         Ok(())
     }
+
+    pub fn get_property(&self, prop_id: PropertyId, default_val: String) -> String {
+        unimplemented!();
+    }
+
+    pub fn get_property_by_string(&self, prop_name: String, default_val: String) -> String {
+        unimplemented!();
+    }
 }
 
 #[derive(Debug)]
@@ -89,4 +97,98 @@ impl ResultReason {
             _ => ResultReason::SynthesizingAudioStarted,
         };
     }
+}
+
+#[derive(Debug)]
+pub enum CancellationReason {
+    Error = 1,
+    EndOfStream = 2,
+}
+
+impl CancellationReason {
+    pub fn from_u32(code: u32) -> Self {
+        return match code {
+            1 => CancellationReason::Error,
+            _ => CancellationReason::EndOfStream,
+        };
+    }
+}
+
+#[derive(Debug)]
+pub enum CancellationErrorCode {
+    NoError = 0,
+    AuthenticationFailure = 1,
+    BadRequest = 2,
+    TooManyRequests = 3,
+    Forbidden = 4,
+    ConnectionFailure = 5,
+    ServiceTimeout = 6,
+    ServiceError = 7,
+    ServiceUnavailable = 8,
+    RuntimeError = 9,
+}
+
+impl CancellationErrorCode {
+    pub fn from_u32(code: u32) -> Self {
+        return match code {
+            0 => CancellationErrorCode::NoError,
+            1 => CancellationErrorCode::AuthenticationFailure,
+            2 => CancellationErrorCode::BadRequest,
+            3 => CancellationErrorCode::TooManyRequests,
+            4 => CancellationErrorCode::Forbidden,
+            5 => CancellationErrorCode::ConnectionFailure,
+            6 => CancellationErrorCode::ServiceTimeout,
+            7 => CancellationErrorCode::ServiceError,
+            8 => CancellationErrorCode::ServiceUnavailable,
+            _ => CancellationErrorCode::RuntimeError,
+        };
+    }
+}
+
+pub enum PropertyId {
+    SpeechServiceConnectionKey = 1000,
+    SpeechServiceConnectionEndpoint = 1001,
+    SpeechServiceConnectionRegion = 1002,
+    SpeechServiceAuthorizationToken = 1003,
+    SpeechServiceAuthorizationType = 1004,
+    SpeechServiceConnectionEndpointId = 1005,
+
+    SpeechServiceConnectionProxyHostName = 1100,
+    SpeechServiceConnectionProxyPort = 1101,
+    SpeechServiceConnectionProxyUserName = 1102,
+    SpeechServiceConnectionProxyPassword = 1103,
+
+    SpeechServiceConnectionTranslationToLanguages = 2000,
+    SpeechServiceConnectionTranslationVoice = 2001,
+    SpeechServiceConnectionTranslationFeatures = 2002,
+    SpeechServiceConnectionIntentRegion = 2003,
+
+    SpeechServiceConnectionRecoMode = 3000,
+    SpeechServiceConnectionRecoLanguage = 3001,
+    SpeechSessionId = 3002,
+
+    SpeechServiceConnectionSynthLanguage = 3100,
+    SpeechServiceConnectionSynthVoice = 3101,
+    SpeechServiceConnectionSynthOutputFormat = 3102,
+
+    SpeechServiceResponseRequestDetailedResultTrueFalse = 4000,
+    SpeechServiceResponseRequestProfanityFilterTrueFalse = 4001,
+
+    SpeechServiceResponseJsonResult = 5000,
+    SpeechServiceResponseJsonErrorDetails = 5001,
+    SpeechServiceResponseRecognitionLatencyMs = 5002,
+
+    CancellationDetailsReason = 6000,
+    CancellationDetailsReasonText = 6001,
+    CancellationDetailsReasonDetailedText = 6002,
+
+    LanguageUnderstandingServiceResponseJsonResult = 7000,
+
+    AudioConfigDeviceNameForCapture = 8000,
+    AudioConfigNumberOfChannelsForCapture = 8001,
+    AudioConfigSampleRateForCapture = 8002,
+    AudioConfigBitsPerSampleForCapture = 8003,
+    AudioConfigAudioSource = 8004,
+
+    SpeechLogFilename = 9001,
 }
