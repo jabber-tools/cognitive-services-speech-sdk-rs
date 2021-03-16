@@ -12,10 +12,12 @@ use crate::ffi::{
     result_get_property_bag, result_get_reason, result_get_reason_canceled, result_get_result_id,
     result_get_text, speech_config_from_subscription, speech_config_get_property_bag,
     speech_config_release, Result_CancellationErrorCode, Result_CancellationReason, SmartHandle,
-    SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
-    SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
+    SPXASYNCHANDLE, SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXPROPERTYBAGHANDLE,
+    SPXRECOHANDLE, SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
 };
+use std::boxed::Box;
 use std::ffi::CString;
+use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_uint, c_void};
 
@@ -65,12 +67,33 @@ impl SpeechConfig {
     }
 }
 
-#[derive(Debug)]
 pub struct SpeechRecognizer {
     handle: SmartHandle<SPXRECOHANDLE>,
     properties: PropertyCollection,
     speech_config: SpeechConfig,
     audio_config: AudioConfig,
+    handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
+    handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
+    handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
+    handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
+    session_started_cb: Option<Box<Fn(SessionEvent)>>,
+    session_stopped_cb: Option<Box<Fn(SessionEvent)>>,
+    speech_start_detected_cb: Option<Box<Fn(RecognitionEvent)>>,
+    speech_end_detected_cb: Option<Box<Fn(RecognitionEvent)>>,
+    canceled_cb: Option<Box<Fn(SpeechRecognitionCanceledEvent)>>,
+    recognizing_cb: Option<Box<Fn(SpeechRecognitionEvent)>>,
+    recognized_cb: Option<Box<Fn(SpeechRecognitionEvent)>>,
+}
+
+impl fmt::Debug for SpeechRecognizer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SpeechRecognizer")
+            .field("handle", &self.handle)
+            .field("properties", &self.properties)
+            .field("speech_config", &self.speech_config)
+            .field("audio_config", &self.audio_config)
+            .finish()
+    }
 }
 
 impl SpeechRecognizer {
@@ -97,6 +120,17 @@ impl SpeechRecognizer {
             properties: property_bag,
             speech_config,
             audio_config,
+            handle_async_start_continuous: None,
+            handle_async_stop_continuous: None,
+            handle_async_start_keyword: None,
+            handle_async_stop_keyword: None,
+            session_started_cb: None,
+            session_stopped_cb: None,
+            speech_start_detected_cb: None,
+            speech_end_detected_cb: None,
+            canceled_cb: None,
+            recognizing_cb: None,
+            recognized_cb: None,
         };
         Ok(result)
     }
@@ -117,6 +151,55 @@ impl SpeechRecognizer {
             )?;
         }
         SpeechRecognizer::from_handle(handle, speech_config, audio_config)
+    }
+
+    pub fn set_session_started_cb<F>(&mut self, f: F)
+    where
+        F: Fn(SessionEvent) + 'static,
+    {
+        self.session_started_cb = Some(Box::new(f));
+    }
+
+    pub fn set_session_stopped_cb<F>(&mut self, f: F)
+    where
+        F: Fn(SessionEvent) + 'static,
+    {
+        self.session_stopped_cb = Some(Box::new(f));
+    }
+
+    pub fn set_speech_start_detected_cb<F>(&mut self, f: F)
+    where
+        F: Fn(RecognitionEvent) + 'static,
+    {
+        self.speech_start_detected_cb = Some(Box::new(f));
+    }
+
+    pub fn set_speech_end_detected_cb<F>(&mut self, f: F)
+    where
+        F: Fn(RecognitionEvent) + 'static,
+    {
+        self.speech_end_detected_cb = Some(Box::new(f));
+    }
+
+    pub fn set_canceled_cb<F>(&mut self, f: F)
+    where
+        F: Fn(SpeechRecognitionCanceledEvent) + 'static,
+    {
+        self.canceled_cb = Some(Box::new(f));
+    }
+
+    pub fn set_recognizing_cb<F>(&mut self, f: F)
+    where
+        F: Fn(SpeechRecognitionEvent) + 'static,
+    {
+        self.recognizing_cb = Some(Box::new(f));
+    }
+
+    pub fn set_recognized_cb<F>(&mut self, f: F)
+    where
+        F: Fn(SpeechRecognitionEvent) + 'static,
+    {
+        self.recognized_cb = Some(Box::new(f));
     }
 }
 
