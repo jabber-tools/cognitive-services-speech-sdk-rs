@@ -3,7 +3,8 @@ use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechRecognizer};
 use log::*;
 use std::env;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     env::set_var("MSSubscriptionKey", "123456789"); // just for now
     env::set_var("MSServiceRegion", "westeurope");
 
@@ -36,9 +37,24 @@ fn main() {
     info!("called SpeechConfig::from_subscription {:?}", speech_config);
 
     info!("calling SpeechRecognizer::from_config");
-    let speech_recognizer = SpeechRecognizer::from_config(speech_config, audio_config).unwrap();
+    let mut speech_recognizer = SpeechRecognizer::from_config(speech_config, audio_config).unwrap();
     info!(
         "called SpeechRecognizer::from_config {:?}",
         speech_recognizer
     );
+
+    speech_recognizer
+        .set_recognizing_cb(|event| info!("set_recognizing_cb {:?}", event))
+        .unwrap();
+
+    speech_recognizer
+        .set_recognized_cb(|event| info!("set_recognized_cb {:?}", event))
+        .unwrap();
+
+    /* let handle = tokio::spawn(async {
+        speech_recognizer.start_continuous_recognition_async()
+    });
+
+    let out = handle.await.unwrap();*/
+    println!("DONE!");
 }

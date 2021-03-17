@@ -83,13 +83,13 @@ pub struct SpeechRecognizer {
     _handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
     _handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
     _handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
-    session_started_cb: Option<Box<dyn Fn(SessionEvent)>>,
-    session_stopped_cb: Option<Box<dyn Fn(SessionEvent)>>,
-    speech_start_detected_cb: Option<Box<dyn Fn(RecognitionEvent)>>,
-    speech_end_detected_cb: Option<Box<dyn Fn(RecognitionEvent)>>,
-    canceled_cb: Option<Box<dyn Fn(SpeechRecognitionCanceledEvent)>>,
-    recognizing_cb: Option<Box<dyn Fn(SpeechRecognitionEvent)>>,
-    recognized_cb: Option<Box<dyn Fn(SpeechRecognitionEvent)>>,
+    session_started_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
+    session_stopped_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
+    speech_start_detected_cb: Option<Box<dyn Fn(RecognitionEvent) + Send>>,
+    speech_end_detected_cb: Option<Box<dyn Fn(RecognitionEvent) + Send>>,
+    canceled_cb: Option<Box<dyn Fn(SpeechRecognitionCanceledEvent) + Send>>,
+    recognizing_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
+    recognized_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
 }
 
 impl fmt::Debug for SpeechRecognizer {
@@ -162,7 +162,7 @@ impl SpeechRecognizer {
 
     pub fn set_session_started_cb<F>(&mut self, f: F) -> Result<()>
     where
-        F: Fn(SessionEvent) + 'static,
+        F: Fn(SessionEvent) + 'static + Send,
     {
         self.session_started_cb = Some(Box::new(f));
         unsafe {
@@ -179,7 +179,7 @@ impl SpeechRecognizer {
 
     pub fn set_session_stopped_cb<F>(&mut self, f: F) -> Result<()>
     where
-        F: Fn(SessionEvent) + 'static,
+        F: Fn(SessionEvent) + 'static + Send,
     {
         self.session_stopped_cb = Some(Box::new(f));
         unsafe {
@@ -195,7 +195,7 @@ impl SpeechRecognizer {
 
     pub fn set_speech_start_detected_cb<F>(&mut self, f: F) -> Result<()>
     where
-        F: Fn(RecognitionEvent) + 'static,
+        F: Fn(RecognitionEvent) + 'static + Send,
     {
         self.speech_start_detected_cb = Some(Box::new(f));
         unsafe {
@@ -211,7 +211,7 @@ impl SpeechRecognizer {
 
     pub fn set_speech_end_detected_cb<F>(&mut self, f: F) -> Result<()>
     where
-        F: Fn(RecognitionEvent) + 'static,
+        F: Fn(RecognitionEvent) + 'static + Send,
     {
         self.speech_end_detected_cb = Some(Box::new(f));
         unsafe {
@@ -227,7 +227,7 @@ impl SpeechRecognizer {
 
     pub fn set_canceled_cb<F>(&mut self, f: F) -> Result<()>
     where
-        F: Fn(SpeechRecognitionCanceledEvent) + 'static,
+        F: Fn(SpeechRecognitionCanceledEvent) + 'static + Send,
     {
         self.canceled_cb = Some(Box::new(f));
         unsafe {
@@ -243,7 +243,7 @@ impl SpeechRecognizer {
 
     pub fn set_recognizing_cb<F>(&mut self, f: F) -> Result<()>
     where
-        F: Fn(SpeechRecognitionEvent) + 'static,
+        F: Fn(SpeechRecognitionEvent) + 'static + Send,
     {
         self.recognizing_cb = Some(Box::new(f));
         unsafe {
@@ -259,7 +259,7 @@ impl SpeechRecognizer {
 
     pub fn set_recognized_cb<F>(&mut self, f: F) -> Result<()>
     where
-        F: Fn(SpeechRecognitionEvent) + 'static,
+        F: Fn(SpeechRecognitionEvent) + 'static + Send,
     {
         self.recognized_cb = Some(Box::new(f));
         unsafe {
@@ -421,6 +421,8 @@ pub struct SessionEvent {
     session_id: String,
     handle: SmartHandle<SPXEVENTHANDLE>,
 }
+
+// unsafe impl Send for SessionEvent {}
 
 impl SessionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
