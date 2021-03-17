@@ -4,10 +4,14 @@ use crate::common::{
 };
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    property_bag_release, recognizer_create_speech_recognizer_from_config,
-    recognizer_event_handle_release, recognizer_get_property_bag, recognizer_handle_release,
+    property_bag_release, recognizer_canceled_set_callback,
+    recognizer_create_speech_recognizer_from_config, recognizer_event_handle_release,
+    recognizer_get_property_bag, recognizer_handle_release,
     recognizer_recognition_event_get_offset, recognizer_recognition_event_get_result,
+    recognizer_recognized_set_callback, recognizer_recognizing_set_callback,
     recognizer_result_handle_release, recognizer_session_event_get_session_id,
+    recognizer_session_started_set_callback, recognizer_session_stopped_set_callback,
+    recognizer_speech_end_detected_set_callback, recognizer_speech_start_detected_set_callback,
     result_get_canceled_error_code, result_get_duration, result_get_offset,
     result_get_property_bag, result_get_reason, result_get_reason_canceled, result_get_result_id,
     result_get_text, speech_config_from_subscription, speech_config_get_property_bag,
@@ -15,6 +19,7 @@ use crate::ffi::{
     SPXASYNCHANDLE, SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXPROPERTYBAGHANDLE,
     SPXRECOHANDLE, SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
 };
+use log::*;
 use std::boxed::Box;
 use std::ffi::CString;
 use std::fmt;
@@ -72,17 +77,17 @@ pub struct SpeechRecognizer {
     properties: PropertyCollection,
     speech_config: SpeechConfig,
     audio_config: AudioConfig,
-    handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
-    handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
-    handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
-    handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
-    session_started_cb: Option<Box<Fn(SessionEvent)>>,
-    session_stopped_cb: Option<Box<Fn(SessionEvent)>>,
-    speech_start_detected_cb: Option<Box<Fn(RecognitionEvent)>>,
-    speech_end_detected_cb: Option<Box<Fn(RecognitionEvent)>>,
-    canceled_cb: Option<Box<Fn(SpeechRecognitionCanceledEvent)>>,
-    recognizing_cb: Option<Box<Fn(SpeechRecognitionEvent)>>,
-    recognized_cb: Option<Box<Fn(SpeechRecognitionEvent)>>,
+    _handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
+    _handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
+    _handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
+    _handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
+    session_started_cb: Option<Box<dyn Fn(SessionEvent)>>,
+    session_stopped_cb: Option<Box<dyn Fn(SessionEvent)>>,
+    speech_start_detected_cb: Option<Box<dyn Fn(RecognitionEvent)>>,
+    speech_end_detected_cb: Option<Box<dyn Fn(RecognitionEvent)>>,
+    canceled_cb: Option<Box<dyn Fn(SpeechRecognitionCanceledEvent)>>,
+    recognizing_cb: Option<Box<dyn Fn(SpeechRecognitionEvent)>>,
+    recognized_cb: Option<Box<dyn Fn(SpeechRecognitionEvent)>>,
 }
 
 impl fmt::Debug for SpeechRecognizer {
@@ -120,10 +125,10 @@ impl SpeechRecognizer {
             properties: property_bag,
             speech_config,
             audio_config,
-            handle_async_start_continuous: None,
-            handle_async_stop_continuous: None,
-            handle_async_start_keyword: None,
-            handle_async_stop_keyword: None,
+            _handle_async_start_continuous: None,
+            _handle_async_stop_continuous: None,
+            _handle_async_start_keyword: None,
+            _handle_async_stop_keyword: None,
             session_started_cb: None,
             session_stopped_cb: None,
             speech_start_detected_cb: None,
@@ -153,124 +158,230 @@ impl SpeechRecognizer {
         SpeechRecognizer::from_handle(handle, speech_config, audio_config)
     }
 
-    pub fn set_session_started_cb<F>(&mut self, f: F)
+    pub fn set_session_started_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(SessionEvent) + 'static,
     {
         self.session_started_cb = Some(Box::new(f));
+        unsafe {
+            let ret = recognizer_session_started_set_callback(
+                self.handle.get(),
+                Some(Self::cb_session_started),
+                // 0 as *mut c_void,
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechRecognizer.set_session_started_cb error")?;
+            Ok(())
+        }
     }
 
-    pub fn set_session_stopped_cb<F>(&mut self, f: F)
+    pub fn set_session_stopped_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(SessionEvent) + 'static,
     {
         self.session_stopped_cb = Some(Box::new(f));
+        unsafe {
+            let ret = recognizer_session_stopped_set_callback(
+                self.handle.get(),
+                Some(Self::cb_session_stopped),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechRecognizer.set_session_stopped_cb error")?;
+            Ok(())
+        }
     }
 
-    pub fn set_speech_start_detected_cb<F>(&mut self, f: F)
+    pub fn set_speech_start_detected_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(RecognitionEvent) + 'static,
     {
         self.speech_start_detected_cb = Some(Box::new(f));
+        unsafe {
+            let ret = recognizer_speech_start_detected_set_callback(
+                self.handle.get(),
+                Some(Self::cb_speech_start_detected),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechRecognizer.set_speech_start_detected_cb error")?;
+            Ok(())
+        }
     }
 
-    pub fn set_speech_end_detected_cb<F>(&mut self, f: F)
+    pub fn set_speech_end_detected_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(RecognitionEvent) + 'static,
     {
         self.speech_end_detected_cb = Some(Box::new(f));
+        unsafe {
+            let ret = recognizer_speech_end_detected_set_callback(
+                self.handle.get(),
+                Some(Self::cb_speech_end_detected),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechRecognizer.set_speech_end_detected_cb error")?;
+            Ok(())
+        }
     }
 
-    pub fn set_canceled_cb<F>(&mut self, f: F)
+    pub fn set_canceled_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(SpeechRecognitionCanceledEvent) + 'static,
     {
         self.canceled_cb = Some(Box::new(f));
+        unsafe {
+            let ret = recognizer_canceled_set_callback(
+                self.handle.get(),
+                Some(Self::cb_canceled),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechRecognizer.set_canceled_cb error")?;
+            Ok(())
+        }
     }
 
-    pub fn set_recognizing_cb<F>(&mut self, f: F)
+    pub fn set_recognizing_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(SpeechRecognitionEvent) + 'static,
     {
         self.recognizing_cb = Some(Box::new(f));
+        unsafe {
+            let ret = recognizer_recognizing_set_callback(
+                self.handle.get(),
+                Some(Self::cb_recognizing),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechRecognizer.set_recognizing_cb error")?;
+            Ok(())
+        }
     }
 
-    pub fn set_recognized_cb<F>(&mut self, f: F)
+    pub fn set_recognized_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(SpeechRecognitionEvent) + 'static,
     {
         self.recognized_cb = Some(Box::new(f));
+        unsafe {
+            let ret = recognizer_recognized_set_callback(
+                self.handle.get(),
+                Some(Self::cb_recognized),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechRecognizer.set_recognized_cb error")?;
+            Ok(())
+        }
     }
-}
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-unsafe extern "C" fn cb_session_started(
-    _hreco: SPXRECOHANDLE,
-    _hevent: SPXEVENTHANDLE,
-    _pvContext: *mut c_void,
-) {
-    unimplemented!();
-}
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_session_started(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        info!("SpeechRecognizer::cb_session_started called");
+        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        if let Some(cb) = &speech_recognizer.session_started_cb {
+            if let Ok(event) = SessionEvent::from_handle(hevent) {
+                cb(event);
+            }
+        }
+    }
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-unsafe extern "C" fn cb_session_stopped(
-    _hreco: SPXRECOHANDLE,
-    _hevent: SPXEVENTHANDLE,
-    _pvContext: *mut c_void,
-) {
-    unimplemented!();
-}
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_session_stopped(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        info!("SpeechRecognizer::cb_session_stopped called");
+        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        if let Some(cb) = &speech_recognizer.session_stopped_cb {
+            if let Ok(event) = SessionEvent::from_handle(hevent) {
+                cb(event);
+            }
+        }
+    }
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-unsafe extern "C" fn cb_speech_start_detected(
-    _hreco: SPXRECOHANDLE,
-    _hevent: SPXEVENTHANDLE,
-    _vpvContext: *mut c_void,
-) {
-    unimplemented!();
-}
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_speech_start_detected(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        info!("SpeechRecognizer::cb_speech_start_detected called");
+        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        if let Some(cb) = &speech_recognizer.speech_start_detected_cb {
+            if let Ok(event) = RecognitionEvent::from_handle(hevent) {
+                cb(event);
+            }
+        }
+    }
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-unsafe extern "C" fn cb_speech_end_detected(
-    _hreco: SPXRECOHANDLE,
-    _hevent: SPXEVENTHANDLE,
-    _pvContext: *mut c_void,
-) {
-    unimplemented!();
-}
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_speech_end_detected(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        info!("SpeechRecognizer::cb_speech_end_detected called");
+        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        if let Some(cb) = &speech_recognizer.speech_end_detected_cb {
+            if let Ok(event) = RecognitionEvent::from_handle(hevent) {
+                cb(event);
+            }
+        }
+    }
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-unsafe extern "C" fn cb_canceled(
-    _hreco: SPXRECOHANDLE,
-    _hevent: SPXEVENTHANDLE,
-    _pvContext: *mut c_void,
-) {
-    unimplemented!();
-}
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_canceled(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        info!("SpeechRecognizer::cb_canceled called");
+        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        if let Some(cb) = &speech_recognizer.canceled_cb {
+            if let Ok(event) = SpeechRecognitionCanceledEvent::from_handle(hevent) {
+                cb(event);
+            }
+        }
+    }
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-unsafe extern "C" fn cb_recognizing(
-    _hreco: SPXRECOHANDLE,
-    _hevent: SPXEVENTHANDLE,
-    _pvContext: *mut c_void,
-) {
-    unimplemented!();
-}
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_recognizing(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        info!("SpeechRecognizer::cb_recognizing called");
+        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        if let Some(cb) = &speech_recognizer.recognizing_cb {
+            if let Ok(event) = SpeechRecognitionEvent::from_handle(hevent) {
+                cb(event);
+            }
+        }
+    }
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-unsafe extern "C" fn cb_recognized(
-    _hreco: SPXRECOHANDLE,
-    _hevent: SPXEVENTHANDLE,
-    _pvContext: *mut c_void,
-) {
-    unimplemented!();
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_recognized(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        info!("SpeechRecognizer::cb_recognized called");
+        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        if let Some(cb) = &speech_recognizer.recognized_cb {
+            if let Ok(event) = SpeechRecognitionEvent::from_handle(hevent) {
+                cb(event);
+            }
+        }
+    }
 }
 
 #[derive(Debug)]

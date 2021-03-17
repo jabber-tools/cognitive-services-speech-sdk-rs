@@ -41,7 +41,7 @@ impl PropertyCollection {
         }
     }
 
-    pub fn get_property_by_string(&self, prop_name: String, default_val: String) -> String {
+    pub fn get_property_by_string(&self, _prop_name: String, _default_val: String) -> String {
         unimplemented!();
     }
 }
