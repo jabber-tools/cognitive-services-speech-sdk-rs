@@ -52,3 +52,5 @@ impl<T: Copy + Debug> Display for SmartHandle<T> {
         write!(f, "{}{{{:?}}}", self.name, self.inner)
     }
 }
+
+unsafe impl<T: Copy + Debug> Send for SmartHandle<T> {}
