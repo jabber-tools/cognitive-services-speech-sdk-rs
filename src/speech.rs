@@ -4,7 +4,7 @@ use crate::common::{
 };
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    property_bag_release, recognizer_canceled_set_callback,
+    property_bag_release, recognizer_async_handle_release, recognizer_canceled_set_callback,
     recognizer_create_speech_recognizer_from_config, recognizer_event_handle_release,
     recognizer_get_property_bag, recognizer_handle_release,
     recognizer_recognition_event_get_offset, recognizer_recognition_event_get_result,
@@ -12,12 +12,14 @@ use crate::ffi::{
     recognizer_result_handle_release, recognizer_session_event_get_session_id,
     recognizer_session_started_set_callback, recognizer_session_stopped_set_callback,
     recognizer_speech_end_detected_set_callback, recognizer_speech_start_detected_set_callback,
-    result_get_canceled_error_code, result_get_duration, result_get_offset,
-    result_get_property_bag, result_get_reason, result_get_reason_canceled, result_get_result_id,
-    result_get_text, speech_config_from_subscription, speech_config_get_property_bag,
-    speech_config_release, Result_CancellationErrorCode, Result_CancellationReason, SmartHandle,
-    SPXASYNCHANDLE, SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXPROPERTYBAGHANDLE,
-    SPXRECOHANDLE, SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
+    recognizer_start_continuous_recognition_async,
+    recognizer_start_continuous_recognition_async_wait_for, result_get_canceled_error_code,
+    result_get_duration, result_get_offset, result_get_property_bag, result_get_reason,
+    result_get_reason_canceled, result_get_result_id, result_get_text,
+    speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
+    Result_CancellationErrorCode, Result_CancellationReason, SmartHandle, SPXASYNCHANDLE,
+    SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
+    SPXRESULTHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use log::*;
 use std::boxed::Box;
@@ -77,7 +79,7 @@ pub struct SpeechRecognizer {
     properties: PropertyCollection,
     speech_config: SpeechConfig,
     audio_config: AudioConfig,
-    _handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
+    handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
     _handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
     _handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
     _handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
@@ -125,7 +127,7 @@ impl SpeechRecognizer {
             properties: property_bag,
             speech_config,
             audio_config,
-            _handle_async_start_continuous: None,
+            handle_async_start_continuous: None,
             _handle_async_stop_continuous: None,
             _handle_async_start_keyword: None,
             _handle_async_stop_keyword: None,
@@ -381,6 +383,36 @@ impl SpeechRecognizer {
                 cb(event);
             }
         }
+    }
+
+    pub async fn start_continuous_recognition_async(&mut self) -> Result<()> {
+        unsafe {
+            let handle_async_start_continuous: *mut SPXASYNCHANDLE =
+                MaybeUninit::uninit().assume_init();
+            let mut ret = recognizer_start_continuous_recognition_async(
+                self.handle.get(),
+                handle_async_start_continuous,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.start_continuous_recognition_async error",
+            )?;
+            self.handle_async_start_continuous = Some(SmartHandle::create(
+                "handle_async_start_continuous",
+                *handle_async_start_continuous,
+                recognizer_async_handle_release,
+            ));
+
+            ret = recognizer_start_continuous_recognition_async_wait_for(
+                *handle_async_start_continuous,
+                u32::MAX,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.recognizer_start_continuous_recognition_async_wait_for error",
+            )?;
+        }
+        Ok(())
     }
 }
 
