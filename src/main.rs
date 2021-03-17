@@ -1,4 +1,6 @@
-use cognitive_services_speech_sdk_rs::audio::{AudioConfig, AudioInputStream, AudioStreamFormat};
+use cognitive_services_speech_sdk_rs::audio::{AudioConfig};
+#[allow(unused_imports)]
+use cognitive_services_speech_sdk_rs::audio::{AudioInputStream, AudioStreamFormat};
 use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechRecognizer};
 use log::*;
 use std::env;
@@ -10,6 +12,7 @@ async fn main() {
 
     env::set_var("RUST_LOG", "debug");
     env_logger::init();
+    /*
     info!("calling AudioStreamFormat::get_wave_format_pcm");
     let wave_format = AudioStreamFormat::get_wave_format_pcm(16000, None, None).unwrap();
     info!(
@@ -27,6 +30,14 @@ async fn main() {
     info!("calling AudioConfig::from_stream_input");
     let audio_config = AudioConfig::from_stream_input(push_stream).unwrap();
     info!("called AudioConfig::from_stream_input {:?}", audio_config);
+    */
+
+    info!("calling AudioConfig::from_wav_file_input");
+    let audio_config = AudioConfig::from_wav_file_input(
+        "/home/adambe/projects/microsoft-speech-rs-master/examples/hello_rust.wav",
+    )
+    .unwrap();
+    info!("called AudioConfig::from_wav_file_input {:?}", audio_config);
 
     info!("calling SpeechConfig::from_subscription");
     let speech_config = SpeechConfig::from_subscription(
