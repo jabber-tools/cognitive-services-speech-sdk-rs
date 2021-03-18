@@ -391,11 +391,11 @@ impl SpeechRecognizer {
 
     pub async fn start_continuous_recognition_async(&mut self) -> Result<()> {
         unsafe {
-            let handle_async_start_continuous = &mut SPXHANDLE_EMPTY as *mut SPXASYNCHANDLE;
+            let mut handle_async_start_continuous: SPXASYNCHANDLE = SPXHANDLE_EMPTY;
             debug!("calling recognizer_start_continuous_recognition_async");
                 let mut ret = recognizer_start_continuous_recognition_async(
                 self.handle.get(),
-                handle_async_start_continuous,
+                &mut handle_async_start_continuous,
             );
             convert_err(
                 ret,
@@ -404,13 +404,13 @@ impl SpeechRecognizer {
             info!("called recognizer_start_continuous_recognition_async");
             self.handle_async_start_continuous = Some(SmartHandle::create(
                 "handle_async_start_continuous",
-                *handle_async_start_continuous,
+                handle_async_start_continuous,
                 recognizer_async_handle_release,
             ));
 
             debug!("calling recognizer_start_continuous_recognition_async_wait_for");
             ret = recognizer_start_continuous_recognition_async_wait_for(
-                *handle_async_start_continuous,
+                handle_async_start_continuous,
                 u32::MAX,
             );
             convert_err(
