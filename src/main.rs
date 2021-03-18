@@ -62,10 +62,11 @@ async fn main() {
         .set_recognized_cb(|event| info!("set_recognized_cb {:?}", event))
         .unwrap();
 
-    let _handle = tokio::spawn(async move {
+    let handle = tokio::spawn(async move {
         if let Err(err) = speech_recognizer.start_continuous_recognition_async().await {
             error!("start_continuous_recognition_async error {:?}", err);
         }
     });
+    handle.await.unwrap();
     info!("DONE!");
 }
