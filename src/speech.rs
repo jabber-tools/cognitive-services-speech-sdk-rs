@@ -247,12 +247,14 @@ impl SpeechRecognizer {
     {
         self.recognizing_cb = Some(Box::new(f));
         unsafe {
+            debug!("calling recognizer_recognizing_set_callback");
             let ret = recognizer_recognizing_set_callback(
                 self.handle.get(),
                 Some(Self::cb_recognizing),
                 self as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_recognizing_cb error")?;
+            debug!("called recognizer_recognizing_set_callback");
             Ok(())
         }
     }
@@ -263,12 +265,14 @@ impl SpeechRecognizer {
     {
         self.recognized_cb = Some(Box::new(f));
         unsafe {
+            debug!("calling recognizer_recognized_set_callback");
             let ret = recognizer_recognized_set_callback(
                 self.handle.get(),
                 Some(Self::cb_recognized),
                 self as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_recognized_cb error")?;
+            debug!("called recognizer_recognized_set_callback");
             Ok(())
         }
     }
