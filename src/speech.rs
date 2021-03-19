@@ -308,11 +308,18 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        info!("SpeechRecognizer::cb_session_stopped called");
+        debug!("SpeechRecognizer::cb_session_stopped called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.session_stopped_cb {
-            if let Ok(event) = SessionEvent::from_handle(hevent) {
-                cb(event);
+            debug!("cb_session_stopped defined");
+            match SessionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    debug!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("SpeechRecognizer::cb_session_stopped error {:?}", err);
+                }
             }
         }
     }
@@ -324,11 +331,18 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        info!("SpeechRecognizer::cb_speech_start_detected called");
+        debug!("SpeechRecognizer::cb_speech_start_detected called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.speech_start_detected_cb {
-            if let Ok(event) = RecognitionEvent::from_handle(hevent) {
-                cb(event);
+            debug!("speech_start_detected_cb defined");
+            match RecognitionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    debug!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("SpeechRecognizer::cb_speech_start_detected error {:?}", err);
+                }
             }
         }
     }
@@ -340,11 +354,18 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        info!("SpeechRecognizer::cb_speech_end_detected called");
+        debug!("SpeechRecognizer::cb_speech_end_detected called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.speech_end_detected_cb {
-            if let Ok(event) = RecognitionEvent::from_handle(hevent) {
-                cb(event);
+            debug!("speech_end_detected_cb defined");
+            match RecognitionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    debug!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("SpeechRecognizer::cb_speech_end_detected error {:?}", err);
+                }
             }
         }
     }
@@ -356,11 +377,18 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        info!("SpeechRecognizer::cb_canceled called");
+        debug!("SpeechRecognizer::cb_canceled called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.canceled_cb {
-            if let Ok(event) = SpeechRecognitionCanceledEvent::from_handle(hevent) {
-                cb(event);
+            debug!("canceled_cb defined");
+            match SpeechRecognitionCanceledEvent::from_handle(hevent) {
+                Ok(event) => {
+                    debug!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("SpeechRecognizer::cb_canceled error {:?}", err);
+                }
             }
         }
     }
@@ -372,15 +400,14 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        info!("SpeechRecognizer::cb_recognizing called");
+        debug!("SpeechRecognizer::cb_recognizing called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        info!("speech_recognizer {:?}", speech_recognizer);
+        debug!("speech_recognizer {:?}", speech_recognizer);
         if let Some(cb) = &speech_recognizer.recognizing_cb {
-            info!("recognizing_cb defined");
-            let evt_result = SpeechRecognitionEvent::from_handle(hevent);
-            match evt_result {
+            debug!("recognizing_cb defined");
+            match SpeechRecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
-                    info!("calling cb with event {:?}", event);
+                    debug!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -397,11 +424,18 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        info!("SpeechRecognizer::cb_recognized called");
+        debug!("SpeechRecognizer::cb_recognized called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.recognized_cb {
-            if let Ok(event) = SpeechRecognitionEvent::from_handle(hevent) {
-                cb(event);
+            debug!("recognized_cb defined");
+            match SpeechRecognitionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    debug!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("SpeechRecognizer::cb_recognized error {:?}", err);
+                }
             }
         }
     }
