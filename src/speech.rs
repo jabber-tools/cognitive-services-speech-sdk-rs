@@ -169,7 +169,6 @@ impl SpeechRecognizer {
             let ret = recognizer_session_started_set_callback(
                 self.handle.get(),
                 Some(Self::cb_session_started),
-                // 0 as *mut c_void,
                 self as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_session_started_cb error")?;
@@ -517,7 +516,7 @@ impl RecognitionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<RecognitionEvent> {
         let base = SessionEvent::from_handle(handle)?;
         unsafe {
-            let mut offset: u64 = 0;
+            let mut offset: u64 = MaybeUninit::uninit().assume_init();
             debug!("calling recognizer_recognition_event_get_offset");
             let ret = recognizer_recognition_event_get_offset(handle, &mut offset);
             convert_err(ret, "RecognitionEvent::from_handle error")?;
@@ -553,8 +552,8 @@ impl SpeechRecognitionResult {
             let result_id_slice = std::slice::from_raw_parts(buffer, 1024);
             let result_id = String::from_utf8(result_id_slice.to_vec())?;
 
-            let reason: *mut c_uint = MaybeUninit::uninit().assume_init();
-            ret = result_get_reason(handle, reason);
+            let mut reason: c_uint = MaybeUninit::uninit().assume_init();
+            ret = result_get_reason(handle, &mut reason);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_reason) error",
@@ -569,22 +568,22 @@ impl SpeechRecognitionResult {
             let result_text_slice = std::slice::from_raw_parts(buffer, 1024);
             let result_text = String::from_utf8(result_text_slice.to_vec())?;
 
-            let duration: *mut u64 = MaybeUninit::uninit().assume_init();
-            ret = result_get_duration(handle, duration);
+            let mut duration: u64 = MaybeUninit::uninit().assume_init();
+            ret = result_get_duration(handle, &mut duration);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_duration) error",
             )?;
 
-            let offset: *mut u64 = MaybeUninit::uninit().assume_init();
-            ret = result_get_offset(handle, offset);
+            let mut offset: u64 = MaybeUninit::uninit().assume_init();
+            ret = result_get_offset(handle, &mut offset);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_offset) error",
             )?;
 
-            let properties_handle: *mut SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            ret = result_get_property_bag(handle, properties_handle);
+            let mut properties_handle: SPXPROPERTYBAGHANDLE = SPXHANDLE_EMPTY;
+            ret = result_get_property_bag(handle, &mut properties_handle);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_property_bag) error",
@@ -592,7 +591,7 @@ impl SpeechRecognitionResult {
             let properties = PropertyCollection {
                 handle: SmartHandle::create(
                     "PropertyCollection",
-                    *properties_handle,
+                    properties_handle,
                     property_bag_release,
                 ),
             };
@@ -604,10 +603,10 @@ impl SpeechRecognitionResult {
                     recognizer_result_handle_release,
                 ),
                 result_id,
-                reason: ResultReason::from_u32(*reason),
+                reason: ResultReason::from_u32(reason),
                 text: result_text,
-                duration: (*duration).to_string(),
-                offset: (*offset).to_string(),
+                duration: (duration).to_string(),
+                offset: (offset).to_string(),
                 properties,
             })
         }
@@ -625,10 +624,12 @@ impl SpeechRecognitionEvent {
         let base = RecognitionEvent::from_handle(handle)?;
 
         unsafe {
-            let result_handle: *mut SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = recognizer_recognition_event_get_result(handle, result_handle);
+            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            debug!("calling recognizer_recognition_event_get_result");
+            let ret = recognizer_recognition_event_get_result(handle, &mut result_handle);
             convert_err(ret, "SpeechRecognitionEvent::from_handle error")?;
-            let result = SpeechRecognitionResult::from_handle(*result_handle)?;
+            debug!("called recognizer_recognition_event_get_result");
+            let result = SpeechRecognitionResult::from_handle(result_handle)?;
             Ok(SpeechRecognitionEvent {
                 base,
                 result: result,
@@ -649,16 +650,15 @@ impl SpeechRecognitionCanceledEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionCanceledEvent> {
         let base = SpeechRecognitionEvent::from_handle(handle)?;
         unsafe {
-            let reason_ptr: *mut Result_CancellationReason = MaybeUninit::uninit().assume_init();
-            let ret = result_get_reason_canceled(base.result.handle.get(), reason_ptr);
+            let mut reason: Result_CancellationReason = MaybeUninit::uninit().assume_init();
+            let ret = result_get_reason_canceled(base.result.handle.get(), &mut reason);
             convert_err(
                 ret,
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_reason_canceled) error",
             )?;
 
-            let error_code_ptr: *mut Result_CancellationErrorCode =
-                MaybeUninit::uninit().assume_init();
-            let ret = result_get_canceled_error_code(base.result.handle.get(), error_code_ptr);
+            let mut error_code: Result_CancellationErrorCode = MaybeUninit::uninit().assume_init();
+            let ret = result_get_canceled_error_code(base.result.handle.get(), &mut error_code);
             convert_err(
                 ret,
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_canceled_error_code) error",
@@ -670,8 +670,8 @@ impl SpeechRecognitionCanceledEvent {
             )?;
             Ok(SpeechRecognitionCanceledEvent {
                 base,
-                reason: CancellationReason::from_u32(*reason_ptr),
-                error_code: CancellationErrorCode::from_u32(*error_code_ptr),
+                reason: CancellationReason::from_u32(reason),
+                error_code: CancellationErrorCode::from_u32(error_code),
                 error_details,
             })
         }

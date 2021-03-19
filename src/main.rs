@@ -13,6 +13,7 @@ async fn main() {
     env::set_var("MSServiceRegion", "westeurope");
 
     env::set_var("RUST_LOG", "debug");
+    env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
     /*
     info!("calling AudioStreamFormat::get_wave_format_pcm");
@@ -57,18 +58,34 @@ async fn main() {
     );
 
     speech_recognizer
-        .set_recognizing_cb(|event| info!("set_recognizing_cb {:?}", event))
+        .set_session_started_cb(|event| info!(">set_session_started_cb {:?}", event))
         .unwrap();
 
     speech_recognizer
-        .set_recognized_cb(|event| info!("set_recognized_cb {:?}", event))
+        .set_session_stopped_cb(|event| info!(">set_session_stopped_cb {:?}", event))
         .unwrap();
 
+    speech_recognizer
+        .set_speech_start_detected_cb(|event| info!(">set_speech_start_detected_cb {:?}", event))
+        .unwrap();
+
+    speech_recognizer
+        .set_speech_end_detected_cb(|event| info!(">set_speech_end_detected_cb {:?}", event))
+        .unwrap();
+    
+    speech_recognizer
+        .set_recognizing_cb(|event| info!(">set_recognizing_cb {:?}", event))
+        .unwrap();
+
+    speech_recognizer
+        .set_recognized_cb(|event| info!(">set_recognized_cb {:?}", event))
+        .unwrap();
+    /**/
     let handle = tokio::spawn(async move {
         if let Err(err) = speech_recognizer.start_continuous_recognition_async().await {
             error!("start_continuous_recognition_async error {:?}", err);
         }
-        sleep(Duration::from_millis(10000)).await;
+        sleep(Duration::from_millis(5000)).await;
     });
     handle.await.unwrap();
     info!("DONE!!!");
