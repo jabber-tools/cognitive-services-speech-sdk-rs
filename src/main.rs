@@ -1,9 +1,11 @@
-use cognitive_services_speech_sdk_rs::audio::{AudioConfig};
+use cognitive_services_speech_sdk_rs::audio::AudioConfig;
 #[allow(unused_imports)]
 use cognitive_services_speech_sdk_rs::audio::{AudioInputStream, AudioStreamFormat};
 use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechRecognizer};
 use log::*;
 use std::env;
+use std::time::Duration;
+use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
@@ -66,7 +68,8 @@ async fn main() {
         if let Err(err) = speech_recognizer.start_continuous_recognition_async().await {
             error!("start_continuous_recognition_async error {:?}", err);
         }
+        sleep(Duration::from_millis(10000)).await;
     });
     handle.await.unwrap();
-    info!("DONE!");
+    info!("DONE!!!");
 }

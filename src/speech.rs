@@ -366,9 +366,18 @@ impl SpeechRecognizer {
     ) {
         info!("SpeechRecognizer::cb_recognizing called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        info!("speech_recognizer {:?}", speech_recognizer);
         if let Some(cb) = &speech_recognizer.recognizing_cb {
-            if let Ok(event) = SpeechRecognitionEvent::from_handle(hevent) {
-                cb(event);
+            info!("recognizing_cb defined");
+            let evt_result = SpeechRecognitionEvent::from_handle(hevent);
+            match evt_result {
+                Ok(event) => {
+                    info!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("SpeechRecognizer::cb_recognizing error {:?}", err);
+                }
             }
         }
     }
@@ -393,7 +402,7 @@ impl SpeechRecognizer {
         unsafe {
             let mut handle_async_start_continuous: SPXASYNCHANDLE = SPXHANDLE_EMPTY;
             debug!("calling recognizer_start_continuous_recognition_async");
-                let mut ret = recognizer_start_continuous_recognition_async(
+            let mut ret = recognizer_start_continuous_recognition_async(
                 self.handle.get(),
                 &mut handle_async_start_continuous,
             );
