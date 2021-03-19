@@ -284,11 +284,19 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        info!("SpeechRecognizer::cb_session_started called");
+        debug!("SpeechRecognizer::cb_session_started called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        debug!("speech_recognizer {:?}", speech_recognizer);
         if let Some(cb) = &speech_recognizer.session_started_cb {
-            if let Ok(event) = SessionEvent::from_handle(hevent) {
-                cb(event);
+            debug!("session_started_cb defined");
+            match SessionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    debug!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("SpeechRecognizer::cb_session_started error {:?}", err);
+                }
             }
         }
     }
@@ -443,15 +451,15 @@ pub struct SessionEvent {
 impl SessionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
         //allocate zeroed buffer and convert to unsafe mutable ptr
-        let buffer: *mut u8 = vec![0u8; 37].as_mut_ptr();
+        let buffer: *mut u8 = vec![0u8; 32].as_mut_ptr();
         unsafe {
-            let ret = recognizer_session_event_get_session_id(handle, buffer as *mut c_char, 37);
+            let ret = recognizer_session_event_get_session_id(handle, buffer as *mut c_char, 33);
             convert_err(ret, "SessionEvent::from_handle error")?;
             // TBD:not sure whether recognizer_session_event_get_session_id will allocate
             // 37 bytes exactly or it might allocate less? In that case we would have to
             // offset pointer byte by byte until we find terminating nul char(0) of C string
             // see also https://doc.rust-lang.org/std/ffi/struct.CStr.html#method.from_ptr
-            let session_id_slice = std::slice::from_raw_parts(buffer, 37);
+            let session_id_slice = std::slice::from_raw_parts(buffer, 32);
             let session_id = String::from_utf8(session_id_slice.to_vec())?;
             Ok(SessionEvent {
                 session_id,
