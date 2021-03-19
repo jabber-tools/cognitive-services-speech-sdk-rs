@@ -517,12 +517,14 @@ impl RecognitionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<RecognitionEvent> {
         let base = SessionEvent::from_handle(handle)?;
         unsafe {
-            let offset: *mut u64 = MaybeUninit::uninit().assume_init();
-            let ret = recognizer_recognition_event_get_offset(handle, offset);
+            let mut offset: u64 = 0;
+            debug!("calling recognizer_recognition_event_get_offset");
+            let ret = recognizer_recognition_event_get_offset(handle, &mut offset);
             convert_err(ret, "RecognitionEvent::from_handle error")?;
+            debug!("recognizer_recognition_event_get_offset offset: {}", offset);
             Ok(RecognitionEvent {
                 base,
-                offset: *offset,
+                offset: offset,
             })
         }
     }
