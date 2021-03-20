@@ -332,6 +332,7 @@ impl SpeechRecognizer {
     ) {
         debug!("SpeechRecognizer::cb_speech_start_detected called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
+        debug!("speech_recognizer {:?}", speech_recognizer);
         if let Some(cb) = &speech_recognizer.speech_start_detected_cb {
             debug!("speech_start_detected_cb defined");
             match RecognitionEvent::from_handle(hevent) {
@@ -486,14 +487,20 @@ impl SessionEvent {
         //allocate zeroed buffer and convert to unsafe mutable ptr
         let buffer: *mut u8 = vec![0u8; 32].as_mut_ptr();
         unsafe {
+            debug!("calling recognizer_session_event_get_session_id");
             let ret = recognizer_session_event_get_session_id(handle, buffer as *mut c_char, 33);
             convert_err(ret, "SessionEvent::from_handle error")?;
+            debug!("called recognizer_session_event_get_session_id");
             // TBD:not sure whether recognizer_session_event_get_session_id will allocate
-            // 37 bytes exactly or it might allocate less? In that case we would have to
+            // 32 bytes exactly or it might allocate less? In that case we would have to
             // offset pointer byte by byte until we find terminating nul char(0) of C string
             // see also https://doc.rust-lang.org/std/ffi/struct.CStr.html#method.from_ptr
             let session_id_slice = std::slice::from_raw_parts(buffer, 32);
-            let session_id = String::from_utf8(session_id_slice.to_vec())?;
+            debug!("retrieved sessionid slice {:?}", session_id_slice);
+            let session_id = String::from_utf8(session_id_slice.to_vec())?
+                .trim_end_matches(char::from(0))
+                .to_owned();
+            debug!("converted sessionid slice to owned string");    
             Ok(SessionEvent {
                 session_id,
                 handle: SmartHandle::create(
@@ -515,6 +522,7 @@ pub struct RecognitionEvent {
 impl RecognitionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<RecognitionEvent> {
         let base = SessionEvent::from_handle(handle)?;
+        debug!("RecognitionEvent::from_handle got base event {:?}", base);
         unsafe {
             let mut offset: u64 = MaybeUninit::uninit().assume_init();
             debug!("calling recognizer_recognition_event_get_offset");

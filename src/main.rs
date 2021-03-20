@@ -9,7 +9,10 @@ use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
-    let msskey: String = std::fs::read_to_string("/home/adambe/projects/mskey").unwrap().trim().to_owned();
+    let msskey: String = std::fs::read_to_string("/home/adambe/projects/mskey")
+        .unwrap()
+        .trim()
+        .to_owned();
     env::set_var("MSSubscriptionKey", msskey);
     env::set_var("MSServiceRegion", "westeurope");
 
@@ -73,7 +76,7 @@ async fn main() {
     speech_recognizer
         .set_speech_end_detected_cb(|event| info!(">set_speech_end_detected_cb {:?}", event))
         .unwrap();
-    
+
     speech_recognizer
         .set_recognizing_cb(|event| info!(">set_recognizing_cb {:?}", event))
         .unwrap();
