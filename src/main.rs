@@ -9,7 +9,8 @@ use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
-    env::set_var("MSSubscriptionKey", "123456789"); // just for now
+    let msskey: String = std::fs::read_to_string("/home/adambe/projects/mskey").unwrap().trim().to_owned();
+    env::set_var("MSSubscriptionKey", msskey);
     env::set_var("MSServiceRegion", "westeurope");
 
     env::set_var("RUST_LOG", "debug");
