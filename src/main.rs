@@ -7,19 +7,42 @@ use std::env;
 use std::time::Duration;
 use tokio::time::sleep;
 
-#[tokio::main]
-async fn main() {
+/// convenience function tosetup environment variables
+fn set_env_vars() {
     let msskey: String = std::fs::read_to_string("/home/adambe/projects/mskey")
         .unwrap()
         .trim()
         .to_owned();
+
     env::set_var("MSSubscriptionKey", msskey);
     env::set_var("MSServiceRegion", "westeurope");
-
     env::set_var("RUST_LOG", "debug");
     env::set_var("RUST_BACKTRACE", "1");
-    env_logger::init();
-    /*
+}
+
+///creates speech recognizer from provided audio config and implicit speech config
+/// created from MS subscription key hardcoded in sample file
+fn speech_recognizer_from_audio_cfg(audio_config: AudioConfig) -> SpeechRecognizer {
+    info!("calling SpeechConfig::from_subscription");
+    let speech_config = SpeechConfig::from_subscription(
+        env::var("MSSubscriptionKey").unwrap(),
+        env::var("MSServiceRegion").unwrap(),
+    )
+    .unwrap();
+    info!("called SpeechConfig::from_subscription {:?}", speech_config);
+
+    info!("calling SpeechRecognizer::from_config");
+    let speech_recognizer = SpeechRecognizer::from_config(speech_config, audio_config).unwrap();
+    info!(
+        "called SpeechRecognizer::from_config {:?}",
+        speech_recognizer
+    );
+    speech_recognizer
+}
+
+#[allow(dead_code)]
+/// creates speech recognizer from push input stream and MS speech subscription key
+fn speech_recognizer_from_push_stream() -> SpeechRecognizer {
     info!("calling AudioStreamFormat::get_wave_format_pcm");
     let wave_format = AudioStreamFormat::get_wave_format_pcm(16000, None, None).unwrap();
     info!(
@@ -37,8 +60,12 @@ async fn main() {
     info!("calling AudioConfig::from_stream_input");
     let audio_config = AudioConfig::from_stream_input(push_stream).unwrap();
     info!("called AudioConfig::from_stream_input {:?}", audio_config);
-    */
 
+    speech_recognizer_from_audio_cfg(audio_config)
+}
+
+/// creates speech recognizer from wav input file and MS speech subscription key
+fn speech_recognizer_from_wav_file() -> SpeechRecognizer {
     info!("calling AudioConfig::from_wav_file_input");
     let audio_config = AudioConfig::from_wav_file_input(
         "/home/adambe/projects/microsoft-speech-rs-master/examples/hello_rust.wav",
@@ -46,20 +73,21 @@ async fn main() {
     .unwrap();
     info!("called AudioConfig::from_wav_file_input {:?}", audio_config);
 
-    info!("calling SpeechConfig::from_subscription");
-    let speech_config = SpeechConfig::from_subscription(
-        env::var("MSSubscriptionKey").unwrap(),
-        env::var("MSServiceRegion").unwrap(),
-    )
-    .unwrap();
-    info!("called SpeechConfig::from_subscription {:?}", speech_config);
+    speech_recognizer_from_audio_cfg(audio_config)
+}
 
-    info!("calling SpeechRecognizer::from_config");
-    let mut speech_recognizer = SpeechRecognizer::from_config(speech_config, audio_config).unwrap();
-    info!(
-        "called SpeechRecognizer::from_config {:?}",
-        speech_recognizer
-    );
+#[allow(dead_code)]
+/// sample for recognize_once_async
+async fn recognize_once() {
+    let mut speech_recognizer = speech_recognizer_from_wav_file();
+    let speech_reco_res = speech_recognizer.recognize_once_async().await;
+    info!("got recognition {:?}", speech_reco_res);
+}
+
+#[allow(dead_code)]
+/// sample for start_continuous_recognition_async
+async fn continuous_recognition() {
+    let mut speech_recognizer = speech_recognizer_from_wav_file();
 
     speech_recognizer
         .set_session_started_cb(|event| info!(">set_session_started_cb {:?}", event))
@@ -68,7 +96,7 @@ async fn main() {
     speech_recognizer
         .set_session_stopped_cb(|event| info!(">set_session_stopped_cb {:?}", event))
         .unwrap();
-    /**/
+
     speech_recognizer
         .set_speech_start_detected_cb(|event| info!(">set_speech_start_detected_cb {:?}", event))
         .unwrap();
@@ -84,7 +112,7 @@ async fn main() {
     speech_recognizer
         .set_recognized_cb(|event| info!(">set_recognized_cb {:?}", event))
         .unwrap();
-    /**/
+
     let handle = tokio::spawn(async move {
         if let Err(err) = speech_recognizer.start_continuous_recognition_async().await {
             error!("start_continuous_recognition_async error {:?}", err);
@@ -92,5 +120,15 @@ async fn main() {
         sleep(Duration::from_millis(5000)).await;
     });
     handle.await.unwrap();
-    info!("DONE!!!");
+}
+
+#[tokio::main]
+async fn main() {
+    set_env_vars();
+    env_logger::init();
+
+    info!("running recognition!!!");
+    recognize_once().await;
+    // continuous_recognition().await;
+    info!("DONE!");
 }

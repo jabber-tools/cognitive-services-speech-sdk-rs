@@ -8,11 +8,11 @@ use crate::ffi::{
     recognizer_create_speech_recognizer_from_config, recognizer_event_handle_release,
     recognizer_get_property_bag, recognizer_handle_release,
     recognizer_recognition_event_get_offset, recognizer_recognition_event_get_result,
-    recognizer_recognized_set_callback, recognizer_recognizing_set_callback,
-    recognizer_result_handle_release, recognizer_session_event_get_session_id,
-    recognizer_session_started_set_callback, recognizer_session_stopped_set_callback,
-    recognizer_speech_end_detected_set_callback, recognizer_speech_start_detected_set_callback,
-    recognizer_start_continuous_recognition_async,
+    recognizer_recognize_once, recognizer_recognized_set_callback,
+    recognizer_recognizing_set_callback, recognizer_result_handle_release,
+    recognizer_session_event_get_session_id, recognizer_session_started_set_callback,
+    recognizer_session_stopped_set_callback, recognizer_speech_end_detected_set_callback,
+    recognizer_speech_start_detected_set_callback, recognizer_start_continuous_recognition_async,
     recognizer_start_continuous_recognition_async_wait_for, result_get_canceled_error_code,
     result_get_duration, result_get_offset, result_get_property_bag, result_get_reason,
     result_get_reason_canceled, result_get_result_id, result_get_text,
@@ -440,6 +440,15 @@ impl SpeechRecognizer {
         }
     }
 
+    pub async fn recognize_once_async(&mut self) -> Result<SpeechRecognitionResult> {
+        unsafe {
+            let mut handle_result: SPXRESULTHANDLE = SPXHANDLE_EMPTY;
+            let ret = recognizer_recognize_once(self.handle.get(), &mut handle_result);
+            convert_err(ret, "SpeechRecognizer.recognize_once_async error")?;
+            SpeechRecognitionResult::from_handle(handle_result)
+        }
+    }
+
     pub async fn start_continuous_recognition_async(&mut self) -> Result<()> {
         unsafe {
             let mut handle_async_start_continuous: SPXASYNCHANDLE = SPXHANDLE_EMPTY;
@@ -479,8 +488,6 @@ pub struct SessionEvent {
     session_id: String,
     handle: SmartHandle<SPXEVENTHANDLE>,
 }
-
-// unsafe impl Send for SessionEvent {}
 
 impl SessionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
