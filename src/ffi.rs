@@ -39,7 +39,7 @@ impl<T: Copy + Debug> SmartHandle<T> {
 
 impl<T: Copy + Debug> Drop for SmartHandle<T> {
     fn drop(&mut self) {
-        debug!("Drop SmartHandle {}.", self);
+        trace!("Drop SmartHandle {}.", self);
         let hr = unsafe { (self.release_fn)(self.inner) };
         if hr != SPX_NOERROR as usize {
             panic!("cannot release SmartHandle {}, err={}", self, hr);

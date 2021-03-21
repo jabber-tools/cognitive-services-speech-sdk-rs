@@ -461,7 +461,7 @@ impl SpeechRecognizer {
                 ret,
                 "SpeechRecognizer.start_continuous_recognition_async error",
             )?;
-            info!("called recognizer_start_continuous_recognition_async");
+            trace!("called recognizer_start_continuous_recognition_async");
             self.handle_async_start_continuous = Some(SmartHandle::create(
                 "handle_async_start_continuous",
                 handle_async_start_continuous,
@@ -483,10 +483,21 @@ impl SpeechRecognizer {
     }
 }
 
-#[derive(Debug)]
+// #[derive(Debug)]
 pub struct SessionEvent {
-    session_id: String,
-    handle: SmartHandle<SPXEVENTHANDLE>,
+    pub session_id: String,
+    _handle: SmartHandle<SPXEVENTHANDLE>,
+}
+
+/// custom Debug implementation for SessionEvent so that
+/// handle is not included. If needed, disable this impl
+/// and reenable derive Debug above
+impl fmt::Debug for SessionEvent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SessionEvent")
+            .field("session_id", &self.session_id)
+            .finish()
+    }
 }
 
 impl SessionEvent {
@@ -507,7 +518,7 @@ impl SessionEvent {
 
             Ok(SessionEvent {
                 session_id: str_buf,
-                handle: SmartHandle::create(
+                _handle: SmartHandle::create(
                     "SessionEvent",
                     handle,
                     recognizer_event_handle_release,
@@ -541,15 +552,27 @@ impl RecognitionEvent {
     }
 }
 
-#[derive(Debug)]
+// #[derive(Debug)]
 pub struct SpeechRecognitionResult {
     handle: SmartHandle<SPXRESULTHANDLE>,
-    result_id: String,
-    reason: ResultReason,
-    text: String,
-    duration: String, //TBD: change to duration
-    offset: String,   // TBD: change to duration
-    properties: PropertyCollection,
+    pub result_id: String,
+    pub reason: ResultReason,
+    pub text: String,
+    pub duration: String, //TBD: change to duration
+    pub offset: String,   // TBD: change to duration
+    pub properties: PropertyCollection,
+}
+
+impl fmt::Debug for SpeechRecognitionResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SpeechRecognitionResult")
+            .field("result_id", &self.result_id)
+            .field("reason", &self.reason)
+            .field("text", &self.text)
+            .field("duration", &self.duration)
+            .field("offset", &self.offset)
+            .finish()
+    }
 }
 
 impl SpeechRecognitionResult {
@@ -625,8 +648,8 @@ impl SpeechRecognitionResult {
 
 #[derive(Debug)]
 pub struct SpeechRecognitionEvent {
-    base: RecognitionEvent,
-    result: SpeechRecognitionResult,
+    pub base: RecognitionEvent,
+    pub result: SpeechRecognitionResult,
 }
 
 impl SpeechRecognitionEvent {
