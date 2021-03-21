@@ -23,7 +23,7 @@ use crate::ffi::{
 };
 use log::*;
 use std::boxed::Box;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_uint, c_void};
@@ -484,25 +484,22 @@ pub struct SessionEvent {
 
 impl SessionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
-        //allocate zeroed buffer and convert to unsafe mutable ptr
-        let buffer: *mut u8 = vec![0u8; 32].as_mut_ptr();
+        let mut buffer: [u8; 37] = [0; 37];
+
         unsafe {
+            let c_buf: *mut c_char = &mut buffer as *const _ as *mut c_char;
             debug!("calling recognizer_session_event_get_session_id");
-            let ret = recognizer_session_event_get_session_id(handle, buffer as *mut c_char, 33);
+            let ret = recognizer_session_event_get_session_id(handle, c_buf, 37);
             convert_err(ret, "SessionEvent::from_handle error")?;
             debug!("called recognizer_session_event_get_session_id");
-            // TBD:not sure whether recognizer_session_event_get_session_id will allocate
-            // 32 bytes exactly or it might allocate less? In that case we would have to
-            // offset pointer byte by byte until we find terminating nul char(0) of C string
-            // see also https://doc.rust-lang.org/std/ffi/struct.CStr.html#method.from_ptr
-            let session_id_slice = std::slice::from_raw_parts(buffer, 32);
-            debug!("retrieved sessionid slice {:?}", session_id_slice);
-            let session_id = String::from_utf8(session_id_slice.to_vec())?
-                .trim_end_matches(char::from(0))
-                .to_owned();
-            debug!("converted sessionid slice to owned string");    
+
+            let c_str: &CStr = CStr::from_ptr(c_buf);
+            let str_slice: &str = c_str.to_str()?;
+            let str_buf: String = str_slice.to_owned();
+            debug!("converted cstring to owned string");
+
             Ok(SessionEvent {
-                session_id,
+                session_id: str_buf,
                 handle: SmartHandle::create(
                     "SessionEvent",
                     handle,

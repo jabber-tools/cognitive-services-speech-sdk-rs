@@ -68,7 +68,7 @@ async fn main() {
     speech_recognizer
         .set_session_stopped_cb(|event| info!(">set_session_stopped_cb {:?}", event))
         .unwrap();
-
+    /**/
     speech_recognizer
         .set_speech_start_detected_cb(|event| info!(">set_speech_start_detected_cb {:?}", event))
         .unwrap();
@@ -76,7 +76,7 @@ async fn main() {
     speech_recognizer
         .set_speech_end_detected_cb(|event| info!(">set_speech_end_detected_cb {:?}", event))
         .unwrap();
-
+    
     speech_recognizer
         .set_recognizing_cb(|event| info!(">set_recognizing_cb {:?}", event))
         .unwrap();
