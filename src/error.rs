@@ -1,13 +1,16 @@
 use crate::ffi::SPX_NOERROR;
+use std::ffi::NulError;
 use std::result;
+use std::str::Utf8Error;
+use std::string::FromUtf8Error;
 
 #[derive(Debug)]
 pub enum ErrorRootCause {
     ApiError(usize),
-    FfiNulError,
+    FfiNulError(NulError),
     InvalidCString,
-    FromUtf8Error,
-    Utf8Error,
+    FromUtf8Error(FromUtf8Error),
+    Utf8Error(Utf8Error),
 }
 
 #[derive(Debug)]
@@ -33,29 +36,29 @@ pub fn convert_err(hr: usize, err_msg: &str) -> Result<()> {
     }
 }
 
-impl From<std::ffi::NulError> for Error {
-    fn from(error: std::ffi::NulError) -> Error {
+impl From<NulError> for Error {
+    fn from(error: NulError) -> Error {
         Error {
             message: format!("std::ffi::NulError: {}", error),
-            caused_by: ErrorRootCause::FfiNulError,
+            caused_by: ErrorRootCause::FfiNulError(error),
         }
     }
 }
 
-impl From<std::string::FromUtf8Error> for Error {
-    fn from(error: std::string::FromUtf8Error) -> Error {
+impl From<FromUtf8Error> for Error {
+    fn from(error: FromUtf8Error) -> Error {
         Error {
             message: format!("std::string::FromUtf8Error: {}", error),
-            caused_by: ErrorRootCause::FromUtf8Error,
+            caused_by: ErrorRootCause::FromUtf8Error(error),
         }
     }
 }
 
-impl From<std::str::Utf8Error> for Error {
-    fn from(error: std::str::Utf8Error) -> Error {
+impl From<Utf8Error> for Error {
+    fn from(error: Utf8Error) -> Error {
         Error {
             message: format!("std::str::Utf8Error: {}", error),
-            caused_by: ErrorRootCause::Utf8Error,
+            caused_by: ErrorRootCause::Utf8Error(error),
         }
     }
 }

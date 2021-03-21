@@ -1,5 +1,4 @@
 use cognitive_services_speech_sdk_rs::audio::AudioConfig;
-#[allow(unused_imports)]
 use cognitive_services_speech_sdk_rs::audio::{AudioInputStream, AudioStreamFormat};
 use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechRecognizer};
 use log::*;

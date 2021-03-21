@@ -441,6 +441,11 @@ impl SpeechRecognizer {
     }
 
     pub async fn recognize_once_async(&mut self) -> Result<SpeechRecognitionResult> {
+        // TBD:
+        // does it make sense to tokio:spawn whole inner implementation?
+        // does it make sense to have this func async at all?
+        // similar design is used by golang implementation
+        // not really sure about fundamental reasons behind it
         unsafe {
             let mut handle_result: SPXRESULTHANDLE = SPXHANDLE_EMPTY;
             let ret = recognizer_recognize_once(self.handle.get(), &mut handle_result);
@@ -450,6 +455,11 @@ impl SpeechRecognizer {
     }
 
     pub async fn start_continuous_recognition_async(&mut self) -> Result<()> {
+        // TBD:
+        // does it make sense to tokio:spawn whole inner implementation?
+        // does it make sense to have this func async at all?
+        // similar design is used by golang implementation
+        // not really sure about fundamental reasons behind it
         unsafe {
             let mut handle_async_start_continuous: SPXASYNCHANDLE = SPXHANDLE_EMPTY;
             trace!("calling recognizer_start_continuous_recognition_async");
@@ -530,8 +540,8 @@ impl SessionEvent {
 
 #[derive(Debug)]
 pub struct RecognitionEvent {
-    base: SessionEvent,
-    offset: u64,
+    pub base: SessionEvent,
+    pub offset: u64,
 }
 
 impl RecognitionEvent {
@@ -673,10 +683,10 @@ impl SpeechRecognitionEvent {
 
 #[derive(Debug)]
 pub struct SpeechRecognitionCanceledEvent {
-    base: SpeechRecognitionEvent,
-    reason: CancellationReason,
-    error_code: CancellationErrorCode,
-    error_details: String,
+    pub base: SpeechRecognitionEvent,
+    pub reason: CancellationReason,
+    pub error_code: CancellationErrorCode,
+    pub error_details: String,
 }
 
 impl SpeechRecognitionCanceledEvent {
