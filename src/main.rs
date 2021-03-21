@@ -76,7 +76,7 @@ async fn main() {
     speech_recognizer
         .set_speech_end_detected_cb(|event| info!(">set_speech_end_detected_cb {:?}", event))
         .unwrap();
-    
+
     speech_recognizer
         .set_recognizing_cb(|event| info!(">set_recognizing_cb {:?}", event))
         .unwrap();

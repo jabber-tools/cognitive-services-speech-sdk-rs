@@ -246,14 +246,14 @@ impl SpeechRecognizer {
     {
         self.recognizing_cb = Some(Box::new(f));
         unsafe {
-            debug!("calling recognizer_recognizing_set_callback");
+            trace!("calling recognizer_recognizing_set_callback");
             let ret = recognizer_recognizing_set_callback(
                 self.handle.get(),
                 Some(Self::cb_recognizing),
                 self as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_recognizing_cb error")?;
-            debug!("called recognizer_recognizing_set_callback");
+            trace!("called recognizer_recognizing_set_callback");
             Ok(())
         }
     }
@@ -264,14 +264,14 @@ impl SpeechRecognizer {
     {
         self.recognized_cb = Some(Box::new(f));
         unsafe {
-            debug!("calling recognizer_recognized_set_callback");
+            trace!("calling recognizer_recognized_set_callback");
             let ret = recognizer_recognized_set_callback(
                 self.handle.get(),
                 Some(Self::cb_recognized),
                 self as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_recognized_cb error")?;
-            debug!("called recognizer_recognized_set_callback");
+            trace!("called recognizer_recognized_set_callback");
             Ok(())
         }
     }
@@ -283,14 +283,14 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        debug!("SpeechRecognizer::cb_session_started called");
+        trace!("SpeechRecognizer::cb_session_started called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        debug!("speech_recognizer {:?}", speech_recognizer);
+        trace!("speech_recognizer {:?}", speech_recognizer);
         if let Some(cb) = &speech_recognizer.session_started_cb {
-            debug!("session_started_cb defined");
+            trace!("session_started_cb defined");
             match SessionEvent::from_handle(hevent) {
                 Ok(event) => {
-                    debug!("calling cb with event {:?}", event);
+                    trace!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -307,13 +307,13 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        debug!("SpeechRecognizer::cb_session_stopped called");
+        trace!("SpeechRecognizer::cb_session_stopped called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.session_stopped_cb {
-            debug!("cb_session_stopped defined");
+            trace!("cb_session_stopped defined");
             match SessionEvent::from_handle(hevent) {
                 Ok(event) => {
-                    debug!("calling cb with event {:?}", event);
+                    trace!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -330,14 +330,14 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        debug!("SpeechRecognizer::cb_speech_start_detected called");
+        trace!("SpeechRecognizer::cb_speech_start_detected called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        debug!("speech_recognizer {:?}", speech_recognizer);
+        trace!("speech_recognizer {:?}", speech_recognizer);
         if let Some(cb) = &speech_recognizer.speech_start_detected_cb {
-            debug!("speech_start_detected_cb defined");
+            trace!("speech_start_detected_cb defined");
             match RecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
-                    debug!("calling cb with event {:?}", event);
+                    trace!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -354,13 +354,13 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        debug!("SpeechRecognizer::cb_speech_end_detected called");
+        trace!("SpeechRecognizer::cb_speech_end_detected called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.speech_end_detected_cb {
-            debug!("speech_end_detected_cb defined");
+            trace!("speech_end_detected_cb defined");
             match RecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
-                    debug!("calling cb with event {:?}", event);
+                    trace!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -377,13 +377,13 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        debug!("SpeechRecognizer::cb_canceled called");
+        trace!("SpeechRecognizer::cb_canceled called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.canceled_cb {
-            debug!("canceled_cb defined");
+            trace!("canceled_cb defined");
             match SpeechRecognitionCanceledEvent::from_handle(hevent) {
                 Ok(event) => {
-                    debug!("calling cb with event {:?}", event);
+                    trace!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -400,14 +400,14 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        debug!("SpeechRecognizer::cb_recognizing called");
+        trace!("SpeechRecognizer::cb_recognizing called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        debug!("speech_recognizer {:?}", speech_recognizer);
+        trace!("speech_recognizer {:?}", speech_recognizer);
         if let Some(cb) = &speech_recognizer.recognizing_cb {
-            debug!("recognizing_cb defined");
+            trace!("recognizing_cb defined");
             match SpeechRecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
-                    debug!("calling cb with event {:?}", event);
+                    trace!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -424,13 +424,13 @@ impl SpeechRecognizer {
         hevent: SPXEVENTHANDLE,
         pvContext: *mut c_void,
     ) {
-        debug!("SpeechRecognizer::cb_recognized called");
+        trace!("SpeechRecognizer::cb_recognized called");
         let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
         if let Some(cb) = &speech_recognizer.recognized_cb {
-            debug!("recognized_cb defined");
+            trace!("recognized_cb defined");
             match SpeechRecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
-                    debug!("calling cb with event {:?}", event);
+                    trace!("calling cb with event {:?}", event);
                     cb(event);
                 }
                 Err(err) => {
@@ -443,7 +443,7 @@ impl SpeechRecognizer {
     pub async fn start_continuous_recognition_async(&mut self) -> Result<()> {
         unsafe {
             let mut handle_async_start_continuous: SPXASYNCHANDLE = SPXHANDLE_EMPTY;
-            debug!("calling recognizer_start_continuous_recognition_async");
+            trace!("calling recognizer_start_continuous_recognition_async");
             let mut ret = recognizer_start_continuous_recognition_async(
                 self.handle.get(),
                 &mut handle_async_start_continuous,
@@ -459,7 +459,7 @@ impl SpeechRecognizer {
                 recognizer_async_handle_release,
             ));
 
-            debug!("calling recognizer_start_continuous_recognition_async_wait_for");
+            trace!("calling recognizer_start_continuous_recognition_async_wait_for");
             ret = recognizer_start_continuous_recognition_async_wait_for(
                 handle_async_start_continuous,
                 u32::MAX,
@@ -468,7 +468,7 @@ impl SpeechRecognizer {
                 ret,
                 "SpeechRecognizer.recognizer_start_continuous_recognition_async_wait_for error",
             )?;
-            debug!("called recognizer_start_continuous_recognition_async_wait_for");
+            trace!("called recognizer_start_continuous_recognition_async_wait_for");
         }
         Ok(())
     }
@@ -488,15 +488,15 @@ impl SessionEvent {
 
         unsafe {
             let c_buf: *mut c_char = &mut buffer as *const _ as *mut c_char;
-            debug!("calling recognizer_session_event_get_session_id");
+            trace!("calling recognizer_session_event_get_session_id");
             let ret = recognizer_session_event_get_session_id(handle, c_buf, 37);
             convert_err(ret, "SessionEvent::from_handle error")?;
-            debug!("called recognizer_session_event_get_session_id");
+            trace!("called recognizer_session_event_get_session_id");
 
             let c_str: &CStr = CStr::from_ptr(c_buf);
             let str_slice: &str = c_str.to_str()?;
             let str_buf: String = str_slice.to_owned();
-            debug!("converted cstring to owned string");
+            trace!("converted cstring to owned string");
 
             Ok(SessionEvent {
                 session_id: str_buf,
@@ -519,13 +519,13 @@ pub struct RecognitionEvent {
 impl RecognitionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<RecognitionEvent> {
         let base = SessionEvent::from_handle(handle)?;
-        debug!("RecognitionEvent::from_handle got base event {:?}", base);
+        trace!("RecognitionEvent::from_handle got base event {:?}", base);
         unsafe {
             let mut offset: u64 = MaybeUninit::uninit().assume_init();
-            debug!("calling recognizer_recognition_event_get_offset");
+            trace!("calling recognizer_recognition_event_get_offset");
             let ret = recognizer_recognition_event_get_offset(handle, &mut offset);
             convert_err(ret, "RecognitionEvent::from_handle error")?;
-            debug!("recognizer_recognition_event_get_offset offset: {}", offset);
+            trace!("recognizer_recognition_event_get_offset offset: {}", offset);
             Ok(RecognitionEvent {
                 base,
                 offset: offset,
@@ -548,14 +548,13 @@ pub struct SpeechRecognitionResult {
 impl SpeechRecognitionResult {
     pub fn from_handle(handle: SPXRESULTHANDLE) -> Result<SpeechRecognitionResult> {
         unsafe {
-            let buffer: *mut u8 = vec![0u8; 1024].as_mut_ptr();
-            let mut ret = result_get_result_id(handle, buffer as *mut c_char, 1024);
+            let c_buf: *mut c_char = &mut [0u8; 1024] as *const _ as *mut c_char;
+            let mut ret = result_get_result_id(handle, c_buf, 1024);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_result_id) error",
             )?;
-            let result_id_slice = std::slice::from_raw_parts(buffer, 1024);
-            let result_id = String::from_utf8(result_id_slice.to_vec())?;
+            let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
 
             let mut reason: c_uint = MaybeUninit::uninit().assume_init();
             ret = result_get_reason(handle, &mut reason);
@@ -564,14 +563,13 @@ impl SpeechRecognitionResult {
                 "SpeechRecognitionResult::from_handle(result_get_reason) error",
             )?;
 
-            let buffer2: *mut u8 = vec![0u8; 1024].as_mut_ptr();
-            ret = result_get_text(handle, buffer2 as *mut c_char, 1024);
+            let c_buf2: *mut c_char = &mut [0u8; 1024] as *const _ as *mut c_char;
+            ret = result_get_text(handle, c_buf2, 1024);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_text) error",
             )?;
-            let result_text_slice = std::slice::from_raw_parts(buffer, 1024);
-            let result_text = String::from_utf8(result_text_slice.to_vec())?;
+            let result_text = CStr::from_ptr(c_buf2).to_str()?.to_owned();
 
             let mut duration: u64 = MaybeUninit::uninit().assume_init();
             ret = result_get_duration(handle, &mut duration);
@@ -630,10 +628,10 @@ impl SpeechRecognitionEvent {
 
         unsafe {
             let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
-            debug!("calling recognizer_recognition_event_get_result");
+            trace!("calling recognizer_recognition_event_get_result");
             let ret = recognizer_recognition_event_get_result(handle, &mut result_handle);
             convert_err(ret, "SpeechRecognitionEvent::from_handle error")?;
-            debug!("called recognizer_recognition_event_get_result");
+            trace!("called recognizer_recognition_event_get_result");
             let result = SpeechRecognitionResult::from_handle(result_handle)?;
             Ok(SpeechRecognitionEvent {
                 base,
