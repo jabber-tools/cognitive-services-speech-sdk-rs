@@ -75,6 +75,18 @@ fn speech_recognizer_from_wav_file() -> SpeechRecognizer {
     speech_recognizer_from_audio_cfg(audio_config)
 }
 
+/// creates speech recognizer from default mic settings and MS speech subscription key
+fn speech_recognizer_default_mic() -> SpeechRecognizer {
+    trace!("calling AudioConfig::from_default_microphone_input");
+    let audio_config = AudioConfig::from_default_microphone_input().unwrap();
+    trace!(
+        "called AudioConfig::from_default_microphone_input {:?}",
+        audio_config
+    );
+
+    speech_recognizer_from_audio_cfg(audio_config)
+}
+
 #[allow(dead_code)]
 /// sample for recognize_once_async
 async fn recognize_once() {
@@ -121,13 +133,41 @@ async fn continuous_recognition() {
     // handle.await.unwrap();
 }
 
+#[allow(dead_code)]
+/// creates recognizer for recognition from default mice. not really working on WLS
+async fn from_microphone() {
+    let mut speech_recognizer = speech_recognizer_default_mic();
+
+    speech_recognizer
+        .set_session_started_cb(|event| info!(">set_session_started_cb {:?}", event))
+        .unwrap();
+
+    speech_recognizer
+        .set_session_stopped_cb(|event| info!(">set_session_stopped_cb {:?}", event))
+        .unwrap();
+
+    speech_recognizer
+        .set_recognizing_cb(|event| info!(">set_recognizing_cb {:?}", event.result.text))
+        .unwrap();
+
+    speech_recognizer
+        .set_recognized_cb(|event| info!(">set_recognized_cb {:?}", event))
+        .unwrap();
+
+    if let Err(err) = speech_recognizer.start_continuous_recognition_async().await {
+        error!("start_continuous_recognition_async error {:?}", err);
+    }
+    sleep(Duration::from_millis(20000)).await;
+}
+
 #[tokio::main]
 async fn main() {
     set_env_vars();
     env_logger::init();
 
     info!("running recognition!!!");
+    // from_microphone().await;
     // recognize_once().await;
-    continuous_recognition().await;
+    // continuous_recognition().await;
     info!("DONE!");
 }

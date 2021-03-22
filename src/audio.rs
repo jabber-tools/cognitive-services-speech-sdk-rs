@@ -1,6 +1,7 @@
 use crate::common::PropertyCollection;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
+    audio_config_create_audio_input_from_default_microphone,
     audio_config_create_audio_input_from_stream,
     audio_config_create_audio_input_from_wav_file_name, audio_config_get_property_bag,
     audio_config_release, audio_stream_create_push_audio_input_stream,
@@ -120,6 +121,17 @@ impl AudioConfig {
                     c_file_name.as_ptr(),
                 ),
                 "AudioConfig::from_wav_file_input error",
+            )?;
+        }
+        AudioConfig::from_handle(handle, None)
+    }
+
+    pub fn from_default_microphone_input() -> Result<AudioConfig> {
+        let mut handle = SPXHANDLE_EMPTY;
+        unsafe {
+            convert_err(
+                audio_config_create_audio_input_from_default_microphone(&mut handle),
+                "AudioConfig::from_default_microphone_input",
             )?;
         }
         AudioConfig::from_handle(handle, None)
