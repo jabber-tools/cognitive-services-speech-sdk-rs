@@ -2,9 +2,10 @@ use crate::audio::AudioStreamFormat;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     audio_stream_create_push_audio_input_stream, audio_stream_release, SmartHandle,
-    SPXAUDIOSTREAMHANDLE, SPXHANDLE_EMPTY,
+    SPXAUDIOSTREAMHANDLE,
 };
 use log::*;
+use std::mem::MaybeUninit;
 
 #[derive(Debug)]
 pub struct AudioInputStream {
@@ -17,8 +18,8 @@ pub struct AudioInputStream {
 
 impl AudioInputStream {
     pub fn create_push_stream_from_format(format: AudioStreamFormat) -> Result<AudioInputStream> {
-        let mut handle = SPXHANDLE_EMPTY;
         unsafe {
+            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
             let ret =
                 audio_stream_create_push_audio_input_stream(&mut handle, format.handle.inner());
             convert_err(ret, "create_push_stream_from_format error")?;

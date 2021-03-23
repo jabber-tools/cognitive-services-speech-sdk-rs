@@ -3,7 +3,7 @@ use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_release, recognizer_result_handle_release, result_get_duration, result_get_offset,
     result_get_property_bag, result_get_reason, result_get_result_id, result_get_text, SmartHandle,
-    SPXHANDLE_EMPTY, SPXPROPERTYBAGHANDLE, SPXRESULTHANDLE,
+    SPXPROPERTYBAGHANDLE, SPXRESULTHANDLE,
 };
 use std::ffi::CStr;
 use std::fmt;
@@ -73,7 +73,7 @@ impl SpeechRecognitionResult {
                 "SpeechRecognitionResult::from_handle(result_get_offset) error",
             )?;
 
-            let mut properties_handle: SPXPROPERTYBAGHANDLE = SPXHANDLE_EMPTY;
+            let mut properties_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
             ret = result_get_property_bag(handle, &mut properties_handle);
             convert_err(
                 ret,

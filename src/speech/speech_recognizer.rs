@@ -9,7 +9,7 @@ use crate::ffi::{
     recognizer_session_stopped_set_callback, recognizer_speech_end_detected_set_callback,
     recognizer_speech_start_detected_set_callback, recognizer_start_continuous_recognition_async,
     recognizer_start_continuous_recognition_async_wait_for, SmartHandle, SPXASYNCHANDLE,
-    SPXEVENTHANDLE, SPXHANDLE, SPXHANDLE_EMPTY, SPXRECOHANDLE, SPXRESULTHANDLE,
+    SPXEVENTHANDLE, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE,
 };
 use crate::speech::{
     RecognitionEvent, SessionEvent, SpeechConfig, SpeechRecognitionCanceledEvent,
@@ -18,6 +18,7 @@ use crate::speech::{
 use log::*;
 use std::boxed::Box;
 use std::fmt;
+use std::mem::MaybeUninit;
 use std::os::raw::c_void;
 
 pub struct SpeechRecognizer {
@@ -55,45 +56,46 @@ impl SpeechRecognizer {
         speech_config: SpeechConfig,
         audio_config: AudioConfig,
     ) -> Result<SpeechRecognizer> {
-        let mut prop_bag_handle = SPXHANDLE_EMPTY;
         unsafe {
+            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
             let ret = recognizer_get_property_bag(handle, &mut prop_bag_handle);
             convert_err(ret, "SpeechRecognizer::from_handle error")?;
-        }
-        let property_bag = PropertyCollection {
-            handle: SmartHandle::create(
-                "PropertyCollection",
-                prop_bag_handle,
-                property_bag_release,
-            ),
-        };
 
-        let result = SpeechRecognizer {
-            handle: SmartHandle::create("SpeechRecognizer", handle, recognizer_handle_release),
-            properties: property_bag,
-            speech_config,
-            audio_config,
-            handle_async_start_continuous: None,
-            _handle_async_stop_continuous: None,
-            _handle_async_start_keyword: None,
-            _handle_async_stop_keyword: None,
-            session_started_cb: None,
-            session_stopped_cb: None,
-            speech_start_detected_cb: None,
-            speech_end_detected_cb: None,
-            canceled_cb: None,
-            recognizing_cb: None,
-            recognized_cb: None,
-        };
-        Ok(result)
+            let property_bag = PropertyCollection {
+                handle: SmartHandle::create(
+                    "PropertyCollection",
+                    prop_bag_handle,
+                    property_bag_release,
+                ),
+            };
+
+            let result = SpeechRecognizer {
+                handle: SmartHandle::create("SpeechRecognizer", handle, recognizer_handle_release),
+                properties: property_bag,
+                speech_config,
+                audio_config,
+                handle_async_start_continuous: None,
+                _handle_async_stop_continuous: None,
+                _handle_async_start_keyword: None,
+                _handle_async_stop_keyword: None,
+                session_started_cb: None,
+                session_stopped_cb: None,
+                speech_start_detected_cb: None,
+                speech_end_detected_cb: None,
+                canceled_cb: None,
+                recognizing_cb: None,
+                recognized_cb: None,
+            };
+            Ok(result)
+        }
     }
 
     pub fn from_config(
         speech_config: SpeechConfig,
         audio_config: AudioConfig,
     ) -> Result<SpeechRecognizer> {
-        let mut handle = SPXHANDLE_EMPTY;
         unsafe {
+            let mut handle: SPXRECOHANDLE = MaybeUninit::uninit().assume_init();
             convert_err(
                 recognizer_create_speech_recognizer_from_config(
                     &mut handle,
@@ -102,8 +104,8 @@ impl SpeechRecognizer {
                 ),
                 "SpeechRecognizer.from_config error",
             )?;
+            SpeechRecognizer::from_handle(handle, speech_config, audio_config)
         }
-        SpeechRecognizer::from_handle(handle, speech_config, audio_config)
     }
 
     pub fn set_session_started_cb<F>(&mut self, f: F) -> Result<()>
@@ -393,7 +395,7 @@ impl SpeechRecognizer {
         // similar design is used by golang implementation
         // not really sure about fundamental reasons behind it
         unsafe {
-            let mut handle_result: SPXRESULTHANDLE = SPXHANDLE_EMPTY;
+            let mut handle_result: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
             let ret = recognizer_recognize_once(self.handle.inner(), &mut handle_result);
             convert_err(ret, "SpeechRecognizer.recognize_once_async error")?;
             SpeechRecognitionResult::from_handle(handle_result)
@@ -407,7 +409,8 @@ impl SpeechRecognizer {
         // similar design is used by golang implementation
         // not really sure about fundamental reasons behind it
         unsafe {
-            let mut handle_async_start_continuous: SPXASYNCHANDLE = SPXHANDLE_EMPTY;
+            let mut handle_async_start_continuous: SPXASYNCHANDLE =
+                MaybeUninit::uninit().assume_init();
             trace!("calling recognizer_start_continuous_recognition_async");
             let mut ret = recognizer_start_continuous_recognition_async(
                 self.handle.inner(),
