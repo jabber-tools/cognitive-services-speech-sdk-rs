@@ -11,7 +11,7 @@ use std::os::raw::c_char;
 // #[derive(Debug)]
 pub struct SessionEvent {
     pub session_id: String,
-    _handle: SmartHandle<SPXEVENTHANDLE>,
+    pub handle: SmartHandle<SPXEVENTHANDLE>,
 }
 
 /// custom Debug implementation for SessionEvent so that
@@ -43,7 +43,7 @@ impl SessionEvent {
 
             Ok(SessionEvent {
                 session_id: str_buf,
-                _handle: SmartHandle::create(
+                handle: SmartHandle::create(
                     "SessionEvent",
                     handle,
                     recognizer_event_handle_release,
