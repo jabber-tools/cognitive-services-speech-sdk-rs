@@ -19,7 +19,8 @@ impl AudioInputStream {
     pub fn create_push_stream_from_format(format: AudioStreamFormat) -> Result<AudioInputStream> {
         let mut handle = SPXHANDLE_EMPTY;
         unsafe {
-            let ret = audio_stream_create_push_audio_input_stream(&mut handle, format.handle.get());
+            let ret =
+                audio_stream_create_push_audio_input_stream(&mut handle, format.handle.inner());
             convert_err(ret, "create_push_stream_from_format error")?;
             info!("create_push_stream_from_format ok");
             let result = AudioInputStream {

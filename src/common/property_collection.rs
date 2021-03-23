@@ -18,7 +18,7 @@ impl PropertyCollection {
         let c_val = CString::new(prop_val)?;
         unsafe {
             let ret =
-                property_bag_set_string(self.handle.get(), -1, c_name.as_ptr(), c_val.as_ptr());
+                property_bag_set_string(self.handle.inner(), -1, c_name.as_ptr(), c_val.as_ptr());
             convert_err(ret, "PropertyCollection.set_property_by_string error")?;
         }
 
@@ -32,7 +32,7 @@ impl PropertyCollection {
         unsafe {
             // TODO: see NULL_C_STR_PTR in orig solution
             let ret = property_bag_get_string(
-                self.handle.get(),
+                self.handle.inner(),
                 prop_id.to_i32(),
                 std::ptr::null(),
                 CString::new(default_val)?.into_raw(),

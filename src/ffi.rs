@@ -32,7 +32,7 @@ impl<T: Copy + Debug> SmartHandle<T> {
     }
 
     #[inline(always)]
-    pub fn get(&self) -> T {
+    pub fn inner(&self) -> T {
         self.inner
     }
 }

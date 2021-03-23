@@ -97,8 +97,8 @@ impl SpeechRecognizer {
             convert_err(
                 recognizer_create_speech_recognizer_from_config(
                     &mut handle,
-                    speech_config.handle.get(),
-                    audio_config.handle.get(),
+                    speech_config.handle.inner(),
+                    audio_config.handle.inner(),
                 ),
                 "SpeechRecognizer.from_config error",
             )?;
@@ -113,7 +113,7 @@ impl SpeechRecognizer {
         self.session_started_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_session_started_set_callback(
-                self.handle.get(),
+                self.handle.inner(),
                 Some(Self::cb_session_started),
                 self as *const _ as *mut c_void,
             );
@@ -129,7 +129,7 @@ impl SpeechRecognizer {
         self.session_stopped_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_session_stopped_set_callback(
-                self.handle.get(),
+                self.handle.inner(),
                 Some(Self::cb_session_stopped),
                 self as *const _ as *mut c_void,
             );
@@ -145,7 +145,7 @@ impl SpeechRecognizer {
         self.speech_start_detected_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_speech_start_detected_set_callback(
-                self.handle.get(),
+                self.handle.inner(),
                 Some(Self::cb_speech_start_detected),
                 self as *const _ as *mut c_void,
             );
@@ -161,7 +161,7 @@ impl SpeechRecognizer {
         self.speech_end_detected_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_speech_end_detected_set_callback(
-                self.handle.get(),
+                self.handle.inner(),
                 Some(Self::cb_speech_end_detected),
                 self as *const _ as *mut c_void,
             );
@@ -177,7 +177,7 @@ impl SpeechRecognizer {
         self.canceled_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_canceled_set_callback(
-                self.handle.get(),
+                self.handle.inner(),
                 Some(Self::cb_canceled),
                 self as *const _ as *mut c_void,
             );
@@ -194,7 +194,7 @@ impl SpeechRecognizer {
         unsafe {
             trace!("calling recognizer_recognizing_set_callback");
             let ret = recognizer_recognizing_set_callback(
-                self.handle.get(),
+                self.handle.inner(),
                 Some(Self::cb_recognizing),
                 self as *const _ as *mut c_void,
             );
@@ -212,7 +212,7 @@ impl SpeechRecognizer {
         unsafe {
             trace!("calling recognizer_recognized_set_callback");
             let ret = recognizer_recognized_set_callback(
-                self.handle.get(),
+                self.handle.inner(),
                 Some(Self::cb_recognized),
                 self as *const _ as *mut c_void,
             );
@@ -394,7 +394,7 @@ impl SpeechRecognizer {
         // not really sure about fundamental reasons behind it
         unsafe {
             let mut handle_result: SPXRESULTHANDLE = SPXHANDLE_EMPTY;
-            let ret = recognizer_recognize_once(self.handle.get(), &mut handle_result);
+            let ret = recognizer_recognize_once(self.handle.inner(), &mut handle_result);
             convert_err(ret, "SpeechRecognizer.recognize_once_async error")?;
             SpeechRecognitionResult::from_handle(handle_result)
         }
@@ -410,7 +410,7 @@ impl SpeechRecognizer {
             let mut handle_async_start_continuous: SPXASYNCHANDLE = SPXHANDLE_EMPTY;
             trace!("calling recognizer_start_continuous_recognition_async");
             let mut ret = recognizer_start_continuous_recognition_async(
-                self.handle.get(),
+                self.handle.inner(),
                 &mut handle_async_start_continuous,
             );
             convert_err(

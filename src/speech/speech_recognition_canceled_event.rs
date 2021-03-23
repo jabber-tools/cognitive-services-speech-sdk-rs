@@ -20,14 +20,14 @@ impl SpeechRecognitionCanceledEvent {
         let base = SpeechRecognitionEvent::from_handle(handle)?;
         unsafe {
             let mut reason: Result_CancellationReason = MaybeUninit::uninit().assume_init();
-            let ret = result_get_reason_canceled(base.result.handle.get(), &mut reason);
+            let ret = result_get_reason_canceled(base.result.handle.inner(), &mut reason);
             convert_err(
                 ret,
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_reason_canceled) error",
             )?;
 
             let mut error_code: Result_CancellationErrorCode = MaybeUninit::uninit().assume_init();
-            let ret = result_get_canceled_error_code(base.result.handle.get(), &mut error_code);
+            let ret = result_get_canceled_error_code(base.result.handle.inner(), &mut error_code);
             convert_err(
                 ret,
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_canceled_error_code) error",

@@ -45,7 +45,8 @@ impl AudioConfig {
     pub fn from_stream_input(stream: AudioInputStream) -> Result<AudioConfig> {
         let mut handle = SPXHANDLE_EMPTY;
         unsafe {
-            let ret = audio_config_create_audio_input_from_stream(&mut handle, stream.handle.get());
+            let ret =
+                audio_config_create_audio_input_from_stream(&mut handle, stream.handle.inner());
             convert_err(ret, "AudioConfig::from_stream_input error")?;
             info!("from_stream_input ok");
             AudioConfig::from_handle(handle, Some(stream))
