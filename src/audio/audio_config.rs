@@ -15,13 +15,11 @@ use std::mem::MaybeUninit;
 #[derive(Debug)]
 pub struct AudioConfig {
     pub handle: SmartHandle<SPXAUDIOCONFIGHANDLE>,
-    stream: Option<AudioInputStream>,
     pub properties: PropertyCollection,
 }
 
 impl AudioConfig {
-    // passing also stream, need to solve this more elegantly, do not want to use Option
-    fn from_handle(handle: SPXHANDLE, stream: Option<AudioInputStream>) -> Result<AudioConfig> {
+    fn from_handle(handle: SPXHANDLE) -> Result<AudioConfig> {
         unsafe {
             let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
             let ret = audio_config_get_property_bag(handle, &mut prop_bag_handle);
@@ -37,21 +35,20 @@ impl AudioConfig {
 
             let result = AudioConfig {
                 handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
-                stream: stream,
                 properties: property_bag,
             };
             Ok(result)
         }
     }
 
-    pub fn from_stream_input(stream: AudioInputStream) -> Result<AudioConfig> {
+    pub fn from_stream_input(stream: &AudioInputStream) -> Result<AudioConfig> {
         unsafe {
             let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
             let ret =
                 audio_config_create_audio_input_from_stream(&mut handle, stream.handle.inner());
             convert_err(ret, "AudioConfig::from_stream_input error")?;
             info!("from_stream_input ok");
-            AudioConfig::from_handle(handle, Some(stream))
+            AudioConfig::from_handle(handle)
         }
     }
 
@@ -66,7 +63,7 @@ impl AudioConfig {
                 ),
                 "AudioConfig::from_wav_file_input error",
             )?;
-            AudioConfig::from_handle(handle, None)
+            AudioConfig::from_handle(handle)
         }
     }
 
@@ -77,7 +74,7 @@ impl AudioConfig {
                 audio_config_create_audio_input_from_default_microphone(&mut handle),
                 "AudioConfig::from_default_microphone_input",
             )?;
-            AudioConfig::from_handle(handle, None)
+            AudioConfig::from_handle(handle)
         }
     }
 }
