@@ -2,8 +2,8 @@ use crate::common::PropertyCollection;
 use crate::common::PropertyId;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    property_bag_release, speech_config_from_subscription, speech_config_get_property_bag,
-    speech_config_release, SmartHandle, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXSPEECHCONFIGHANDLE,
+    speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
+    SmartHandle, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
 use std::mem::MaybeUninit;
@@ -21,13 +21,7 @@ impl SpeechConfig {
             let ret = speech_config_get_property_bag(handle, &mut prop_bag_handle);
             convert_err(ret, "SpeechConfig::from_handle error")?;
 
-            let mut property_bag = PropertyCollection {
-                handle: SmartHandle::create(
-                    "PropertyCollection",
-                    prop_bag_handle,
-                    property_bag_release,
-                ),
-            };
+            let mut property_bag = PropertyCollection::from_handle(prop_bag_handle);
 
             property_bag
                 .set_property_by_string("SPEECHSDK-SPEECH-CONFIG-SYSTEM-LANGUAGE", "Rust")?;

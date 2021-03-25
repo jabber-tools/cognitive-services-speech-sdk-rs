@@ -2,7 +2,7 @@ use crate::audio::AudioConfig;
 use crate::common::PropertyCollection;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    property_bag_release, recognizer_async_handle_release, recognizer_canceled_set_callback,
+    recognizer_async_handle_release, recognizer_canceled_set_callback,
     recognizer_create_speech_recognizer_from_config, recognizer_get_property_bag,
     recognizer_handle_release, recognizer_recognize_once, recognizer_recognized_set_callback,
     recognizer_recognizing_set_callback, recognizer_session_started_set_callback,
@@ -61,13 +61,7 @@ impl SpeechRecognizer {
             let ret = recognizer_get_property_bag(handle, &mut prop_bag_handle);
             convert_err(ret, "SpeechRecognizer::from_handle error")?;
 
-            let property_bag = PropertyCollection {
-                handle: SmartHandle::create(
-                    "PropertyCollection",
-                    prop_bag_handle,
-                    property_bag_release,
-                ),
-            };
+            let property_bag = PropertyCollection::from_handle(prop_bag_handle);
 
             let result = SpeechRecognizer {
                 handle: SmartHandle::create("SpeechRecognizer", handle, recognizer_handle_release),

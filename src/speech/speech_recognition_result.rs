@@ -1,7 +1,7 @@
 use crate::common::{PropertyCollection, ResultReason};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    property_bag_release, recognizer_result_handle_release, result_get_duration, result_get_offset,
+    recognizer_result_handle_release, result_get_duration, result_get_offset,
     result_get_property_bag, result_get_reason, result_get_result_id, result_get_text, SmartHandle,
     SPXPROPERTYBAGHANDLE, SPXRESULTHANDLE,
 };
@@ -79,13 +79,7 @@ impl SpeechRecognitionResult {
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_property_bag) error",
             )?;
-            let properties = PropertyCollection {
-                handle: SmartHandle::create(
-                    "PropertyCollection",
-                    properties_handle,
-                    property_bag_release,
-                ),
-            };
+            let properties = PropertyCollection::from_handle(properties_handle);
 
             Ok(SpeechRecognitionResult {
                 handle: SmartHandle::create(

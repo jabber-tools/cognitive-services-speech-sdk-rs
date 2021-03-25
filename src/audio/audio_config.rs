@@ -5,8 +5,8 @@ use crate::ffi::{
     audio_config_create_audio_input_from_default_microphone,
     audio_config_create_audio_input_from_stream,
     audio_config_create_audio_input_from_wav_file_name, audio_config_get_property_bag,
-    audio_config_release, property_bag_release, SmartHandle, SPXAUDIOCONFIGHANDLE,
-    SPXAUDIOSTREAMHANDLE, SPXHANDLE, SPXPROPERTYBAGHANDLE,
+    audio_config_release, SmartHandle, SPXAUDIOCONFIGHANDLE, SPXAUDIOSTREAMHANDLE, SPXHANDLE,
+    SPXPROPERTYBAGHANDLE,
 };
 use log::*;
 use std::ffi::CString;
@@ -25,13 +25,7 @@ impl AudioConfig {
             let ret = audio_config_get_property_bag(handle, &mut prop_bag_handle);
             convert_err(ret, "AudioConfig::from_handle error")?;
 
-            let property_bag = PropertyCollection {
-                handle: SmartHandle::create(
-                    "PropertyCollection",
-                    prop_bag_handle,
-                    property_bag_release,
-                ),
-            };
+            let property_bag = PropertyCollection::from_handle(prop_bag_handle);
 
             let result = AudioConfig {
                 handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
