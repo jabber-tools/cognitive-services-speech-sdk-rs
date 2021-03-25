@@ -1,4 +1,5 @@
 use crate::common::PropertyCollection;
+use crate::common::PropertyId;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_release, speech_config_from_subscription, speech_config_get_property_bag,
@@ -53,5 +54,29 @@ impl SpeechConfig {
             convert_err(ret, "SpeechConfig::from_subscription error")?;
             SpeechConfig::from_handle(handle)
         }
+    }
+
+    pub fn set_proxy(&mut self, hostname: String, port: u64) -> Result<()> {
+        self.set_property(PropertyId::SpeechServiceConnectionProxyHostName, hostname)?;
+        self.set_property(
+            PropertyId::SpeechServiceConnectionProxyPort,
+            port.to_string(),
+        )
+    }
+
+    pub fn set_proxy_with_usrname_and_pwd(
+        &mut self,
+        hostname: String,
+        port: u64,
+        username: String,
+        password: String,
+    ) -> Result<()> {
+        self.set_proxy(hostname, port)?;
+        self.set_property(PropertyId::SpeechServiceConnectionProxyUserName, username)?;
+        self.set_property(PropertyId::SpeechServiceConnectionProxyPassword, password)
+    }
+
+    pub fn set_property(&mut self, id: PropertyId, value: String) -> Result<()> {
+        self.properties.set_property(id, value)
     }
 }
