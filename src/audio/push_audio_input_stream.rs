@@ -1,11 +1,14 @@
 use crate::audio::AudioStreamFormat;
+use crate::common::PropertyId;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     audio_stream_create_push_audio_input_stream, audio_stream_release,
-    push_audio_input_stream_close, push_audio_input_stream_write, SmartHandle,
+    push_audio_input_stream_close, push_audio_input_stream_set_property_by_id,
+    push_audio_input_stream_set_property_by_name, push_audio_input_stream_write, SmartHandle,
     SPXAUDIOSTREAMHANDLE,
 };
 use log::*;
+use std::ffi::CString;
 use std::mem::MaybeUninit;
 
 #[derive(Debug)]
@@ -68,6 +71,30 @@ impl PushAudioInputStream {
         unsafe {
             let ret = push_audio_input_stream_close(self.handle.inner());
             convert_err(ret, "PushAudioInputStream.close_stream error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_property_by_name(&mut self, name: String, value: String) -> Result<()> {
+        unsafe {
+            let c_name = CString::new(name)?.as_ptr();
+            let c_value = CString::new(value)?.as_ptr();
+            let ret =
+                push_audio_input_stream_set_property_by_name(self.handle.inner(), c_name, c_value);
+            convert_err(ret, "PushAudioInputStream.set_property_by_name error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_property(&mut self, id: PropertyId, value: String) -> Result<()> {
+        unsafe {
+            let c_value = CString::new(value)?.as_ptr();
+            let ret = push_audio_input_stream_set_property_by_id(
+                self.handle.inner(),
+                id.to_i32(),
+                c_value,
+            );
+            convert_err(ret, "PushAudioInputStream.set_property error")?;
             Ok(())
         }
     }
