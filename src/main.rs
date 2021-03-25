@@ -1,5 +1,5 @@
 use cognitive_services_speech_sdk_rs::audio::AudioConfig;
-use cognitive_services_speech_sdk_rs::audio::{AudioInputStream, AudioStreamFormat};
+use cognitive_services_speech_sdk_rs::audio::{AudioStreamFormat, PushAudioInputStream};
 use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechRecognizer};
 use log::*;
 use std::env;
@@ -68,7 +68,7 @@ fn speech_recognizer_from_audio_cfg(audio_config: AudioConfig) -> SpeechRecogniz
 
 #[allow(dead_code)]
 /// creates speech recognizer from push input stream and MS speech subscription key
-fn speech_recognizer_from_push_stream() -> (SpeechRecognizer, AudioInputStream) {
+fn speech_recognizer_from_push_stream() -> (SpeechRecognizer, PushAudioInputStream) {
     trace!("calling AudioStreamFormat::get_wave_format_pcm");
     let wave_format = AudioStreamFormat::get_wave_format_pcm(16000, None, None).unwrap();
     trace!(
@@ -77,14 +77,14 @@ fn speech_recognizer_from_push_stream() -> (SpeechRecognizer, AudioInputStream) 
     );
 
     trace!("calling AudioInputStream::create_push_stream_from_format");
-    let push_stream = AudioInputStream::create_push_stream_from_format(wave_format).unwrap();
+    let push_stream = PushAudioInputStream::create_push_stream_from_format(wave_format).unwrap();
     trace!(
         "called AudioInputStream::create_push_stream_from_format {:?}",
         push_stream
     );
 
     trace!("calling AudioConfig::from_stream_input");
-    let audio_config = AudioConfig::from_stream_input(&push_stream).unwrap();
+    let audio_config = AudioConfig::from_push_input_stream(&push_stream).unwrap();
     trace!("called AudioConfig::from_stream_input {:?}", audio_config);
 
     (speech_recognizer_from_audio_cfg(audio_config), push_stream)
@@ -165,7 +165,7 @@ async fn continuous_recognition_push_stream() {
     let wav_file = "/home/adambe/projects/microsoft-speech-rs-master/examples/chinese_test.wav";
 
     let mut file = std::fs::File::open(wav_file).unwrap();
-    let chunk_size = 40000;
+    let chunk_size = 1000;
 
     loop {
         // info!("pushing");
@@ -183,6 +183,7 @@ async fn continuous_recognition_push_stream() {
             break;
         }
     }
+    audio_push_stream.close_stream().unwrap();
 
     handle.await.unwrap();
 }
@@ -197,7 +198,7 @@ async fn continuous_recognition_push_stream_once() {
     let wav_file = "/home/adambe/projects/microsoft-speech-rs-master/examples/chinese_test.wav";
 
     let mut file = std::fs::File::open(wav_file).unwrap();
-    let chunk_size = 40000;
+    let chunk_size = 1000;
 
     loop {
         // info!("pushing");
@@ -216,6 +217,8 @@ async fn continuous_recognition_push_stream_once() {
         }
     }
 
+    audio_push_stream.close_stream().unwrap();
+
     let speech_reco_res = speech_recognizer.recognize_once_async().await;
     info!("got recognition {:?}", speech_reco_res);
 }
@@ -229,7 +232,7 @@ async fn main() {
     // from_microphone().await;
     //recognize_once().await;
     // continuous_recognition().await;
-    continuous_recognition_push_stream().await;
-    // continuous_recognition_push_stream_once().await;
+    // continuous_recognition_push_stream().await;
+    continuous_recognition_push_stream_once().await;
     info!("DONE!");
 }

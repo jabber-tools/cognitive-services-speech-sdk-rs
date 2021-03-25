@@ -1,4 +1,4 @@
-use crate::audio::AudioInputStream;
+use crate::audio::PushAudioInputStream;
 use crate::common::PropertyCollection;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
@@ -41,7 +41,7 @@ impl AudioConfig {
         }
     }
 
-    pub fn from_stream_input(stream: &AudioInputStream) -> Result<AudioConfig> {
+    pub fn from_push_input_stream(stream: &PushAudioInputStream) -> Result<AudioConfig> {
         unsafe {
             let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
             let ret =
