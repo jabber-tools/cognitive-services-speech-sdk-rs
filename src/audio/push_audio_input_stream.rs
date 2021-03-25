@@ -32,6 +32,27 @@ impl PushAudioInputStream {
         }
     }
 
+    pub fn create_push_stream() -> Result<PushAudioInputStream> {
+        unsafe {
+            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
+
+            let default_format = AudioStreamFormat::get_default_input_format()?;
+
+            let ret = audio_stream_create_push_audio_input_stream(
+                &mut handle,
+                default_format.handle.inner(),
+            );
+            convert_err(
+                ret,
+                "PushAudioInputStream::create_push_stream_from_format error",
+            )?;
+            info!("create_push_stream_from_format ok");
+            Ok(PushAudioInputStream {
+                handle: SmartHandle::create("PushAudioInputStream", handle, audio_stream_release),
+            })
+        }
+    }
+
     // impl to use static dispatch, see https://joshleeb.com/posts/rust-traits-and-trait-objects/
     pub fn write(&mut self, buffer: impl AsRef<[u8]>) -> Result<()> {
         unsafe {
