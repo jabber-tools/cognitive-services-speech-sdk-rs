@@ -84,7 +84,7 @@ fn speech_recognizer_from_push_stream() -> (SpeechRecognizer, PushAudioInputStre
     );
 
     trace!("calling AudioConfig::from_stream_input");
-    let audio_config = AudioConfig::from_push_input_stream(&push_stream).unwrap();
+    let audio_config = AudioConfig::from_input_stream(&push_stream).unwrap();
     trace!("called AudioConfig::from_stream_input {:?}", audio_config);
 
     (speech_recognizer_from_audio_cfg(audio_config), push_stream)

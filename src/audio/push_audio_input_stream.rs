@@ -1,4 +1,4 @@
-use crate::audio::AudioStreamFormat;
+use crate::audio::{AudioInputStream, AudioStreamFormat};
 use crate::common::PropertyId;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
@@ -14,6 +14,12 @@ use std::mem::MaybeUninit;
 #[derive(Debug)]
 pub struct PushAudioInputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
+}
+
+impl AudioInputStream for PushAudioInputStream {
+    fn get_handle(&self) -> SPXAUDIOSTREAMHANDLE {
+        self.handle.inner()
+    }
 }
 
 impl PushAudioInputStream {
