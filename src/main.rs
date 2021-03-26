@@ -84,7 +84,7 @@ fn speech_recognizer_from_push_stream() -> (SpeechRecognizer, PushAudioInputStre
     );
 
     trace!("calling AudioConfig::from_stream_input");
-    let audio_config = AudioConfig::from_input_stream(&push_stream).unwrap();
+    let audio_config = AudioConfig::from_stream_input(&push_stream).unwrap();
     trace!("called AudioConfig::from_stream_input {:?}", audio_config);
 
     (speech_recognizer_from_audio_cfg(audio_config), push_stream)
@@ -230,7 +230,7 @@ async fn main() {
 
     info!("running recognition!!!");
     // from_microphone().await;
-    //recognize_once().await;
+    // recognize_once().await;
     // continuous_recognition().await;
     // continuous_recognition_push_stream().await;
     continuous_recognition_push_stream_once().await;

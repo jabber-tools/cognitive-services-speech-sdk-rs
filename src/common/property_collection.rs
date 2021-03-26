@@ -68,7 +68,10 @@ impl PropertyCollection {
         }
     }
 
-    pub fn get_property_by_string(&self, prop_name: String, default_val: String) -> Result<String> {
+    pub fn get_property_by_string<S>(&self, prop_name: S, default_val: S) -> Result<String>
+    where
+        S: Into<Vec<u8>>,
+    {
         unsafe {
             let c_name = CString::new(prop_name)?.as_ptr();
             let c_default_val = CString::new(default_val)?.as_ptr();
