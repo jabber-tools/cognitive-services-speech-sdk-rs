@@ -3043,6 +3043,31 @@ extern "C" {
     pub fn speaker_verification_model_release_handle(hsvmodel: SPXSVMODELHANDLE) -> SPXHR;
 }
 extern "C" {
+    pub fn source_lang_config_from_language(
+        hconfig: *mut SPXSOURCELANGCONFIGHANDLE,
+        language: *const ::std::os::raw::c_char,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn source_lang_config_from_language_and_endpointId(
+        hconfig: *mut SPXSOURCELANGCONFIGHANDLE,
+        language: *const ::std::os::raw::c_char,
+        endpointId: *const ::std::os::raw::c_char,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn source_lang_config_is_handle_valid(hconfig: SPXSOURCELANGCONFIGHANDLE) -> bool;
+}
+extern "C" {
+    pub fn source_lang_config_release(hconfig: SPXSOURCELANGCONFIGHANDLE) -> SPXHR;
+}
+extern "C" {
+    pub fn source_lang_config_get_property_bag(
+        hconfig: SPXSOURCELANGCONFIGHANDLE,
+        hpropbag: *mut SPXPROPERTYBAGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
     pub fn create_auto_detect_source_lang_config_from_open_range(
         hAutoDetectSourceLanguageconfig: *mut SPXAUTODETECTSOURCELANGCONFIGHANDLE,
     ) -> SPXHR;

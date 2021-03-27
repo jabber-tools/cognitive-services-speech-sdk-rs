@@ -6,7 +6,7 @@ use crate::ffi::{
     auto_detect_source_lang_config_get_property_bag, auto_detect_source_lang_config_release,
     create_auto_detect_source_lang_config_from_languages,
     create_auto_detect_source_lang_config_from_source_lang_config, SmartHandle,
-    SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+    SPXAUTODETECTSOURCELANGCONFIGHANDLE, SPXPROPERTYBAGHANDLE,
 };
 use std::ffi::CString;
 use std::mem::MaybeUninit;
@@ -23,8 +23,7 @@ impl AutoDetectSourceLanguageConfig {
         handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE,
     ) -> Result<AutoDetectSourceLanguageConfig> {
         unsafe {
-            let mut prop_bag_handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE =
-                MaybeUninit::uninit().assume_init();
+            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
 
             let ret = auto_detect_source_lang_config_get_property_bag(handle, &mut prop_bag_handle);
             convert_err(ret, "AutoDetectSourceLanguageConfig::from_handle error")?;
