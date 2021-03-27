@@ -5,3 +5,4 @@
 #include <stddef.h>
 
 #include <speechapi_c.h>
+#include <speechapi_c_auto_detect_source_lang_config.h>

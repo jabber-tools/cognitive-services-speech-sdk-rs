@@ -3042,6 +3042,45 @@ extern "C" {
 extern "C" {
     pub fn speaker_verification_model_release_handle(hsvmodel: SPXSVMODELHANDLE) -> SPXHR;
 }
+extern "C" {
+    pub fn create_auto_detect_source_lang_config_from_open_range(
+        hAutoDetectSourceLanguageconfig: *mut SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn create_auto_detect_source_lang_config_from_languages(
+        hAutoDetectSourceLanguageconfig: *mut SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+        languages: *const ::std::os::raw::c_char,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn create_auto_detect_source_lang_config_from_source_lang_config(
+        hAutoDetectSourceLanguageconfig: *mut SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+        hSourceLanguageConfig: SPXSOURCELANGCONFIGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn add_source_lang_config_to_auto_detect_source_lang_config(
+        hAutoDetectSourceLanguageconfig: SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+        hSourceLanguageConfig: SPXSOURCELANGCONFIGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn auto_detect_source_lang_config_is_handle_valid(
+        hAutoDetectSourceLanguageconfig: SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+    ) -> bool;
+}
+extern "C" {
+    pub fn auto_detect_source_lang_config_release(
+        hAutoDetectSourceLanguageconfig: SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn auto_detect_source_lang_config_get_property_bag(
+        hAutoDetectSourceLanguageconfig: SPXAUTODETECTSOURCELANGCONFIGHANDLE,
+        hpropbag: *mut SPXPROPERTYBAGHANDLE,
+    ) -> SPXHR;
+}
 pub type __builtin_va_list = [__va_list_tag; 1usize];
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
