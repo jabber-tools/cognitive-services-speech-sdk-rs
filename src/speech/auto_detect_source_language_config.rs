@@ -1,6 +1,5 @@
 use crate::common::PropertyCollection;
 use crate::error::{convert_err, Result};
-#[allow(unused_imports)]
 use crate::ffi::{
     add_source_lang_config_to_auto_detect_source_lang_config,
     auto_detect_source_lang_config_get_property_bag, auto_detect_source_lang_config_release,
@@ -8,6 +7,7 @@ use crate::ffi::{
     create_auto_detect_source_lang_config_from_source_lang_config, SmartHandle,
     SPXAUTODETECTSOURCELANGCONFIGHANDLE, SPXPROPERTYBAGHANDLE,
 };
+use crate::speech::SourceLanguageConfig;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
@@ -51,6 +51,37 @@ impl AutoDetectSourceLanguageConfig {
                 c_languages_str.as_ptr(),
             );
             convert_err(ret, "AutoDetectSourceLanguageConfig::from_languages error")?;
+            Ok(AutoDetectSourceLanguageConfig::from_handle(handle)?)
+        }
+    }
+
+    pub fn from_language_configs(
+        languages: Vec<SourceLanguageConfig>,
+    ) -> Result<AutoDetectSourceLanguageConfig> {
+        unsafe {
+            let mut first = true;
+            let mut handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE =
+                MaybeUninit::uninit().assume_init();
+            for language in &languages {
+                let ret;
+                if first == true {
+                    first = false;
+                    ret = create_auto_detect_source_lang_config_from_source_lang_config(
+                        &mut handle,
+                        language.handle.inner(),
+                    );
+                } else {
+                    ret = add_source_lang_config_to_auto_detect_source_lang_config(
+                        handle,
+                        language.handle.inner(),
+                    );
+                }
+                convert_err(
+                    ret,
+                    "AutoDetectSourceLanguageConfig::from_language_configs error",
+                )?;
+            }
+
             Ok(AutoDetectSourceLanguageConfig::from_handle(handle)?)
         }
     }
