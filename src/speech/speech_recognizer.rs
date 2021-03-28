@@ -10,7 +10,9 @@ use crate::ffi::{
     recognizer_recognizing_set_callback, recognizer_session_started_set_callback,
     recognizer_session_stopped_set_callback, recognizer_speech_end_detected_set_callback,
     recognizer_speech_start_detected_set_callback, recognizer_start_continuous_recognition_async,
-    recognizer_start_continuous_recognition_async_wait_for, SmartHandle, SPXASYNCHANDLE,
+    recognizer_start_continuous_recognition_async_wait_for,
+    recognizer_stop_continuous_recognition_async,
+    recognizer_stop_continuous_recognition_async_wait_for, SmartHandle, SPXASYNCHANDLE,
     SPXEVENTHANDLE, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE,
 };
 use crate::speech::{AutoDetectSourceLanguageConfig, SourceLanguageConfig};
@@ -28,9 +30,9 @@ pub struct SpeechRecognizer {
     handle: SmartHandle<SPXRECOHANDLE>,
     properties: PropertyCollection,
     handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
-    _handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
-    _handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
-    _handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
+    handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
+    handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
+    handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
     session_started_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
     session_stopped_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
     speech_start_detected_cb: Option<Box<dyn Fn(RecognitionEvent) + Send>>,
@@ -62,9 +64,9 @@ impl SpeechRecognizer {
                 handle: SmartHandle::create("SpeechRecognizer", handle, recognizer_handle_release),
                 properties: property_bag,
                 handle_async_start_continuous: None,
-                _handle_async_stop_continuous: None,
-                _handle_async_start_keyword: None,
-                _handle_async_stop_keyword: None,
+                handle_async_stop_continuous: None,
+                handle_async_start_keyword: None,
+                handle_async_stop_keyword: None,
                 session_started_cb: None,
                 session_stopped_cb: None,
                 speech_start_detected_cb: None,
@@ -473,6 +475,36 @@ impl SpeechRecognizer {
                 "SpeechRecognizer.recognizer_start_continuous_recognition_async_wait_for error",
             )?;
             trace!("called recognizer_start_continuous_recognition_async_wait_for");
+        }
+        Ok(())
+    }
+
+    pub async fn stop_continuous_recognition_async(&mut self) -> Result<()> {
+        unsafe {
+            let mut handle_async_stop_continuous: SPXASYNCHANDLE =
+                MaybeUninit::uninit().assume_init();
+            let mut ret = recognizer_stop_continuous_recognition_async(
+                self.handle.inner(),
+                &mut handle_async_stop_continuous,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.stop_continuous_recognition_async error",
+            )?;
+            self.handle_async_stop_continuous = Some(SmartHandle::create(
+                "handle_async_stop_continuous",
+                handle_async_stop_continuous,
+                recognizer_async_handle_release,
+            ));
+
+            ret = recognizer_stop_continuous_recognition_async_wait_for(
+                handle_async_stop_continuous,
+                u32::MAX,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.recognizer_stop_continuous_recognition_async_wait_for error",
+            )?;
         }
         Ok(())
     }
