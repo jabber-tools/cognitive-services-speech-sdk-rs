@@ -1,5 +1,5 @@
 use crate::audio::AudioConfig;
-use crate::common::PropertyCollection;
+use crate::common::{PropertyCollection, PropertyId};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     recognizer_async_handle_release, recognizer_canceled_set_callback,
@@ -574,5 +574,20 @@ impl SpeechRecognizer {
             )?;
         }
         Ok(())
+    }
+
+    pub fn get_endpoint_id(&self) -> Result<String> {
+        self.properties
+            .get_property(PropertyId::SpeechServiceConnectionEndpointId, "")
+    }
+
+    pub fn get_auth_token(&self) -> Result<String> {
+        self.properties
+            .get_property(PropertyId::SpeechServiceAuthorizationToken, "")
+    }
+
+    pub fn set_auth_token(&mut self, token: &str) -> Result<()> {
+        self.properties
+            .set_property(PropertyId::SpeechServiceAuthorizationToken, token)
     }
 }
