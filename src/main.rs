@@ -231,8 +231,8 @@ async fn main() {
     info!("running recognition!!!");
     // from_microphone().await;
     // recognize_once().await;
-    // continuous_recognition().await;
+    continuous_recognition().await;
     // continuous_recognition_push_stream().await;
-    continuous_recognition_push_stream_once().await;
+    // continuous_recognition_push_stream_once().await;
     info!("DONE!");
 }

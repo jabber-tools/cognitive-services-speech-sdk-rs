@@ -3,7 +3,9 @@ use crate::common::PropertyCollection;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     recognizer_async_handle_release, recognizer_canceled_set_callback,
-    recognizer_create_speech_recognizer_from_config, recognizer_get_property_bag,
+    recognizer_create_speech_recognizer_from_auto_detect_source_lang_config,
+    recognizer_create_speech_recognizer_from_config,
+    recognizer_create_speech_recognizer_from_source_lang_config, recognizer_get_property_bag,
     recognizer_handle_release, recognizer_recognize_once, recognizer_recognized_set_callback,
     recognizer_recognizing_set_callback, recognizer_session_started_set_callback,
     recognizer_session_stopped_set_callback, recognizer_speech_end_detected_set_callback,
@@ -11,6 +13,7 @@ use crate::ffi::{
     recognizer_start_continuous_recognition_async_wait_for, SmartHandle, SPXASYNCHANDLE,
     SPXEVENTHANDLE, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE,
 };
+use crate::speech::{AutoDetectSourceLanguageConfig, SourceLanguageConfig};
 use crate::speech::{
     RecognitionEvent, SessionEvent, SpeechConfig, SpeechRecognitionCanceledEvent,
     SpeechRecognitionEvent, SpeechRecognitionResult,
@@ -24,8 +27,6 @@ use std::os::raw::c_void;
 pub struct SpeechRecognizer {
     handle: SmartHandle<SPXRECOHANDLE>,
     properties: PropertyCollection,
-    speech_config: SpeechConfig,
-    audio_config: AudioConfig,
     handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
     _handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
     _handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
@@ -44,18 +45,12 @@ impl fmt::Debug for SpeechRecognizer {
         f.debug_struct("SpeechRecognizer")
             .field("handle", &self.handle)
             .field("properties", &self.properties)
-            .field("speech_config", &self.speech_config)
-            .field("audio_config", &self.audio_config)
             .finish()
     }
 }
 
 impl SpeechRecognizer {
-    fn from_handle(
-        handle: SPXHANDLE,
-        speech_config: SpeechConfig,
-        audio_config: AudioConfig,
-    ) -> Result<SpeechRecognizer> {
+    fn from_handle(handle: SPXHANDLE) -> Result<SpeechRecognizer> {
         unsafe {
             let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
             let ret = recognizer_get_property_bag(handle, &mut prop_bag_handle);
@@ -66,8 +61,6 @@ impl SpeechRecognizer {
             let result = SpeechRecognizer {
                 handle: SmartHandle::create("SpeechRecognizer", handle, recognizer_handle_release),
                 properties: property_bag,
-                speech_config,
-                audio_config,
                 handle_async_start_continuous: None,
                 _handle_async_stop_continuous: None,
                 _handle_async_start_keyword: None,
@@ -98,8 +91,57 @@ impl SpeechRecognizer {
                 ),
                 "SpeechRecognizer.from_config error",
             )?;
-            SpeechRecognizer::from_handle(handle, speech_config, audio_config)
+            SpeechRecognizer::from_handle(handle)
         }
+    }
+
+    pub fn from_auto_detect_source_lang_config(
+        speech_config: SpeechConfig,
+        audio_config: AudioConfig,
+        lang_config: AutoDetectSourceLanguageConfig,
+    ) -> Result<SpeechRecognizer> {
+        unsafe {
+            let mut handle: SPXRECOHANDLE = MaybeUninit::uninit().assume_init();
+            convert_err(
+                recognizer_create_speech_recognizer_from_auto_detect_source_lang_config(
+                    &mut handle,
+                    speech_config.handle.inner(),
+                    lang_config.handle.inner(),
+                    audio_config.handle.inner(),
+                ),
+                "SpeechRecognizer.from_auto_detect_source_lang_config error",
+            )?;
+            SpeechRecognizer::from_handle(handle)
+        }
+    }
+
+    pub fn from_source_lang_config(
+        speech_config: SpeechConfig,
+        audio_config: AudioConfig,
+        source_lang_config: SourceLanguageConfig,
+    ) -> Result<SpeechRecognizer> {
+        unsafe {
+            let mut handle: SPXRECOHANDLE = MaybeUninit::uninit().assume_init();
+            convert_err(
+                recognizer_create_speech_recognizer_from_source_lang_config(
+                    &mut handle,
+                    speech_config.handle.inner(),
+                    source_lang_config.handle.inner(),
+                    audio_config.handle.inner(),
+                ),
+                "SpeechRecognizer.from_source_lang_config error",
+            )?;
+            SpeechRecognizer::from_handle(handle)
+        }
+    }
+
+    pub fn from_source_lang(
+        speech_config: SpeechConfig,
+        audio_config: AudioConfig,
+        source_lang: &str,
+    ) -> Result<SpeechRecognizer> {
+        let source_lang_config = SourceLanguageConfig::from_language(source_lang)?;
+        SpeechRecognizer::from_source_lang_config(speech_config, audio_config, source_lang_config)
     }
 
     pub fn set_session_started_cb<F>(&mut self, f: F) -> Result<()>
