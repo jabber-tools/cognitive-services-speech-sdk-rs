@@ -11,11 +11,17 @@ use crate::ffi::{
     recognizer_session_stopped_set_callback, recognizer_speech_end_detected_set_callback,
     recognizer_speech_start_detected_set_callback, recognizer_start_continuous_recognition_async,
     recognizer_start_continuous_recognition_async_wait_for,
+    recognizer_start_keyword_recognition_async,
+    recognizer_start_keyword_recognition_async_wait_for,
     recognizer_stop_continuous_recognition_async,
-    recognizer_stop_continuous_recognition_async_wait_for, SmartHandle, SPXASYNCHANDLE,
-    SPXEVENTHANDLE, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE,
+    recognizer_stop_continuous_recognition_async_wait_for,
+    recognizer_stop_keyword_recognition_async, recognizer_stop_keyword_recognition_async_wait_for,
+    SmartHandle, SPXASYNCHANDLE, SPXEVENTHANDLE, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
+    SPXRESULTHANDLE,
 };
-use crate::speech::{AutoDetectSourceLanguageConfig, SourceLanguageConfig};
+use crate::speech::{
+    AutoDetectSourceLanguageConfig, KeywordRecognitionModel, SourceLanguageConfig,
+};
 use crate::speech::{
     RecognitionEvent, SessionEvent, SpeechConfig, SpeechRecognitionCanceledEvent,
     SpeechRecognitionEvent, SpeechRecognitionResult,
@@ -449,23 +455,20 @@ impl SpeechRecognizer {
         unsafe {
             let mut handle_async_start_continuous: SPXASYNCHANDLE =
                 MaybeUninit::uninit().assume_init();
-            trace!("calling recognizer_start_continuous_recognition_async");
             let mut ret = recognizer_start_continuous_recognition_async(
                 self.handle.inner(),
                 &mut handle_async_start_continuous,
             );
             convert_err(
                 ret,
-                "SpeechRecognizer.start_continuous_recognition_async error",
+                "SpeechRecognizer.recognizer_start_continuous_recognition_async error",
             )?;
-            trace!("called recognizer_start_continuous_recognition_async");
             self.handle_async_start_continuous = Some(SmartHandle::create(
                 "handle_async_start_continuous",
                 handle_async_start_continuous,
                 recognizer_async_handle_release,
             ));
 
-            trace!("calling recognizer_start_continuous_recognition_async_wait_for");
             ret = recognizer_start_continuous_recognition_async_wait_for(
                 handle_async_start_continuous,
                 u32::MAX,
@@ -474,7 +477,6 @@ impl SpeechRecognizer {
                 ret,
                 "SpeechRecognizer.recognizer_start_continuous_recognition_async_wait_for error",
             )?;
-            trace!("called recognizer_start_continuous_recognition_async_wait_for");
         }
         Ok(())
     }
@@ -489,7 +491,7 @@ impl SpeechRecognizer {
             );
             convert_err(
                 ret,
-                "SpeechRecognizer.stop_continuous_recognition_async error",
+                "SpeechRecognizer.recognizer_stop_continuous_recognition_async error",
             )?;
             self.handle_async_stop_continuous = Some(SmartHandle::create(
                 "handle_async_stop_continuous",
@@ -504,6 +506,71 @@ impl SpeechRecognizer {
             convert_err(
                 ret,
                 "SpeechRecognizer.recognizer_stop_continuous_recognition_async_wait_for error",
+            )?;
+        }
+        Ok(())
+    }
+
+    pub async fn start_keyword_recognition_async(
+        &mut self,
+        model: KeywordRecognitionModel,
+    ) -> Result<()> {
+        unsafe {
+            let mut handle_async_start_keyword: SPXASYNCHANDLE =
+                MaybeUninit::uninit().assume_init();
+            let mut ret = recognizer_start_keyword_recognition_async(
+                self.handle.inner(),
+                model.handle.inner(),
+                &mut handle_async_start_keyword,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.recognizer_start_keyword_recognition_async error",
+            )?;
+
+            self.handle_async_start_keyword = Some(SmartHandle::create(
+                "handle_async_start_keyword",
+                handle_async_start_keyword,
+                recognizer_async_handle_release,
+            ));
+
+            ret = recognizer_start_keyword_recognition_async_wait_for(
+                handle_async_start_keyword,
+                u32::MAX,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.recognizer_start_keyword_recognition_async_wait_for error",
+            )?;
+        }
+        Ok(())
+    }
+
+    pub async fn stop_keyword_recognition_async(&mut self) -> Result<()> {
+        unsafe {
+            let mut handle_async_stop_keyword: SPXASYNCHANDLE = MaybeUninit::uninit().assume_init();
+            let mut ret = recognizer_stop_keyword_recognition_async(
+                self.handle.inner(),
+                &mut handle_async_stop_keyword,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.recognizer_stop_keyword_recognition_async error",
+            )?;
+
+            self.handle_async_stop_keyword = Some(SmartHandle::create(
+                "handle_async_stop_keyword",
+                handle_async_stop_keyword,
+                recognizer_async_handle_release,
+            ));
+
+            ret = recognizer_stop_keyword_recognition_async_wait_for(
+                handle_async_stop_keyword,
+                u32::MAX,
+            );
+            convert_err(
+                ret,
+                "SpeechRecognizer.recognizer_stop_keyword_recognition_async_wait_for error",
             )?;
         }
         Ok(())

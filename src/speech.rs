@@ -1,4 +1,5 @@
 mod auto_detect_source_language_config;
+mod keyword_recognition_model;
 mod recognition_event;
 mod session_event;
 mod source_language_config;
@@ -10,6 +11,7 @@ mod speech_recognizer;
 
 // re-export structs directly under speech module
 pub use self::auto_detect_source_language_config::AutoDetectSourceLanguageConfig;
+pub use self::keyword_recognition_model::KeywordRecognitionModel;
 pub use self::recognition_event::RecognitionEvent;
 pub use self::session_event::SessionEvent;
 pub use self::source_language_config::SourceLanguageConfig;
