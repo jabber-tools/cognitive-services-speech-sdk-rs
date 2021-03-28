@@ -146,6 +146,10 @@ async fn continuous_recognition() {
         error!("start_continuous_recognition_async error {:?}", err);
     }
     sleep(Duration::from_millis(10000)).await;
+    speech_recognizer
+        .stop_continuous_recognition_async()
+        .await
+        .unwrap();
 }
 
 #[allow(dead_code)]
