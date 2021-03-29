@@ -15,7 +15,7 @@ pub struct SpeechConfig {
 }
 
 impl SpeechConfig {
-    fn from_handle(handle: SPXHANDLE) -> Result<SpeechConfig> {
+    pub fn from_handle(handle: SPXHANDLE) -> Result<SpeechConfig> {
         unsafe {
             let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
             let ret = speech_config_get_property_bag(handle, &mut prop_bag_handle);
