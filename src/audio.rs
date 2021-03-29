@@ -3,6 +3,7 @@ mod audio_input_stream;
 mod audio_output_stream;
 mod audio_stream_container_format;
 mod audio_stream_format;
+mod pull_audio_output_stream;
 mod push_audio_input_stream;
 
 // re-export structs directly under audio module
@@ -11,4 +12,5 @@ pub use self::audio_input_stream::AudioInputStream;
 pub use self::audio_output_stream::AudioOutputStream;
 pub use self::audio_stream_container_format::AudioStreamContainerFormat;
 pub use self::audio_stream_format::AudioStreamFormat;
+pub use self::pull_audio_output_stream::PullAudioOutputStream;
 pub use self::push_audio_input_stream::PushAudioInputStream;
