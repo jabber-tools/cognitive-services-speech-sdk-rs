@@ -1,9 +1,12 @@
-use crate::common::PropertyCollection;
-use crate::common::PropertyId;
+use crate::common::{
+    OutputFormat, ProfanityOption, PropertyCollection, PropertyId, ServicePropertyChannel,
+};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
+    speech_config_from_authorization_token, speech_config_from_endpoint, speech_config_from_host,
     speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
-    SmartHandle, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXSPEECHCONFIGHANDLE,
+    speech_config_set_profanity, speech_config_set_service_property, SmartHandle, SPXHANDLE,
+    SPXPROPERTYBAGHANDLE, SPXSPEECHCONFIGHANDLE,
 };
 use std::ffi::CString;
 use std::mem::MaybeUninit;
@@ -50,6 +53,89 @@ impl SpeechConfig {
         }
     }
 
+    pub fn from_auth_token<S>(auth_token: S, region: S) -> Result<SpeechConfig>
+    where
+        S: Into<Vec<u8>>,
+    {
+        let c_auth_token = CString::new(auth_token)?;
+        let c_region = CString::new(region)?;
+
+        unsafe {
+            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = speech_config_from_authorization_token(
+                &mut handle,
+                c_auth_token.as_ptr(),
+                c_region.as_ptr(),
+            );
+            convert_err(ret, "SpeechConfig::from_auth_token error")?;
+            SpeechConfig::from_handle(handle)
+        }
+    }
+
+    pub fn from_endpoint_with_subscription<S>(endpoint: S, subscription: S) -> Result<SpeechConfig>
+    where
+        S: Into<Vec<u8>>,
+    {
+        let c_endpoint = CString::new(endpoint)?;
+        let c_subscription = CString::new(subscription)?;
+
+        unsafe {
+            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = speech_config_from_endpoint(
+                &mut handle,
+                c_endpoint.as_ptr(),
+                c_subscription.as_ptr(),
+            );
+            convert_err(ret, "SpeechConfig::from_endpoint_with_subscription error")?;
+            SpeechConfig::from_handle(handle)
+        }
+    }
+
+    pub fn from_endpoint<S>(endpoint: S) -> Result<SpeechConfig>
+    where
+        S: Into<Vec<u8>>,
+    {
+        let c_endpoint = CString::new(endpoint)?;
+
+        unsafe {
+            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let ret =
+                speech_config_from_endpoint(&mut handle, c_endpoint.as_ptr(), std::ptr::null());
+            convert_err(ret, "SpeechConfig::from_endpoint error")?;
+            SpeechConfig::from_handle(handle)
+        }
+    }
+
+    pub fn from_host_with_subscription<S>(host: S, subscription: S) -> Result<SpeechConfig>
+    where
+        S: Into<Vec<u8>>,
+    {
+        let c_host = CString::new(host)?;
+        let c_subscription = CString::new(subscription)?;
+
+        unsafe {
+            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let ret =
+                speech_config_from_host(&mut handle, c_host.as_ptr(), c_subscription.as_ptr());
+            convert_err(ret, "SpeechConfig::from_host_with_subscription error")?;
+            SpeechConfig::from_handle(handle)
+        }
+    }
+
+    pub fn from_host<S>(host: S) -> Result<SpeechConfig>
+    where
+        S: Into<Vec<u8>>,
+    {
+        let c_host = CString::new(host)?;
+
+        unsafe {
+            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = speech_config_from_host(&mut handle, c_host.as_ptr(), std::ptr::null());
+            convert_err(ret, "SpeechConfig::from_host error")?;
+            SpeechConfig::from_handle(handle)
+        }
+    }
+
     pub fn set_proxy(&mut self, hostname: String, port: u64) -> Result<()> {
         self.set_property(PropertyId::SpeechServiceConnectionProxyHostName, hostname)?;
         self.set_property(
@@ -70,11 +156,164 @@ impl SpeechConfig {
         self.set_property(PropertyId::SpeechServiceConnectionProxyPassword, password)
     }
 
+    pub fn set_service_property(
+        &mut self,
+        name: String,
+        value: String,
+        channel: ServicePropertyChannel,
+    ) -> Result<()> {
+        unsafe {
+            let c_name = CString::new(name)?;
+            let c_value = CString::new(value)?;
+            let ret = speech_config_set_service_property(
+                self.handle.inner(),
+                c_name.as_ptr(),
+                c_value.as_ptr(),
+                channel as u32,
+            );
+            convert_err(ret, "SpeechConfig.set_service_property error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_profanity_option(&mut self, profanity_option: ProfanityOption) -> Result<()> {
+        unsafe {
+            let ret = speech_config_set_profanity(self.handle.inner(), profanity_option as u32);
+            convert_err(ret, "SpeechConfig.set_profanity_option error")?;
+            Ok(())
+        }
+    }
+
+    pub fn enable_audio_logging(&mut self) -> Result<()> {
+        self.set_property(
+            PropertyId::SpeechServiceConnectionEnableAudioLogging,
+            "true".into(),
+        )
+    }
+
+    pub fn request_word_level_timestamps(&mut self) -> Result<()> {
+        self.set_property(
+            PropertyId::SpeechServiceResponseRequestWordLevelTimestamps,
+            "true".into(),
+        )
+    }
+
+    pub fn enable_dictation(&mut self) -> Result<()> {
+        self.set_property(
+            PropertyId::SpeechServiceConnectionRecoMode,
+            "DICTATION".into(),
+        )
+    }
+
     pub fn set_property(&mut self, id: PropertyId, value: String) -> Result<()> {
         self.properties.set_property(id, value)
     }
 
     pub fn get_property(&self, id: PropertyId) -> Result<String> {
         self.properties.get_property(id, "")
+    }
+
+    pub fn set_property_by_string(&mut self, name: String, value: String) -> Result<()> {
+        self.properties.set_property_by_string(name, value)
+    }
+
+    pub fn get_property_by_string(&self, name: String) -> Result<String> {
+        self.properties.get_property_by_string(name, "".into())
+    }
+
+    pub fn get_subscription_key(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceConnectionKey)
+    }
+
+    pub fn get_region(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceConnectionRegion)
+    }
+
+    pub fn get_auth_token(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceAuthorizationToken)
+    }
+
+    pub fn set_auth_token(&mut self, auth_token: String) -> Result<()> {
+        self.set_property(PropertyId::SpeechServiceAuthorizationToken, auth_token)
+    }
+
+    pub fn get_speech_recognition_language(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceConnectionRecoLanguage)
+    }
+
+    pub fn set_speech_recognition_language(&mut self, reco_lang: String) -> Result<()> {
+        self.set_property(PropertyId::SpeechServiceConnectionRecoLanguage, reco_lang)
+    }
+
+    pub fn get_output_format(&self) -> Result<OutputFormat> {
+        let output_format =
+            self.get_property(PropertyId::SpeechServiceResponseRequestDetailedResultTrueFalse)?;
+        match output_format.as_str() {
+            "true" => Ok(OutputFormat::Detailed),
+            _ => Ok(OutputFormat::Simple),
+        }
+    }
+
+    pub fn set_get_output_format(&mut self, output_format: OutputFormat) -> Result<()> {
+        match output_format {
+            OutputFormat::Simple => self.set_property(
+                PropertyId::SpeechServiceResponseRequestDetailedResultTrueFalse,
+                "false".into(),
+            ),
+            OutputFormat::Detailed => self.set_property(
+                PropertyId::SpeechServiceResponseRequestDetailedResultTrueFalse,
+                "true".into(),
+            ),
+        }
+    }
+
+    pub fn get_endpoint_id(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceConnectionEndpointId)
+    }
+
+    pub fn set_endpoint_id(&mut self, endpoint_id: String) -> Result<()> {
+        self.set_property(PropertyId::SpeechServiceConnectionEndpointId, endpoint_id)
+    }
+
+    pub fn get_speech_synthesis_language(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceConnectionSynthLanguage)
+    }
+
+    pub fn set_get_speech_synthesis_language(
+        &mut self,
+        speech_synthesis_language: String,
+    ) -> Result<()> {
+        self.set_property(
+            PropertyId::SpeechServiceConnectionSynthLanguage,
+            speech_synthesis_language,
+        )
+    }
+
+    pub fn get_speech_synthesis_voice_name(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceConnectionSynthVoice)
+    }
+
+    pub fn set_get_speech_synthesis_voice_name(
+        &mut self,
+        speech_synthesis_voice_name: String,
+    ) -> Result<()> {
+        self.set_property(
+            PropertyId::SpeechServiceConnectionSynthVoice,
+            speech_synthesis_voice_name,
+        )
+    }
+
+    pub fn get_speech_synthesis_output_format(&self) -> Result<String> {
+        self.get_property(PropertyId::SpeechServiceConnectionSynthOutputFormat)
+    }
+
+    pub fn set_get_speech_synthesis_output_format(
+        &mut self,
+        speech_synthesis_output_format: String,
+    ) -> Result<()> {
+        self.set_property(
+            PropertyId::SpeechServiceConnectionSynthOutputFormat,
+            speech_synthesis_output_format,
+        )
     }
 }

@@ -24,8 +24,12 @@ pub enum PropertyId {
     SpeechServiceConnectionSynthVoice = 3101,
     SpeechServiceConnectionSynthOutputFormat = 3102,
 
+    SpeechServiceConnectionEnableAudioLogging = 3202,
+
     SpeechServiceResponseRequestDetailedResultTrueFalse = 4000,
     SpeechServiceResponseRequestProfanityFilterTrueFalse = 4001,
+
+    SpeechServiceResponseRequestWordLevelTimestamps = 4004,
 
     SpeechServiceResponseJsonResult = 5000,
     SpeechServiceResponseJsonErrorDetails = 5001,
@@ -84,8 +88,11 @@ impl PropertyId {
             PropertyId::SpeechServiceConnectionSynthVoice => 3101,
             PropertyId::SpeechServiceConnectionSynthOutputFormat => 3102,
 
+            PropertyId::SpeechServiceConnectionEnableAudioLogging => 3202,
+
             PropertyId::SpeechServiceResponseRequestDetailedResultTrueFalse => 4000,
             PropertyId::SpeechServiceResponseRequestProfanityFilterTrueFalse => 4001,
+            PropertyId::SpeechServiceResponseRequestWordLevelTimestamps => 4004,
 
             PropertyId::SpeechServiceResponseJsonResult => 5000,
             PropertyId::SpeechServiceResponseJsonErrorDetails => 5001,
