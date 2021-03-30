@@ -44,6 +44,16 @@ pub enum PropertyId {
     AudioConfigAudioSource = 8004,
 
     SpeechLogFilename = 9001,
+
+    ConversationApplicationID = 10000,
+    ConversationDialogType = 10001,
+    ConversationInitialSilenceTimeout = 10002,
+    ConversationFromID = 10003,
+    ConversationConversationID = 10004,
+    ConversationCustomVoiceDeploymentIDs = 10005,
+    ConversationSpeechActivityTemplate = 10006,
+    DataBufferTimeStamp = 11001,
+    DataBufferUserID = 11002,
 }
 
 impl PropertyId {
@@ -94,6 +104,16 @@ impl PropertyId {
             PropertyId::AudioConfigAudioSource => 8004,
 
             PropertyId::SpeechLogFilename => 9001,
+
+            PropertyId::ConversationApplicationID => 10000,
+            PropertyId::ConversationDialogType => 10001,
+            PropertyId::ConversationInitialSilenceTimeout => 10002,
+            PropertyId::ConversationFromID => 10003,
+            PropertyId::ConversationConversationID => 10004,
+            PropertyId::ConversationCustomVoiceDeploymentIDs => 10005,
+            PropertyId::ConversationSpeechActivityTemplate => 10006,
+            PropertyId::DataBufferTimeStamp => 11001,
+            PropertyId::DataBufferUserID => 11002,
         };
     }
 }

@@ -73,4 +73,8 @@ impl SpeechConfig {
     pub fn set_property(&mut self, id: PropertyId, value: String) -> Result<()> {
         self.properties.set_property(id, value)
     }
+
+    pub fn get_property(&self, id: PropertyId) -> Result<String> {
+        self.properties.get_property(id, "")
+    }
 }
