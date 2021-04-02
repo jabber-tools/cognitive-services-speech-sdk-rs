@@ -1,4 +1,5 @@
 use crate::common::PropertyId;
+use crate::dialog::DialogServiceConfig;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     custom_commands_config_from_authorization_token, custom_commands_config_from_subscription,
@@ -11,6 +12,16 @@ use std::mem::MaybeUninit;
 #[derive(Debug)]
 pub struct CustomCommandsConfig {
     pub config: SpeechConfig,
+}
+
+impl DialogServiceConfig for CustomCommandsConfig {
+    fn get_speech_config(&mut self) -> &mut SpeechConfig {
+        &mut self.config
+    }
+
+    fn get_handle(&self) -> SPXSPEECHCONFIGHANDLE {
+        self.config.handle.inner()
+    }
 }
 
 impl CustomCommandsConfig {
