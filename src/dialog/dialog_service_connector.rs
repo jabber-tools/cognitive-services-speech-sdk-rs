@@ -1,30 +1,54 @@
 use crate::audio::AudioConfig;
 use crate::common::{PropertyCollection, PropertyId};
-use crate::dialog::DialogServiceConfig;
+use crate::dialog::{ActivityReceivedEvent, DialogServiceConfig};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    dialog_service_connector_connect,
+    dialog_service_connector_activity_received_set_callback,
+    dialog_service_connector_canceled_set_callback, dialog_service_connector_connect,
     dialog_service_connector_create_dialog_service_connector_from_config,
     dialog_service_connector_disconnect, dialog_service_connector_get_property_bag,
     dialog_service_connector_handle_release, dialog_service_connector_listen_once,
-    dialog_service_connector_send_activity, dialog_service_connector_start_keyword_recognition,
-    dialog_service_connector_stop_keyword_recognition, SmartHandle, SPXHANDLE,
+    dialog_service_connector_recognized_set_callback,
+    dialog_service_connector_recognizing_set_callback, dialog_service_connector_send_activity,
+    dialog_service_connector_session_started_set_callback,
+    dialog_service_connector_session_stopped_set_callback,
+    dialog_service_connector_start_keyword_recognition,
+    dialog_service_connector_stop_keyword_recognition, SmartHandle, SPXEVENTHANDLE, SPXHANDLE,
     SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE,
 };
-use crate::speech::{KeywordRecognitionModel, SpeechRecognitionResult};
+use crate::speech::{
+    KeywordRecognitionModel, SessionEvent, SpeechRecognitionCanceledEvent, SpeechRecognitionEvent,
+    SpeechRecognitionResult,
+};
+use log::*;
 use std::ffi::{CStr, CString};
+use std::fmt;
 use std::mem::MaybeUninit;
-use std::os::raw::c_char;
+use std::os::raw::{c_char, c_void};
 
 #[derive(Debug)]
 pub struct SendActivityOutcome {
     pub interaction_id: String,
 }
 
-#[derive(Debug)]
 pub struct DialogServiceConnector {
     pub properties: PropertyCollection,
     pub handle: SmartHandle<SPXRECOHANDLE>,
+    session_started_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
+    session_stopped_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
+    canceled_cb: Option<Box<dyn Fn(SpeechRecognitionCanceledEvent) + Send>>,
+    recognizing_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
+    recognized_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
+    activity_received_cb: Option<Box<dyn Fn(ActivityReceivedEvent) + Send>>,
+}
+
+impl fmt::Debug for DialogServiceConnector {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DialogServiceConnector")
+            .field("handle", &self.handle)
+            .field("properties", &self.properties)
+            .finish()
+    }
 }
 
 impl DialogServiceConnector {
@@ -40,6 +64,12 @@ impl DialogServiceConnector {
                     handle,
                     dialog_service_connector_handle_release,
                 ),
+                session_started_cb: None,
+                session_stopped_cb: None,
+                canceled_cb: None,
+                recognizing_cb: None,
+                recognized_cb: None,
+                activity_received_cb: None,
             })
         }
     }
@@ -160,5 +190,243 @@ impl DialogServiceConnector {
             PropertyId::ConversationSpeechActivityTemplate,
             speech_activity_template,
         )
+    }
+
+    pub fn set_session_started_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SessionEvent) + 'static + Send,
+    {
+        self.session_started_cb = Some(Box::new(f));
+        unsafe {
+            let ret = dialog_service_connector_session_started_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_session_started),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "DialogServiceConnector.set_session_started_cb error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_session_stopped_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SessionEvent) + 'static + Send,
+    {
+        self.session_stopped_cb = Some(Box::new(f));
+        unsafe {
+            let ret = dialog_service_connector_session_stopped_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_session_stopped),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "DialogServiceConnector.set_session_stopped_cb error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_canceled_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SpeechRecognitionCanceledEvent) + 'static + Send,
+    {
+        self.canceled_cb = Some(Box::new(f));
+        unsafe {
+            let ret = dialog_service_connector_canceled_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_canceled),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "DialogServiceConnector.set_canceled_cb error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_recognizing_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SpeechRecognitionEvent) + 'static + Send,
+    {
+        self.recognizing_cb = Some(Box::new(f));
+        unsafe {
+            let ret = dialog_service_connector_recognizing_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_recognizing),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "DialogServiceConnector.set_recognizing_cb error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_recognized_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SpeechRecognitionEvent) + 'static + Send,
+    {
+        self.recognized_cb = Some(Box::new(f));
+        unsafe {
+            let ret = dialog_service_connector_recognized_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_recognized),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "DialogServiceConnector.set_recognized_cb error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_activity_received_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SpeechRecognitionEvent) + 'static + Send,
+    {
+        self.recognized_cb = Some(Box::new(f));
+        unsafe {
+            let ret = dialog_service_connector_activity_received_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_activity_received),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "DialogServiceConnector.set_activity_received_cb error")?;
+            Ok(())
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_session_started(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("DialogServiceConnector::cb_session_started called");
+        let dialog_service_connector = &mut *(pvContext as *mut DialogServiceConnector);
+        trace!("dialog_service_connector {:?}", dialog_service_connector);
+        if let Some(cb) = &dialog_service_connector.session_started_cb {
+            trace!("session_started_cb defined");
+            match SessionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("DialogServiceConnector::cb_session_started error {:?}", err);
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_session_stopped(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("DialogServiceConnector::cb_session_stopped called");
+        let dialog_service_connector = &mut *(pvContext as *mut DialogServiceConnector);
+        if let Some(cb) = &dialog_service_connector.session_stopped_cb {
+            trace!("cb_session_stopped defined");
+            match SessionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("DialogServiceConnector::cb_session_stopped error {:?}", err);
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_canceled(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("DialogServiceConnector::cb_canceled called");
+        let dialog_service_connector = &mut *(pvContext as *mut DialogServiceConnector);
+        if let Some(cb) = &dialog_service_connector.canceled_cb {
+            trace!("canceled_cb defined");
+            match SpeechRecognitionCanceledEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("DialogServiceConnector::cb_canceled error {:?}", err);
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_recognizing(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("DialogServiceConnector::cb_recognizing called");
+        let dialog_service_connector = &mut *(pvContext as *mut DialogServiceConnector);
+        if let Some(cb) = &dialog_service_connector.recognizing_cb {
+            trace!("recognizing_cb defined");
+            match SpeechRecognitionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("DialogServiceConnector::cb_recognizing error {:?}", err);
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_recognized(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("DialogServiceConnector::cb_recognized called");
+        let dialog_service_connector = &mut *(pvContext as *mut DialogServiceConnector);
+        if let Some(cb) = &dialog_service_connector.recognized_cb {
+            trace!("recognized_cb defined");
+            match SpeechRecognitionEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!("DialogServiceConnector::cb_recognized error {:?}", err);
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_activity_received(
+        hreco: SPXRECOHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("DialogServiceConnector::cb_activity_received called");
+        let dialog_service_connector = &mut *(pvContext as *mut DialogServiceConnector);
+        if let Some(cb) = &dialog_service_connector.activity_received_cb {
+            trace!("cb_activity_received defined");
+            match ActivityReceivedEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!(
+                        "DialogServiceConnector::cb_activity_received error {:?}",
+                        err
+                    );
+                }
+            }
+        }
     }
 }
