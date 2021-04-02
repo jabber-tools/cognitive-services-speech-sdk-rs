@@ -7,7 +7,7 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 
 // using std::mem::MaybeUninit::uninit().assume_init(); instead
-//pub const SPXHANDLE_EMPTY: SPXHANDLE = 0 as SPXHANDLE;
+// pub const SPXHANDLE_EMPTY: SPXHANDLE = 0 as SPXHANDLE;
 
 #[derive(Debug)]
 pub struct SmartHandle<T: Copy + Debug> {
