@@ -3,11 +3,20 @@ use crate::common::PropertyCollection;
 use crate::dialog::DialogServiceConfig;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
+    dialog_service_connector_connect,
     dialog_service_connector_create_dialog_service_connector_from_config,
-    dialog_service_connector_get_property_bag, dialog_service_connector_handle_release,
-    SmartHandle, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
+    dialog_service_connector_disconnect, dialog_service_connector_get_property_bag,
+    dialog_service_connector_handle_release, dialog_service_connector_send_activity, SmartHandle,
+    SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
 };
+use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
+use std::os::raw::c_char;
+
+#[derive(Debug)]
+pub struct SendActivityOutcome {
+    pub interaction_id: String,
+}
 
 #[derive(Debug)]
 pub struct DialogServiceConnector {
@@ -57,6 +66,37 @@ impl DialogServiceConnector {
             }
             convert_err(ret, "DialogServiceConnector::from_config error")?;
             DialogServiceConnector::from_handle(handle)
+        }
+    }
+
+    pub async fn connect_async(&mut self) -> Result<()> {
+        unsafe {
+            let ret = dialog_service_connector_connect(self.handle.inner());
+            convert_err(ret, "DialogServiceConnector.connect_async error")?;
+            Ok(())
+        }
+    }
+
+    pub async fn disconnect_async(&mut self) -> Result<()> {
+        unsafe {
+            let ret = dialog_service_connector_disconnect(self.handle.inner());
+            convert_err(ret, "DialogServiceConnector.disconnect_async error")?;
+            Ok(())
+        }
+    }
+
+    pub async fn send_activity_async(&mut self, message: String) -> Result<SendActivityOutcome> {
+        unsafe {
+            let c_buf: *mut c_char = &mut [0u8; 37] as *const _ as *mut c_char;
+            let c_message = CString::new(message)?;
+            let ret = dialog_service_connector_send_activity(
+                self.handle.inner(),
+                c_message.as_ptr(),
+                c_buf,
+            );
+            convert_err(ret, "DialogServiceConnector.send_activity_async error")?;
+            let interaction_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
+            Ok(SendActivityOutcome { interaction_id })
         }
     }
 }
