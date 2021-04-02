@@ -1,14 +1,17 @@
 use crate::audio::AudioConfig;
-use crate::common::PropertyCollection;
+use crate::common::{PropertyCollection, PropertyId};
 use crate::dialog::DialogServiceConfig;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     dialog_service_connector_connect,
     dialog_service_connector_create_dialog_service_connector_from_config,
     dialog_service_connector_disconnect, dialog_service_connector_get_property_bag,
-    dialog_service_connector_handle_release, dialog_service_connector_send_activity, SmartHandle,
-    SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
+    dialog_service_connector_handle_release, dialog_service_connector_listen_once,
+    dialog_service_connector_send_activity, dialog_service_connector_start_keyword_recognition,
+    dialog_service_connector_stop_keyword_recognition, SmartHandle, SPXHANDLE,
+    SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE,
 };
+use crate::speech::{KeywordRecognitionModel, SpeechRecognitionResult};
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
@@ -69,7 +72,7 @@ impl DialogServiceConnector {
         }
     }
 
-    pub async fn connect_async(&mut self) -> Result<()> {
+    pub async fn connect_async(&self) -> Result<()> {
         unsafe {
             let ret = dialog_service_connector_connect(self.handle.inner());
             convert_err(ret, "DialogServiceConnector.connect_async error")?;
@@ -77,7 +80,7 @@ impl DialogServiceConnector {
         }
     }
 
-    pub async fn disconnect_async(&mut self) -> Result<()> {
+    pub async fn disconnect_async(&self) -> Result<()> {
         unsafe {
             let ret = dialog_service_connector_disconnect(self.handle.inner());
             convert_err(ret, "DialogServiceConnector.disconnect_async error")?;
@@ -85,7 +88,7 @@ impl DialogServiceConnector {
         }
     }
 
-    pub async fn send_activity_async(&mut self, message: String) -> Result<SendActivityOutcome> {
+    pub async fn send_activity_async(&self, message: String) -> Result<SendActivityOutcome> {
         unsafe {
             let c_buf: *mut c_char = &mut [0u8; 37] as *const _ as *mut c_char;
             let c_message = CString::new(message)?;
@@ -98,5 +101,64 @@ impl DialogServiceConnector {
             let interaction_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
             Ok(SendActivityOutcome { interaction_id })
         }
+    }
+
+    pub async fn listen_once_async(&self) -> Result<SpeechRecognitionResult> {
+        unsafe {
+            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = dialog_service_connector_listen_once(self.handle.inner(), &mut result_handle);
+            convert_err(ret, "DialogServiceConnector.listen_once_async error")?;
+            SpeechRecognitionResult::from_handle(result_handle)
+        }
+    }
+
+    pub async fn start_keyword_recognition_async(
+        &self,
+        model: &KeywordRecognitionModel,
+    ) -> Result<()> {
+        unsafe {
+            let ret = dialog_service_connector_start_keyword_recognition(
+                self.handle.inner(),
+                model.handle.inner(),
+            );
+            convert_err(
+                ret,
+                "DialogServiceConnector.start_keyword_recognition_async error",
+            )?;
+            Ok(())
+        }
+    }
+
+    pub async fn stop_keyword_recognition_async(&self) -> Result<()> {
+        unsafe {
+            let ret = dialog_service_connector_stop_keyword_recognition(self.handle.inner());
+            convert_err(
+                ret,
+                "DialogServiceConnector.stop_keyword_recognition_async error",
+            )?;
+            Ok(())
+        }
+    }
+
+    pub fn get_auth_token(&self) -> Result<String> {
+        self.properties
+            .get_property(PropertyId::SpeechServiceAuthorizationToken, "")
+    }
+
+    pub fn set_auth_token(&mut self, auth_token: String) -> Result<()> {
+        self.properties
+            .set_property(PropertyId::SpeechServiceAuthorizationToken, auth_token)
+    }
+
+    pub fn get_speech_activity_template(&self) -> Result<String> {
+        self.properties
+            .get_property(PropertyId::ConversationSpeechActivityTemplate, "")
+    }
+
+    pub fn set_speech_activity_template(&mut self, speech_activity_template: String) -> Result<()> {
+        self.properties.set_property(
+            PropertyId::ConversationSpeechActivityTemplate,
+            speech_activity_template,
+        )
     }
 }
