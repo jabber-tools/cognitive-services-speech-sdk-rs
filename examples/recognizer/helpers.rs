@@ -48,12 +48,15 @@ pub fn set_callbacks(speech_recognizer: &mut SpeechRecognizer) {
     speech_recognizer
         .set_recognized_cb(|event| info!(">set_recognized_cb {:?}", event))
         .unwrap();
+
+    speech_recognizer
+        .set_canceled_cb(|event| info!(">set_canceled_cb {:?}", event))
+        .unwrap();
 }
 
 ///creates speech recognizer from provided audio config and implicit speech config
 /// created from MS subscription key hardcoded in sample file
 pub fn speech_recognizer_from_audio_cfg(audio_config: AudioConfig) -> SpeechRecognizer {
-    trace!("calling SpeechConfig::from_subscription");
     let speech_config = SpeechConfig::from_subscription(
         env::var("MSSubscriptionKey").unwrap(),
         env::var("MSServiceRegion").unwrap(),
