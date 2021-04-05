@@ -3,7 +3,9 @@ use log::*;
 
 #[allow(dead_code)]
 pub async fn run_example() {
-    info!("running continuous_recognition_push_stream_once example...");
+    info!("--------------------------------------------------------");
+    info!("running recognize_once_async_from_push_stream example...");
+    info!("--------------------------------------------------------");
 
     let filename = helpers::get_sample_file("whats_the_weather_like.wav");
 

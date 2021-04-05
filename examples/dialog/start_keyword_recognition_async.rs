@@ -7,7 +7,9 @@ use tokio::time::sleep;
 
 #[allow(dead_code)]
 pub async fn run_example() {
-    info!("running keyword_recognition_async example...");
+    info!("--------------------------------------------------");
+    info!("running start_keyword_recognition_async example...");
+    info!("--------------------------------------------------");
 
     let filename_wav = helpers::get_sample_file("whats_the_weather_like.wav");
 

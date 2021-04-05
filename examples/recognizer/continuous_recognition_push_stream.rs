@@ -5,7 +5,9 @@ use tokio::time::sleep;
 
 #[allow(dead_code)]
 pub async fn run_example() {
+    info!("-----------------------------------------------------");
     info!("running continuous_recognition_push_stream example...");
+    info!("-----------------------------------------------------");
 
     let filename = helpers::get_sample_file("chinese_test.wav");
 

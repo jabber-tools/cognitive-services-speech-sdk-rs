@@ -2,7 +2,7 @@ use crate::common::PropertyId;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     property_bag_get_string, property_bag_release, property_bag_set_string, SmartHandle,
-    SPXPROPERTYBAGHANDLE,
+    NULL_C_STR_PTR, SPXPROPERTYBAGHANDLE,
 };
 use std::ffi::{CStr, CString};
 
@@ -56,7 +56,6 @@ impl PropertyCollection {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            // TODO: see NULL_C_STR_PTR in orig solution
             let c_default_val = CString::new(default_val)?.as_ptr();
             let ret = property_bag_get_string(
                 self.handle.inner(),
@@ -64,7 +63,11 @@ impl PropertyCollection {
                 std::ptr::null(),
                 c_default_val,
             );
-            Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+            if ret == NULL_C_STR_PTR {
+                Ok("".to_owned())
+            } else {
+                Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+            }
         }
     }
 
@@ -76,7 +79,11 @@ impl PropertyCollection {
             let c_name = CString::new(prop_name)?.as_ptr();
             let c_default_val = CString::new(default_val)?.as_ptr();
             let ret = property_bag_get_string(self.handle.inner(), -1, c_name, c_default_val);
-            Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+            if ret == NULL_C_STR_PTR {
+                Ok("".to_owned())
+            } else {
+                Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+            }
         }
     }
 }

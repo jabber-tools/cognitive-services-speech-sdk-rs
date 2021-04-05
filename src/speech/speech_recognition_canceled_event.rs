@@ -5,6 +5,7 @@ use crate::ffi::{
     Result_CancellationReason, SPXEVENTHANDLE,
 };
 use crate::speech::SpeechRecognitionEvent;
+use log::*;
 use std::mem::MaybeUninit;
 
 #[derive(Debug)]
@@ -33,10 +34,21 @@ impl SpeechRecognitionCanceledEvent {
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_canceled_error_code) error",
             )?;
 
-            let error_details = base.result.properties.get_property(
+            let error_details;
+            let error_details_res = base.result.properties.get_property(
                 PropertyId::SpeechServiceResponseJsonErrorDetails,
-                "".to_string(),
-            )?;
+                "no details".to_string(),
+            );
+            if let Err(err) = error_details_res {
+                warn!(
+                    "Error when getting SpeechServiceResponseJsonErrorDetails {:?}",
+                    err
+                );
+                error_details = "".to_owned();
+            } else {
+                error_details = error_details_res.unwrap();
+            }
+
             Ok(SpeechRecognitionCanceledEvent {
                 base,
                 reason: CancellationReason::from_u32(reason),

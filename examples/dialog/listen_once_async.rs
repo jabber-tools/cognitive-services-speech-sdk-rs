@@ -4,7 +4,9 @@ use log::*;
 
 #[allow(dead_code)]
 pub async fn run_example() {
-    info!("running from_push_audio_stream example...");
+    info!("------------------------------------");
+    info!("running listen_once_async example...");
+    info!("------------------------------------");
 
     let filename = helpers::get_sample_file("hello_rust.wav");
 
