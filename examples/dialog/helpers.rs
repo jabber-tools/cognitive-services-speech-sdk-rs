@@ -70,7 +70,7 @@ pub fn push_file_into_stream(filename: &str, mut audio_push_stream: PushAudioInp
 
 /// retrieves full path of file with filename
 /// from examples/sample_files folder
-pub fn get_samples_wav(filename: &str) -> String {
+pub fn get_sample_file(filename: &str) -> String {
     let mut dir = std::env::current_exe().unwrap();
     dir.pop();
     dir.pop();

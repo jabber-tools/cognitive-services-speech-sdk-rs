@@ -5,11 +5,6 @@ use log::*;
 use std::env;
 use std::io::Read;
 
-pub const SAMPLE_FILE_1: &str =
-    "/home/adambe/projects/microsoft-speech-rs-master/examples/hello_rust.wav";
-pub const SAMPLE_FILE_2: &str =
-    "/home/adambe/projects/microsoft-speech-rs-master/examples/chinese_test.wav";
-
 /// convenience function to setup environment variables
 /// subscription key is taken from external file
 pub fn set_env_vars(ms_key_file_path: &str) {
@@ -109,4 +104,18 @@ pub fn push_file_into_stream(filename: &str, mut audio_push_stream: PushAudioInp
     }
 
     audio_push_stream.close_stream().unwrap();
+}
+
+/// retrieves full path of file with filename
+/// from examples/sample_files folder
+pub fn get_sample_file(filename: &str) -> String {
+    let mut dir = std::env::current_exe().unwrap();
+    dir.pop();
+    dir.pop();
+    dir.pop();
+    dir.pop();
+    dir.push("examples");
+    dir.push("sample_files");
+    dir.push(filename);
+    dir.into_os_string().into_string().unwrap()
 }

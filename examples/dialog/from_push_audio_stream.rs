@@ -4,10 +4,9 @@ use log::*;
 
 #[allow(dead_code)]
 pub async fn run_example() {
-
     info!("running from_push_audio_stream example...");
 
-    let filename = helpers::get_samples_wav("hello_rust.wav");
+    let filename = helpers::get_sample_file("hello_rust.wav");
 
     let input_push_stream = PushAudioInputStream::create_push_stream().unwrap();
     let audio_config = AudioConfig::from_stream_input(&input_push_stream).unwrap();

@@ -7,6 +7,8 @@ use tokio::time::sleep;
 pub async fn run_example() {
     info!("running continuous_recognition_push_stream example...");
 
+    let filename = helpers::get_sample_file("chinese_test.wav");
+
     let (mut speech_recognizer, audio_push_stream) = helpers::speech_recognizer_from_push_stream();
     helpers::set_callbacks(&mut speech_recognizer);
 
@@ -17,7 +19,7 @@ pub async fn run_example() {
         sleep(Duration::from_millis(10000)).await;
     });
 
-    helpers::push_file_into_stream(helpers::SAMPLE_FILE_2, audio_push_stream);
+    helpers::push_file_into_stream(&filename, audio_push_stream);
     handle.await.unwrap();
 
     info!("example finished!");

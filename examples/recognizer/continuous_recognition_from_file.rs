@@ -7,7 +7,9 @@ use tokio::time::sleep;
 pub async fn run_example() {
     info!("running continuous_recognition_from_file example...");
 
-    let mut speech_recognizer = helpers::speech_recognizer_from_wav_file(helpers::SAMPLE_FILE_2);
+    let filename = helpers::get_sample_file("turn_on_the_lamp.wav");
+
+    let mut speech_recognizer = helpers::speech_recognizer_from_wav_file(&filename);
 
     helpers::set_callbacks(&mut speech_recognizer);
 
