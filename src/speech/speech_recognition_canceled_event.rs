@@ -37,7 +37,7 @@ impl SpeechRecognitionCanceledEvent {
             let error_details;
             let error_details_res = base.result.properties.get_property(
                 PropertyId::SpeechServiceResponseJsonErrorDetails,
-                "no details".to_string(),
+                "".to_string(),
             );
             if let Err(err) = error_details_res {
                 warn!(

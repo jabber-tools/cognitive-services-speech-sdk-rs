@@ -66,7 +66,12 @@ impl PropertyCollection {
             if ret == NULL_C_STR_PTR {
                 Ok("".to_owned())
             } else {
-                Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+                // Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+                // based on tests result will not always contain
+                // happnening in SpeechRecognitionCanceledEvent::from_handle
+                // when getting property SpeechServiceResponseJsonErrorDetails
+                // valid UTF-8 data -> we use to_string_lossy()
+                Ok(CStr::from_ptr(ret).to_string_lossy().into_owned())
             }
         }
     }
@@ -82,7 +87,8 @@ impl PropertyCollection {
             if ret == NULL_C_STR_PTR {
                 Ok("".to_owned())
             } else {
-                Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+                // Ok(CStr::from_ptr(ret).to_str()?.to_owned())
+                Ok(CStr::from_ptr(ret).to_string_lossy().into_owned())
             }
         }
     }
