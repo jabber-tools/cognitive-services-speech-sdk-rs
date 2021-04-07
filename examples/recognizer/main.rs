@@ -1,4 +1,5 @@
 mod continuous_recognition_from_file;
+mod continuous_recognition_pull_stream;
 mod continuous_recognition_push_stream;
 mod from_microphone;
 mod helpers;
@@ -11,10 +12,11 @@ async fn main() {
     helpers::set_env_vars("/home/adambe/projects/mskey");
     env_logger::init();
 
-    recognize_once_async_from_file::run_example().await;
-    continuous_recognition_from_file::run_example().await;
-    continuous_recognition_push_stream::run_example().await;
-    recognize_once_async_from_push_stream::run_example().await;
+    //recognize_once_async_from_file::run_example().await;
+    //continuous_recognition_from_file::run_example().await;
+    //continuous_recognition_push_stream::run_example().await;
+    //recognize_once_async_from_push_stream::run_example().await;
+    continuous_recognition_pull_stream::run_example().await;
     // works only on system with properly configured microphone
     // from_microphone::run_example().await;
 }

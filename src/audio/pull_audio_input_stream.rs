@@ -103,8 +103,9 @@ impl PullAudioInputStream {
     #[allow(non_snake_case)]
     #[allow(unused_variables)]
     unsafe extern "C" fn cb_read(pvContext: *mut c_void, buffer: *mut u8, size: u32) -> c_int {
+        debug!("PullAudioInputStream::cb_read called");
         let callbacks = &mut *(pvContext as *mut Box<dyn PullAudioInputStreamCallbacks>);
-
+        debug!("PullAudioInputStream::cb_read 1");
         let converted_size = usize::try_from(size);
         if let Err(conv_err) = converted_size {
             error!(
@@ -113,8 +114,11 @@ impl PullAudioInputStream {
             );
             0 // return 0 as we did not read anything
         } else {
+            debug!("PullAudioInputStream::cb_read 2");
             let slice_buffer = std::slice::from_raw_parts_mut(buffer, converted_size.unwrap());
+            debug!("PullAudioInputStream::cb_read 3");
             let bytes_read = callbacks.read(slice_buffer, size);
+            debug!("PullAudioInputStream::cb_read 4");
             bytes_read as i32
         }
     }

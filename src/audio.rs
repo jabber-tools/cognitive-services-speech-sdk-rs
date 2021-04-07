@@ -14,5 +14,6 @@ pub use self::audio_output_stream::AudioOutputStream;
 pub use self::audio_stream_container_format::AudioStreamContainerFormat;
 pub use self::audio_stream_format::AudioStreamFormat;
 pub use self::pull_audio_input_stream::PullAudioInputStream;
+pub use self::pull_audio_input_stream::PullAudioInputStreamCallbacks;
 pub use self::pull_audio_output_stream::PullAudioOutputStream;
 pub use self::push_audio_input_stream::PushAudioInputStream;
