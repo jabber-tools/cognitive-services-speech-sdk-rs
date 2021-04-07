@@ -1,5 +1,4 @@
 use crate::audio::{AudioInputStream, AudioStreamFormat};
-use crate::common::PropertyId;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     audio_stream_create_pull_audio_input_stream, audio_stream_release,
@@ -14,21 +13,19 @@ use std::mem::MaybeUninit;
 use std::os::raw::{c_int, c_void};
 
 /// Trait that must be implemented by pull audio input stream
-/// Methods of this trait will be called by Speech Recognizer
+/// Methods of this trait will be called by Speech Recognizer.
 /// When Speech recognizer is ready to process more data it
-/// will call read method. Implementation must use some internal
-/// buffer from where data will be read by recognizer. It is up
-/// to this implementation to populate data
-/// somehow (e.g. by pushing them from some source)
-/// Structs implementing PullAudioInputStreamCallbacks must
-/// also implement Send trait
+/// will call read method. Structs implementing
+/// PullAudioInputStreamCallbacks must also implement Send trait
 pub trait PullAudioInputStreamCallbacks: Send {
     /// Reads (pulls) data from this audio stream instance
-    /// data_buffer is target buffer that should be populated
-    /// the size of data_buffer slize (data_buffer.len())
-    /// determines how many elements(bytes) should be read
-    /// Function should return how many bytes it did actually read
-    fn read(&mut self, data_buffer: &mut [u8]) -> i32;
+    /// data_buffer - data buffer to populate
+    /// size - maximum number of bytes to read and return
+    /// returns - number of actual bytes populated or 0 in case
+    /// stream hits end and there is no more data. If there
+    /// is no data available immediatelly read should block
+    /// until next data becomes available.
+    fn read(&mut self, data_buffer: &mut [u8], size: u32) -> u32;
 
     /// Closes this audio stream instance
     fn close(&mut self);
@@ -116,10 +113,9 @@ impl PullAudioInputStream {
             );
             0 // return 0 as we did not read anything
         } else {
-            callbacks.read(std::slice::from_raw_parts_mut(
-                buffer,
-                converted_size.unwrap(),
-            ))
+            let slice_buffer = std::slice::from_raw_parts_mut(buffer, converted_size.unwrap());
+            let bytes_read = callbacks.read(slice_buffer, size);
+            bytes_read as i32
         }
     }
 
@@ -147,10 +143,10 @@ impl PullAudioInputStream {
                     std::mem::size_of::<u32>(),
                 );
             } else {
-                // TBD: log error
+                // TBD: log error (use match to get error details)
             }
         } else {
-            // TBD: log error
+            // TBD: log error (use match to get error details)
         }
     }
 }
