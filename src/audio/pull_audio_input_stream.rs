@@ -64,12 +64,10 @@ impl PullAudioInputStream {
                 audio_stream_create_pull_audio_input_stream(&mut handle, format.handle.inner());
             convert_err(ret, "PullAudioInputStream::from_format error")?;
 
-            let pull_stream = PullAudioInputStream {
+            Ok(PullAudioInputStream {
                 handle: SmartHandle::create("PullAudioInputStream", handle, audio_stream_release),
                 callbacks: None,
-            };
-
-            Ok(pull_stream)
+            })
         }
     }
 
