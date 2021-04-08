@@ -1,6 +1,5 @@
 use cognitive_services_speech_sdk_rs::audio::{
-    AudioConfig, AudioStreamFormat, PullAudioInputStream, PullAudioInputStreamCallbacks,
-    PushAudioInputStream,
+    AudioConfig, AudioStreamFormat, PullAudioInputStream, PushAudioInputStream,
 };
 use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechRecognizer};
 use log::*;
@@ -74,11 +73,9 @@ pub fn speech_recognizer_from_push_stream() -> (SpeechRecognizer, PushAudioInput
 
 /// creates speech recognizer from pull input stream and MS speech subscription key
 /// returns recognizer and also pull stream so that data push can be initiated
-pub fn speech_recognizer_from_pull_stream(
-    callbacks: Box<dyn PullAudioInputStreamCallbacks>,
-) -> (SpeechRecognizer, PullAudioInputStream) {
+pub fn speech_recognizer_from_pull_stream() -> (SpeechRecognizer, PullAudioInputStream) {
     let wave_format = AudioStreamFormat::get_wave_format_pcm(16000, None, None).unwrap();
-    let pull_stream = PullAudioInputStream::from_format(callbacks, &wave_format).unwrap();
+    let pull_stream = PullAudioInputStream::from_format(&wave_format).unwrap();
     let audio_config = AudioConfig::from_stream_input(&pull_stream).unwrap();
     (speech_recognizer_from_audio_cfg(audio_config), pull_stream)
 }
