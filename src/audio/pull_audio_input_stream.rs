@@ -73,6 +73,11 @@ impl PullAudioInputStream {
         }
     }
 
+    pub fn from_default_format() -> Result<Self> {
+        let default_format = AudioStreamFormat::get_default_input_format()?;
+        PullAudioInputStream::from_format(&default_format)
+    }
+
     /// Registers callbacks for speech recognizer. Callback for pull read
     /// and close are mandatory. Optionally (register_get_prop_cb = true)
     /// get property callback can be registered as well.
@@ -108,11 +113,6 @@ impl PullAudioInputStream {
 
             Ok(())
         }
-    }
-
-    pub fn from_default_format() -> Result<Self> {
-        let default_format = AudioStreamFormat::get_default_input_format()?;
-        PullAudioInputStream::from_format(&default_format)
     }
 
     #[allow(non_snake_case)]
