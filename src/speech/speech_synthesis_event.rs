@@ -6,6 +6,7 @@ use crate::ffi::{
 use crate::speech::SpeechSynthesisResult;
 use std::mem::MaybeUninit;
 
+#[derive(Debug)]
 pub struct SpeechSynthesisEvent {
     pub handle: SmartHandle<SPXEVENTHANDLE>,
     pub result: SpeechSynthesisResult,
