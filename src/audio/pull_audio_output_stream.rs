@@ -1,9 +1,10 @@
 use crate::audio::AudioOutputStream;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    audio_stream_create_pull_audio_output_stream, audio_stream_release, SmartHandle,
-    SPXAUDIOSTREAMHANDLE,
+    audio_stream_create_pull_audio_output_stream, audio_stream_release,
+    pull_audio_output_stream_read, SmartHandle, SPXAUDIOSTREAMHANDLE,
 };
+use std::convert::TryFrom;
 use std::mem::MaybeUninit;
 
 #[derive(Debug)]
@@ -36,12 +37,18 @@ impl PullAudioOutputStream {
     /// Read reads audio from the stream.
     /// The maximal number of bytes to be read is determined from the size parameter.
     /// If there is no data immediately available, read() blocks until the next data becomes available.
-    pub fn read(_size: u32, _buffer: &mut [u8]) -> Result<()> {
-        unimplemented!();
-        // crate::ffi::pull_audio_output_stream_read
+    pub fn read(&self, size: u32) -> Result<Vec<u8>> {
+        unsafe {
+            let mut buf_vec = vec![0u8; size as usize];
+            let c_buf: *mut u8 = &mut buf_vec[..] as *const _ as *mut u8;
 
-        // no idea how this should work. Go impl does not expose
-        // this function as C function to speech synthetizer
-        // and it is not called in official C# examples.
+            let filled_size: *mut u32 = MaybeUninit::uninit().assume_init();
+            let ret = pull_audio_output_stream_read(self.handle.inner(), c_buf, size, filled_size);
+            convert_err(ret, "PullAudioOutputStream.read error")?;
+
+            let converted_size = usize::try_from(*filled_size)?;
+            let slice_buffer = std::slice::from_raw_parts_mut(c_buf, converted_size);
+            Ok(slice_buffer.to_vec())
+        }
     }
 }

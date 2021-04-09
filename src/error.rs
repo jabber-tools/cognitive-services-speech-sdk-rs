@@ -1,5 +1,6 @@
 use crate::ffi::SPX_NOERROR;
 use std::ffi::NulError;
+use std::num::TryFromIntError;
 use std::result;
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
@@ -11,6 +12,7 @@ pub enum ErrorRootCause {
     InvalidCString,
     FromUtf8Error(FromUtf8Error),
     Utf8Error(Utf8Error),
+    UsizeConversion(TryFromIntError),
 }
 
 #[derive(Debug)]
@@ -123,6 +125,15 @@ impl From<Utf8Error> for Error {
         Error {
             message: format!("std::str::Utf8Error: {}", error),
             caused_by: ErrorRootCause::Utf8Error(error),
+        }
+    }
+}
+
+impl From<TryFromIntError> for Error {
+    fn from(error: TryFromIntError) -> Error {
+        Error {
+            message: format!("std::num::TryFromIntError: {}", error),
+            caused_by: ErrorRootCause::UsizeConversion(error),
         }
     }
 }
