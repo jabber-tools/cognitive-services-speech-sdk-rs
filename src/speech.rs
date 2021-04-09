@@ -8,6 +8,7 @@ mod speech_recognition_canceled_event;
 mod speech_recognition_event;
 mod speech_recognition_result;
 mod speech_recognizer;
+mod speech_synthesis_event;
 mod speech_synthesis_result;
 
 // re-export structs directly under speech module
@@ -21,4 +22,5 @@ pub use self::speech_recognition_canceled_event::SpeechRecognitionCanceledEvent;
 pub use self::speech_recognition_event::SpeechRecognitionEvent;
 pub use self::speech_recognition_result::SpeechRecognitionResult;
 pub use self::speech_recognizer::SpeechRecognizer;
+pub use self::speech_synthesis_event::SpeechSynthesisEvent;
 pub use self::speech_synthesis_result::SpeechSynthesisResult;
