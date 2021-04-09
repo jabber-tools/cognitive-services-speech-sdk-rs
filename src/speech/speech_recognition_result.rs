@@ -10,7 +10,6 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_uint};
 
-// #[derive(Debug)]
 pub struct SpeechRecognitionResult {
     pub handle: SmartHandle<SPXRESULTHANDLE>,
     pub result_id: String,

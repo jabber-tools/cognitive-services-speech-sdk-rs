@@ -12,7 +12,7 @@ pub enum ErrorRootCause {
     InvalidCString,
     FromUtf8Error(FromUtf8Error),
     Utf8Error(Utf8Error),
-    UsizeConversion(TryFromIntError),
+    TryFromIntError(TryFromIntError),
 }
 
 #[derive(Debug)]
@@ -133,7 +133,7 @@ impl From<TryFromIntError> for Error {
     fn from(error: TryFromIntError) -> Error {
         Error {
             message: format!("std::num::TryFromIntError: {}", error),
-            caused_by: ErrorRootCause::UsizeConversion(error),
+            caused_by: ErrorRootCause::TryFromIntError(error),
         }
     }
 }
