@@ -16,15 +16,13 @@ use crate::ffi::{
     recognizer_stop_continuous_recognition_async,
     recognizer_stop_continuous_recognition_async_wait_for,
     recognizer_stop_keyword_recognition_async, recognizer_stop_keyword_recognition_async_wait_for,
-    SmartHandle, SPXASYNCHANDLE, SPXEVENTHANDLE, SPXHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
+    SmartHandle, SPXASYNCHANDLE, SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE, SPXRECOHANDLE,
     SPXRESULTHANDLE,
 };
 use crate::speech::{
-    AutoDetectSourceLanguageConfig, KeywordRecognitionModel, SourceLanguageConfig,
-};
-use crate::speech::{
-    RecognitionEvent, SessionEvent, SpeechConfig, SpeechRecognitionCanceledEvent,
-    SpeechRecognitionEvent, SpeechRecognitionResult,
+    AutoDetectSourceLanguageConfig, KeywordRecognitionModel, RecognitionEvent, SessionEvent,
+    SourceLanguageConfig, SpeechConfig, SpeechRecognitionCanceledEvent, SpeechRecognitionEvent,
+    SpeechRecognitionResult,
 };
 use log::*;
 use std::boxed::Box;
@@ -58,7 +56,7 @@ impl fmt::Debug for SpeechRecognizer {
 }
 
 impl SpeechRecognizer {
-    fn from_handle(handle: SPXHANDLE) -> Result<SpeechRecognizer> {
+    fn from_handle(handle: SPXRECOHANDLE) -> Result<SpeechRecognizer> {
         unsafe {
             let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
             let ret = recognizer_get_property_bag(handle, &mut prop_bag_handle);
@@ -433,11 +431,6 @@ impl SpeechRecognizer {
     }
 
     pub async fn recognize_once_async(&mut self) -> Result<SpeechRecognitionResult> {
-        // TBD:
-        // does it make sense to tokio:spawn whole inner implementation?
-        // does it make sense to have this func async at all?
-        // similar design is used by golang implementation
-        // not really sure about fundamental reasons behind it
         unsafe {
             let mut handle_result: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
             let ret = recognizer_recognize_once(self.handle.inner(), &mut handle_result);
@@ -447,11 +440,6 @@ impl SpeechRecognizer {
     }
 
     pub async fn start_continuous_recognition_async(&mut self) -> Result<()> {
-        // TBD:
-        // does it make sense to tokio:spawn whole inner implementation?
-        // does it make sense to have this func async at all?
-        // similar design is used by golang implementation
-        // not really sure about fundamental reasons behind it
         unsafe {
             let mut handle_async_start_continuous: SPXASYNCHANDLE =
                 MaybeUninit::uninit().assume_init();
