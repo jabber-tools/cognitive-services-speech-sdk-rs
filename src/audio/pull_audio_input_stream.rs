@@ -32,9 +32,13 @@ pub trait PullAudioInputStreamCallbacks: Send {
     /// Closes this audio stream instance
     fn close(&mut self);
 
-    // retrieves specific property from this audio stream instances
-    // property id is provided by underlying C api as u32
-    fn get_property(&mut self, id: u32) -> Result<String>;
+    /// retrieves specific property related to read audio frame
+    /// recognizer will be trying to retrieve following properties:
+    /// ConversationTranscribingService_DataBufferTimeStamp (11001)
+    /// ConversationTranscribingService_DataBufferUserId (11002)
+    /// For mor details see:
+    /// https://docs.microsoft.com/en-us/dotnet/api/microsoft.cognitiveservices.speech.propertyid?view=azure-dotnet
+    fn get_property(&mut self, id: i32) -> Result<String>;
 }
 
 pub struct PullAudioInputStream {
@@ -169,7 +173,7 @@ impl PullAudioInputStream {
         }
         let converted_size = converted_size.unwrap();
 
-        match callbacks.get_property(size) {
+        match callbacks.get_property(id) {
             Ok(prop_value) => match CString::new(prop_value) {
                 Ok(c_prop_value) => {
                     let bytes_count_to_copy;

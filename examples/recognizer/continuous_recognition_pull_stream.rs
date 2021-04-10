@@ -67,7 +67,7 @@ impl PullAudioInputStreamCallbacks for BinaryAudioStreamReader {
     }
 
     #[allow(unused_variables)]
-    fn get_property(&mut self, id: u32) -> Result<String> {
+    fn get_property(&mut self, id: i32) -> Result<String> {
         debug!("BinaryAudioStreamReader.get_property called {}", id);
         Ok("".to_owned())
     }
@@ -84,7 +84,7 @@ pub async fn run_example() {
     let (mut speech_recognizer, mut audio_pull_stream) =
         helpers::speech_recognizer_from_pull_stream();
 
-    let reg_all_callbacks = false;
+    let reg_all_callbacks = true;
     audio_pull_stream
         .set_callbacks(
             Box::new(BinaryAudioStreamReader::from_file(&filename)),
