@@ -25,3 +25,9 @@ Dialog service connector examples:
 ```
 cargo run --example dialog
 ```
+
+Synthesizer examples:
+
+```
+cargo run --example synthesizer
+```
