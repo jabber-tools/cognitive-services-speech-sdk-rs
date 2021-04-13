@@ -39,13 +39,15 @@ impl SpeechSynthesisResult {
                 "SpeechSynthesisResult::from_handle(synth_result_get_audio_length) error",
             )?;
 
-            // using max(1024, cAudioLength) as buffer size
+            // we will allocate at least 1024 bytes
+            // in reality audio_length returned by
+            // synth_result_get_audio_length might be much bigger
             if audio_length < 1024 {
                 audio_length = 1024;
             }
 
-            let c_buf: *mut c_char = &mut [0u8; 1024] as *const _ as *mut c_char;
-            ret = synth_result_get_result_id(handle, c_buf, 1024);
+            let c_buf: *mut c_char = &mut [0u8; 37] as *const _ as *mut c_char;
+            ret = synth_result_get_result_id(handle, c_buf, 37);
             convert_err(
                 ret,
                 "SpeechSynthesisResult::from_handle(synth_result_get_result_id) error",
@@ -59,7 +61,8 @@ impl SpeechSynthesisResult {
                 "SpeechSynthesisResult::from_handle(synth_result_get_reason) error",
             )?;
 
-            let c_buf2: *mut u8 = &mut [0u8; 1024] as *const _ as *mut u8;
+            let mut c_buf2_vec = vec![0u8; audio_length as usize];
+            let c_buf2: *mut u8 = &mut c_buf2_vec[..] as *const _ as *mut u8;
             let mut filled_size: u32 = MaybeUninit::uninit().assume_init();
             ret = synth_result_get_audio_data(handle, c_buf2, audio_length, &mut filled_size);
             convert_err(
@@ -78,7 +81,7 @@ impl SpeechSynthesisResult {
             )?;
             let properties = PropertyCollection::from_handle(properties_handle);
 
-            Ok(SpeechSynthesisResult {
+            let speech_synthesis_result = SpeechSynthesisResult {
                 handle: SmartHandle::create(
                     "SpeechSynthesisResult",
                     handle,
@@ -88,7 +91,8 @@ impl SpeechSynthesisResult {
                 reason: ResultReason::from_u32(reason),
                 audio_data: slice_buffer.to_vec(),
                 properties,
-            })
+            };
+            Ok(speech_synthesis_result)
         }
     }
 }
