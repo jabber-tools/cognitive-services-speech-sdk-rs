@@ -265,7 +265,7 @@ impl SpeechSynthesizer {
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_completed called");
         let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_started_cb {
+        if let Some(cb) = &speech_synthesizer.synthesizer_completed_cb {
             trace!("synthesizer_completed_cb defined");
             match SpeechSynthesisEvent::from_handle(hevent) {
                 Ok(event) => {

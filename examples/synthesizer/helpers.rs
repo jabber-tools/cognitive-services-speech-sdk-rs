@@ -1,9 +1,12 @@
 use cognitive_services_speech_sdk_rs::audio::{
-    AudioConfig, AudioStreamFormat, PullAudioOutputStream, PushAudioInputStream,
+    AudioConfig, PullAudioOutputStream, PushAudioInputStream,
 };
-use cognitive_services_speech_sdk_rs::speech::{SpeechConfig, SpeechSynthesizer};
+use cognitive_services_speech_sdk_rs::speech::{
+    SpeechConfig, SpeechRecognitionResult, SpeechRecognizer, SpeechSynthesizer,
+};
 use log::*;
 use std::env;
+use std::io::Cursor;
 use std::io::Read;
 
 /// convenience function to setup environment variables
@@ -38,14 +41,14 @@ pub fn set_callbacks(speech_synthesizer: &mut SpeechSynthesizer) {
         .unwrap();
 }
 
-pub fn push_file_into_stream(filename: &str, mut audio_push_stream: PushAudioInputStream) {
-    let mut file = std::fs::File::open(filename).unwrap();
+pub fn push_bytes_vec_into_stream(bytes_vec: Vec<u8>, mut audio_push_stream: PushAudioInputStream) {
     let chunk_size = 1000;
 
+    let mut bytes_cursor = Cursor::new(bytes_vec);
+
     loop {
-        // info!("pushing");
         let mut chunk = Vec::with_capacity(chunk_size);
-        let n = file
+        let n = bytes_cursor
             .by_ref()
             .take(chunk_size as u64)
             .read_to_end(&mut chunk)
@@ -62,20 +65,6 @@ pub fn push_file_into_stream(filename: &str, mut audio_push_stream: PushAudioInp
     audio_push_stream.close_stream().unwrap();
 }
 
-/// retrieves full path of file with filename
-/// from examples/sample_files folder
-pub fn get_sample_file(filename: &str) -> String {
-    let mut dir = std::env::current_exe().unwrap();
-    dir.pop();
-    dir.pop();
-    dir.pop();
-    dir.pop();
-    dir.push("examples");
-    dir.push("sample_files");
-    dir.push(filename);
-    dir.into_os_string().into_string().unwrap()
-}
-
 ///creates speech synthesizer from provided audio config and implicit speech config
 /// created from MS subscription key hardcoded in sample file
 pub fn speech_synthesizer() -> SpeechSynthesizer {
@@ -89,4 +78,29 @@ pub fn speech_synthesizer() -> SpeechSynthesizer {
     .unwrap();
     let speech_synthesizer = SpeechSynthesizer::from_config(speech_config, audio_config).unwrap();
     speech_synthesizer
+}
+
+///creates speech recognizer from provided audio config and implicit speech config
+/// created from MS subscription key hardcoded in sample file
+pub fn speech_recognizer_from_audio_cfg(audio_config: AudioConfig) -> SpeechRecognizer {
+    let speech_config = SpeechConfig::from_subscription(
+        env::var("MSSubscriptionKey").unwrap(),
+        env::var("MSServiceRegion").unwrap(),
+    )
+    .unwrap();
+    let speech_recognizer = SpeechRecognizer::from_config(speech_config, audio_config).unwrap();
+    speech_recognizer
+}
+
+pub fn speech_recognizer_from_push_stream() -> (SpeechRecognizer, PushAudioInputStream) {
+    let push_stream = PushAudioInputStream::create_push_stream().unwrap();
+    let audio_config = AudioConfig::from_stream_input(&push_stream).unwrap();
+    (speech_recognizer_from_audio_cfg(audio_config), push_stream)
+}
+
+pub async fn recognize_synthetis_result(synthetis_result: Vec<u8>) -> SpeechRecognitionResult {
+    let (mut speech_recognizer, audio_push_stream) = speech_recognizer_from_push_stream();
+    push_bytes_vec_into_stream(synthetis_result, audio_push_stream);
+    let speech_reco_res = speech_recognizer.recognize_once_async().await;
+    speech_reco_res.unwrap()
 }
