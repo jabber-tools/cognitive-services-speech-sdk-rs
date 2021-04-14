@@ -3,7 +3,8 @@ use log::*;
 use std::time::Duration;
 use tokio::time::sleep;
 
-/// uses audio output PULL stream
+/// uses audio output PULL stream but syntehtized bytes
+/// are taken from SpeechSynthesisResult returned by speak_text_async
 #[allow(dead_code)]
 pub async fn run_example() {
     info!("---------------------------------------------------");

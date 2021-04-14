@@ -3,8 +3,9 @@ use log::*;
 use std::time::Duration;
 use tokio::time::sleep;
 
-/// uses audio output PUSH stream
-/// Final audio data are read via read method
+// uses audio output PULL stream but syntehtized bytes
+/// are read gradually during synthetis via read method
+/// provided by audio output pull stream
 #[allow(dead_code)]
 pub async fn run_example() {
     info!("---------------------------------------------------");
@@ -15,19 +16,22 @@ pub async fn run_example() {
 
     helpers::set_callbacks(&mut speech_synthesizer);
 
-    let handle = tokio::spawn(async move {
+    let _ = tokio::spawn(async move {
         if let Err(err) = speech_synthesizer
             .speak_text_async("This is sample text to transcribe")
             .await
         {
             error!("speak_text_async error {:?}", err);
-        }/**/
-        sleep(Duration::from_millis(10000)).await;
+        }
     });
 
     let mut final_audio_data: Vec<u8> = vec![];
     loop {
-        let mut audio_data_chunk = pull_stream.read(100).unwrap();
+        // when reading smaller chunks (e.g. 100) we are actually missing data
+        // and recognition will not succeed. output pull stream probably implements
+        // some kind of ring buffer which needs to be pulled/read before it gets
+        // replaced with new values
+        let mut audio_data_chunk = pull_stream.read(1024).unwrap();
 
         // quick & dirty way how to find out if we got vector of zeroes
         let audio_data_chunk_no0 = audio_data_chunk
@@ -43,7 +47,7 @@ pub async fn run_example() {
         }
         final_audio_data.append(&mut audio_data_chunk);
     }
-    info!("final_audio_data {:?}", final_audio_data);
+    // info!("final_audio_data {:?}", final_audio_data);
     let recognition_result = helpers::recognize_synthetis_result(final_audio_data).await;
     info!("recognition_result {:?}", recognition_result);
 

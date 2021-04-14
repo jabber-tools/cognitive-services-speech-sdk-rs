@@ -28,6 +28,13 @@ pub struct SpeechSynthesizer {
     synthesizer_canceled_cb: Option<Box<dyn Fn(SpeechSynthesisEvent) + Send>>,
 }
 
+// to allow to move synthetizer to tokio::spawn
+// see example speak_text_async_2
+// not sure why it is needed, for recognizer
+// and dialog connector this is not needed. 
+// TBD: find the root cause
+unsafe impl Sync for SpeechSynthesizer {}
+
 impl fmt::Debug for SpeechSynthesizer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SpeechSynthesizer")
