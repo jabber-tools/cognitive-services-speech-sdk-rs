@@ -1,7 +1,5 @@
 use super::helpers;
 use log::*;
-use std::time::Duration;
-use tokio::time::sleep;
 
 // uses audio output PULL stream but syntehtized bytes
 /// are read gradually during synthetis via read method

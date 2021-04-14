@@ -1,5 +1,5 @@
 use cognitive_services_speech_sdk_rs::audio::{
-    AudioConfig, PullAudioOutputStream, PushAudioInputStream,
+    AudioConfig, PullAudioOutputStream, PushAudioInputStream, PushAudioOutputStream,
 };
 use cognitive_services_speech_sdk_rs::speech::{
     SpeechConfig, SpeechRecognitionResult, SpeechRecognizer, SpeechSynthesizer,
@@ -78,6 +78,19 @@ pub fn speech_synthesizer() -> (SpeechSynthesizer, PullAudioOutputStream) {
     .unwrap();
     let speech_synthesizer = SpeechSynthesizer::from_config(speech_config, audio_config).unwrap();
     (speech_synthesizer, pull_stream)
+}
+
+pub fn speech_synthesizer_push() -> (SpeechSynthesizer, PushAudioOutputStream) {
+    let push_stream = PushAudioOutputStream::create_push_stream().unwrap();
+    let audio_config = AudioConfig::from_stream_output(&push_stream).unwrap();
+
+    let speech_config = SpeechConfig::from_subscription(
+        env::var("MSSubscriptionKey").unwrap(),
+        env::var("MSServiceRegion").unwrap(),
+    )
+    .unwrap();
+    let speech_synthesizer = SpeechSynthesizer::from_config(speech_config, audio_config).unwrap();
+    (speech_synthesizer, push_stream)
 }
 
 ///creates speech recognizer from provided audio config and implicit speech config

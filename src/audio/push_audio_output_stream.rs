@@ -19,7 +19,7 @@ use std::os::raw::{c_int, c_void};
 pub trait PushAudioOutputStreamCallbacks: Send {
     /// called by synthetizer when new data are synthetized
     /// callback implementation should then write data to
-    /// target sink (wahtever it is) as appropriate
+    /// target sink (whatever it is) as appropriate
     /// It should return number of received
     /// bytes (in most cases it will return data_buffer.len())
     fn write(&mut self, data_buffer: &[u8]) -> u32;

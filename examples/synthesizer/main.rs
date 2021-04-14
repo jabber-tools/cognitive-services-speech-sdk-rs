@@ -1,4 +1,5 @@
 mod helpers;
+mod speak_ssml_async;
 mod speak_text_async;
 mod speak_text_async_2;
 
@@ -10,4 +11,5 @@ async fn main() {
 
     speak_text_async::run_example().await;
     speak_text_async_2::run_example().await;
+    speak_ssml_async::run_example().await;
 }
