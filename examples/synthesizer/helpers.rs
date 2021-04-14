@@ -67,7 +67,7 @@ pub fn push_bytes_vec_into_stream(bytes_vec: Vec<u8>, mut audio_push_stream: Pus
 
 ///creates speech synthesizer from provided audio config and implicit speech config
 /// created from MS subscription key hardcoded in sample file
-pub fn speech_synthesizer() -> SpeechSynthesizer {
+pub fn speech_synthesizer() -> (SpeechSynthesizer, PullAudioOutputStream) {
     let pull_stream = PullAudioOutputStream::create_pull_stream().unwrap();
     let audio_config = AudioConfig::from_stream_output(&pull_stream).unwrap();
 
@@ -77,7 +77,7 @@ pub fn speech_synthesizer() -> SpeechSynthesizer {
     )
     .unwrap();
     let speech_synthesizer = SpeechSynthesizer::from_config(speech_config, audio_config).unwrap();
-    speech_synthesizer
+    (speech_synthesizer, pull_stream)
 }
 
 ///creates speech recognizer from provided audio config and implicit speech config

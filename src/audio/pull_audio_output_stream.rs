@@ -42,11 +42,12 @@ impl PullAudioOutputStream {
             let mut buf_vec = vec![0u8; size as usize];
             let c_buf: *mut u8 = &mut buf_vec[..] as *const _ as *mut u8;
 
-            let filled_size: *mut u32 = MaybeUninit::uninit().assume_init();
-            let ret = pull_audio_output_stream_read(self.handle.inner(), c_buf, size, filled_size);
+            let mut filled_size: u32 = MaybeUninit::uninit().assume_init();
+            let ret =
+                pull_audio_output_stream_read(self.handle.inner(), c_buf, size, &mut filled_size);
             convert_err(ret, "PullAudioOutputStream.read error")?;
 
-            let converted_size = usize::try_from(*filled_size)?;
+            let converted_size = usize::try_from(filled_size)?;
             let slice_buffer = std::slice::from_raw_parts_mut(c_buf, converted_size);
             Ok(slice_buffer.to_vec())
         }

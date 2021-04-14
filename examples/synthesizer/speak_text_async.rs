@@ -3,6 +3,7 @@ use log::*;
 use std::time::Duration;
 use tokio::time::sleep;
 
+/// uses audio output PULL stream
 #[allow(dead_code)]
 pub async fn run_example() {
     info!("---------------------------------------------------");
@@ -11,7 +12,7 @@ pub async fn run_example() {
 
     let text = "This is sample text to transcribe";
 
-    let mut speech_synthesize = helpers::speech_synthesizer();
+    let (mut speech_synthesize, _) = helpers::speech_synthesizer();
 
     helpers::set_callbacks(&mut speech_synthesize);
 
