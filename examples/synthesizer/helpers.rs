@@ -2,7 +2,8 @@ use cognitive_services_speech_sdk_rs::audio::{
     AudioConfig, PullAudioOutputStream, PushAudioInputStream, PushAudioOutputStream,
 };
 use cognitive_services_speech_sdk_rs::speech::{
-    SpeechConfig, SpeechRecognitionResult, SpeechRecognizer, SpeechSynthesizer,
+    AudioDataStream, SpeechConfig, SpeechRecognitionResult, SpeechRecognizer,
+    SpeechSynthesisResult, SpeechSynthesizer,
 };
 use log::*;
 use std::env;
@@ -116,4 +117,8 @@ pub async fn recognize_synthetis_result(synthetis_result: Vec<u8>) -> SpeechReco
     push_bytes_vec_into_stream(synthetis_result, audio_push_stream);
     let speech_reco_res = speech_recognizer.recognize_once_async().await;
     speech_reco_res.unwrap()
+}
+pub async fn save_wav(filename: &str, result: SpeechSynthesisResult) {
+    let ads = AudioDataStream::from_speech_synthesis_result(result).unwrap();
+    ads.save_wav_file_async(filename).await.unwrap();
 }

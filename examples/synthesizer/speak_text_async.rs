@@ -1,7 +1,5 @@
 use super::helpers;
 use log::*;
-use std::time::Duration;
-use tokio::time::sleep;
 
 /// uses audio output PULL stream but syntehtized bytes
 /// are taken from SpeechSynthesisResult returned by speak_text_async
@@ -25,8 +23,6 @@ pub async fn run_example() {
             info!("recognition_result {:?}", recognition_result);
         }
     }
-
-    sleep(Duration::from_millis(10000)).await;
 
     info!("example finished!");
 }

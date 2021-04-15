@@ -1,3 +1,4 @@
+mod audio_data_stream;
 mod helpers;
 mod speak_ssml_async;
 mod speak_text_async;
@@ -12,4 +13,5 @@ async fn main() {
     speak_text_async::run_example().await;
     speak_text_async_2::run_example().await;
     speak_ssml_async::run_example().await;
+    audio_data_stream::run_example().await;
 }
