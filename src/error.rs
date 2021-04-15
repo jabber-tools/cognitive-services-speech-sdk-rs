@@ -29,7 +29,7 @@ impl Error {
     /// returns description based on API error code
     /// TBD: check if we are getting codes really in hex
     /// for other than API errors returns None
-    pub fn api_error_desc(error_root_cause: ErrorRootCause) -> Option<String> {
+    pub fn api_error_desc(error_root_cause: &ErrorRootCause) -> Option<String> {
         match error_root_cause {
             ErrorRootCause::ApiError(api_code) => {
                 let api_result_desc = match api_code {
