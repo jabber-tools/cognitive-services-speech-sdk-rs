@@ -6,8 +6,10 @@ use crate::ffi::{
     synthesizer_create_speech_synthesizer_from_auto_detect_source_lang_config,
     synthesizer_create_speech_synthesizer_from_config, synthesizer_get_property_bag,
     synthesizer_handle_release, synthesizer_speak_ssml, synthesizer_speak_text,
-    synthesizer_started_set_callback, synthesizer_synthesizing_set_callback, SmartHandle,
-    SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE, SPXRESULTHANDLE, SPXSYNTHHANDLE,
+    synthesizer_start_speaking_ssml, synthesizer_start_speaking_text,
+    synthesizer_started_set_callback, synthesizer_stop_speaking,
+    synthesizer_synthesizing_set_callback, SmartHandle, SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE,
+    SPXRESULTHANDLE, SPXSYNTHHANDLE,
 };
 use crate::speech::{
     AutoDetectSourceLanguageConfig, SpeechConfig, SpeechSynthesisEvent, SpeechSynthesisResult,
@@ -131,6 +133,46 @@ impl SpeechSynthesizer {
             );
             convert_err(ret, "SpeechSynthesizer::speak_ssml_async error")?;
             SpeechSynthesisResult::from_handle(result_handle)
+        }
+    }
+
+    pub async fn start_speaking_text_async(&self, text: &str) -> Result<SpeechSynthesisResult> {
+        unsafe {
+            let c_text = CString::new(text)?;
+            let text_len = c_text.as_bytes().len();
+            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = synthesizer_start_speaking_text(
+                self.handle.inner(),
+                c_text.as_ptr(),
+                text_len as u32,
+                &mut result_handle,
+            );
+            convert_err(ret, "SpeechSynthesizer::start_speaking_text_async error")?;
+            SpeechSynthesisResult::from_handle(result_handle)
+        }
+    }
+
+    pub async fn start_speaking_ssml_async(&self, ssml: &str) -> Result<SpeechSynthesisResult> {
+        unsafe {
+            let c_ssml = CString::new(ssml)?;
+            let ssml_len = c_ssml.as_bytes().len();
+            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = synthesizer_start_speaking_ssml(
+                self.handle.inner(),
+                c_ssml.as_ptr(),
+                ssml_len as u32,
+                &mut result_handle,
+            );
+            convert_err(ret, "SpeechSynthesizer::start_speaking_ssml_async error")?;
+            SpeechSynthesisResult::from_handle(result_handle)
+        }
+    }
+
+    pub async fn stop_speaking_async(&self) -> Result<()> {
+        unsafe {
+            let ret = synthesizer_stop_speaking(self.handle.inner());
+            convert_err(ret, "SpeechSynthesizer::stop_speaking_async error")?;
+            Ok(())
         }
     }
 
