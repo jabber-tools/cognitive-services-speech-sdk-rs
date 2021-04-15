@@ -53,7 +53,6 @@ pub async fn run_example() {
 
     let handle = tokio::spawn(async move {
         if let Err(err) = speech_synthesizer
-            //.speak_text_async("This is sample text to transcribe")
             .speak_ssml_async("<speak xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='http://www.w3.org/2001/mstts' xmlns:emo='http://www.w3.org/2009/10/emotionml' version='1.0' xml:lang='en-US'><voice name='en-GB-George'>This is sample SSML text to transcribe</voice></speak>")
             .await
         {
