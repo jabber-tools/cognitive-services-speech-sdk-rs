@@ -16,6 +16,7 @@ use std::os::raw::c_uint;
 /// AudioDataStream represents audio data retrieved either from file
 /// or result of speech synthesis. Represents convenient option for
 /// manipulating and storing of syntehtized audio data
+/// Added in version 1.17.0
 #[derive(Debug)]
 pub struct AudioDataStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
