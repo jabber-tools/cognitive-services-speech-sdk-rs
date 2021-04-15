@@ -1,4 +1,4 @@
-use crate::common::{CancellationErrorCode, CancellationReason};
+use crate::common::{CancellationErrorCode, CancellationReason, PropertyId};
 use crate::error::{convert_err, Result};
 use crate::ffi::{synth_result_get_canceled_error_code, synth_result_get_reason_canceled};
 use crate::speech::SpeechSynthesisResult;
@@ -11,6 +11,7 @@ use std::os::raw::c_uint;
 pub struct CancellationDetails {
     pub reason: CancellationReason,
     pub error_code: CancellationErrorCode,
+    pub error_details: String,
 }
 
 impl CancellationDetails {
@@ -38,9 +39,14 @@ impl CancellationDetails {
                 "CancellationDetails::from_speech_synthesis_result(error_code) error",
             )?;
 
+            let error_details = speech_synthesis_result
+                .properties
+                .get_property(PropertyId::CancellationDetailsReasonDetailedText, "")?;
+
             Ok(CancellationDetails {
                 reason: CancellationReason::from_u32(reason),
                 error_code: CancellationErrorCode::from_u32(error_code),
+                error_details,
             })
         }
     }
