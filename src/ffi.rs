@@ -1,3 +1,4 @@
+//! Package ffi contains bindings to underlying C API and thin abstraction for managing C handles.
 #![allow(warnings)]
 include!("ffi/bindings.rs");
 

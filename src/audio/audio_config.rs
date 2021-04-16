@@ -15,6 +15,8 @@ use log::*;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
+/// AudioConfig represents specific audio configuration,
+/// such as microphone, file, or custom audio streams.
 #[derive(Debug)]
 pub struct AudioConfig {
     pub handle: SmartHandle<SPXAUDIOCONFIGHANDLE>,

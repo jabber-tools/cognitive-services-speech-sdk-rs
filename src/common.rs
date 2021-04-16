@@ -1,3 +1,4 @@
+//! Package common contains the definitions for many of the shared objects and properties in the Speech SDK.
 mod cancellation_error_code;
 mod cancellation_reason;
 mod output_format;

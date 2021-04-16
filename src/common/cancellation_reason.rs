@@ -1,6 +1,9 @@
+/// CancellationReason defines the possible reasons a recognition result might be canceled.
 #[derive(Debug)]
 pub enum CancellationReason {
+    /// Indicates that an error occurred during speech recognition.
     Error = 1,
+    /// Indicates that the end of the audio stream was reached.
     EndOfStream = 2,
 }
 

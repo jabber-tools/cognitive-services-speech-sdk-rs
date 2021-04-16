@@ -1,3 +1,4 @@
+//! Package audio provides the audio configuration, input/output streams, and related utilities for audio interactions.
 mod audio_config;
 mod audio_input_stream;
 mod audio_output_stream;

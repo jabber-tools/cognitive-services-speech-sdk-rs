@@ -8,8 +8,10 @@ use crate::ffi::{
 };
 use std::mem::MaybeUninit;
 
+/// AudioStreamFormat represents the audio stream format used for custom audio input configurations.
 #[derive(Debug)]
 pub struct AudioStreamFormat {
+    /// Smart handle wrapping underlying SPXAUDIOSTREAMFORMATHANDLE
     pub handle: SmartHandle<SPXAUDIOSTREAMFORMATHANDLE>,
 }
 
@@ -20,6 +22,9 @@ impl AudioStreamFormat {
         })
     }
 
+    /// GetWaveFormatPCM creates an audio stream format object with the specified PCM waveformat characteristics.
+    /// Note: Currently, only WAV / PCM with 16-bit samples, 16 kHz sample rate, and a single channel (Mono) is supported. When
+    /// used with Conversation Transcription, eight channels are supported.
     pub fn get_wave_format_pcm(
         samples_per_second: u32,
         bits_per_sample: Option<u8>,
@@ -38,6 +43,8 @@ impl AudioStreamFormat {
         }
     }
 
+    /// GetDefaultInputFormat creates an audio stream format object representing the default audio stream format
+    /// (16 kHz, 16 bit, mono PCM).
     pub fn get_default_input_format() -> Result<AudioStreamFormat> {
         unsafe {
             let mut handle: SPXAUDIOSTREAMFORMATHANDLE = MaybeUninit::uninit().assume_init();
@@ -47,6 +54,8 @@ impl AudioStreamFormat {
         }
     }
 
+    /// GetDefaultOutputFormat creates an audio stream format object representing the default audio stream format
+    /// (16 kHz, 16 bit, mono PCM).
     pub fn get_default_output_format() -> Result<AudioStreamFormat> {
         unsafe {
             let mut handle: SPXAUDIOSTREAMFORMATHANDLE = MaybeUninit::uninit().assume_init();
@@ -56,6 +65,8 @@ impl AudioStreamFormat {
         }
     }
 
+    /// GetCompressedFormat creates an audio stream format object with the specified compressed audio container format, to be
+    /// used as input format.
     pub fn get_compressed_format(
         compressed_format: AudioStreamContainerFormat,
     ) -> Result<AudioStreamFormat> {

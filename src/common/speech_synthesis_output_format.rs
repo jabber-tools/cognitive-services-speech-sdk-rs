@@ -1,3 +1,4 @@
+/// SpeechSynthesisOutputFormat defines the possible speech synthesis output audio formats.
 #[derive(Debug)]
 pub enum SpeechSynthesisOutputFormat {
     /// Raw8Khz8BitMonoMULaw stands for raw-8khz-8bit-mono-mulaw

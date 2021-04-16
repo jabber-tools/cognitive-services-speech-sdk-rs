@@ -1,3 +1,4 @@
+//! Package dialog provides functionality for creating custom voice assistant applications and managing the related interaction flow.
 mod activity_received_event;
 mod bot_framework_config;
 mod custom_commands_config;

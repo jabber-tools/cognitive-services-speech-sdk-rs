@@ -12,12 +12,12 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_int, c_void};
 
-/// Trait that must be implemented by callback struct
+/// This trait that must be implemented by callback struct
 /// passed into  pull audio input stream during initialization.
 /// Methods of this trait will be called by Speech Recognizer.
 /// When Speech recognizer is ready to process more data it
-/// will call read method. Structs implementing
-/// PullAudioInputStreamCallbacks must also implement Send trait
+/// will call **read** method. Structs implementing
+/// **PullAudioInputStreamCallbacks** must also implement **Send** trait.
 pub trait PullAudioInputStreamCallbacks: Send {
     /// Reads (pulls) data from this audio stream instance
     /// data_buffer - data buffer to populate. It is prepolutated
@@ -41,6 +41,8 @@ pub trait PullAudioInputStreamCallbacks: Send {
     fn get_property(&mut self, id: i32) -> Result<String>;
 }
 
+/// PullAudioInputStream represents audio input stream with audio data pulled (read) by Speech Recognizer when needed via *read* method.
+/// Passing audio input is controlled by receiver.
 pub struct PullAudioInputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
     callbacks: Option<Box<dyn PullAudioInputStreamCallbacks>>,

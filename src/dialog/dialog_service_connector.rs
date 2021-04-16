@@ -31,6 +31,7 @@ pub struct SendActivityOutcome {
     pub interaction_id: String,
 }
 
+/// DialogServiceConnector connects to a speech enabled dialog backend.
 pub struct DialogServiceConnector {
     pub properties: PropertyCollection,
     pub handle: SmartHandle<SPXRECOHANDLE>,
@@ -74,6 +75,8 @@ impl DialogServiceConnector {
         }
     }
 
+    /// NewDialogServiceConnectorFromConfig creates a dialog service connector from a dialog service config and an audio config.
+    /// Users should use this function to create a dialog service connector.
     // using static dispatch, see https://joshleeb.com/posts/rust-traits-and-trait-objects/
     pub fn from_config(
         dialog_service_config: impl DialogServiceConfig,
@@ -118,6 +121,7 @@ impl DialogServiceConnector {
         }
     }
 
+    /// Sends an activity to the backing dialog.
     pub async fn send_activity_async(&self, message: String) -> Result<SendActivityOutcome> {
         unsafe {
             let c_buf: *mut c_char = &mut [0u8; 37] as *const _ as *mut c_char;
@@ -133,6 +137,7 @@ impl DialogServiceConnector {
         }
     }
 
+    /// ListenOnceAsync starts a listening session that will terminate after the first utterance.
     pub async fn listen_once_async(&self) -> Result<SpeechRecognitionResult> {
         unsafe {
             let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
@@ -142,6 +147,7 @@ impl DialogServiceConnector {
         }
     }
 
+    /// StartKeywordRecognitionAsync initiates keyword recognition.
     pub async fn start_keyword_recognition_async(
         &self,
         model: &KeywordRecognitionModel,
@@ -159,6 +165,7 @@ impl DialogServiceConnector {
         }
     }
 
+    /// StopKeywordRecognitionAsync stops keyword recognition.
     pub async fn stop_keyword_recognition_async(&self) -> Result<()> {
         unsafe {
             let ret = dialog_service_connector_stop_keyword_recognition(self.handle.inner());
@@ -175,6 +182,10 @@ impl DialogServiceConnector {
             .get_property(PropertyId::SpeechServiceAuthorizationToken, "")
     }
 
+    /// Sets the authorization token that will be used for connecting to the service.
+    /// Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
+    /// expires, the caller needs to refresh it by calling this setter with a new valid token.
+    /// Otherwise, the connector will encounter errors during its operation.
     pub fn set_auth_token(&mut self, auth_token: String) -> Result<()> {
         self.properties
             .set_property(PropertyId::SpeechServiceAuthorizationToken, auth_token)
@@ -185,6 +196,8 @@ impl DialogServiceConnector {
             .get_property(PropertyId::ConversationSpeechActivityTemplate, "")
     }
 
+    /// Sets the speech activity template. It is used to stamp properties from the template on the service generated
+    /// activty for speech.
     pub fn set_speech_activity_template(&mut self, speech_activity_template: String) -> Result<()> {
         self.properties.set_property(
             PropertyId::ConversationSpeechActivityTemplate,

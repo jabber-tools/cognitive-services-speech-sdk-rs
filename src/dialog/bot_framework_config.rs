@@ -8,6 +8,7 @@ use crate::speech::SpeechConfig;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
+/// BotFrameworkConfig defines configurations for the dialog service connector object for using a Bot Framework backend.
 #[derive(Debug)]
 pub struct BotFrameworkConfig {
     // does not make sense to keep handle explicitly since
@@ -30,6 +31,8 @@ impl DialogServiceConfig for BotFrameworkConfig {
 }
 
 impl BotFrameworkConfig {
+    /// NewBotFrameworkConfigFromSubscription creates a bot framework service config instance with the specified subscription
+    /// key and region.
     pub fn from_subscription<S>(subscription_key: S, region: S) -> Result<Self>
     where
         S: Into<Vec<u8>>,
@@ -52,6 +55,8 @@ impl BotFrameworkConfig {
         }
     }
 
+    /// NewBotFrameworkConfigFromSubscriptionAndBotID creates a bot framework service config instance with the specified subscription
+    /// key, region, and botID .
     pub fn from_subscription_and_bot_id<S>(
         subscription_key: S,
         region: S,
@@ -81,6 +86,14 @@ impl BotFrameworkConfig {
         }
     }
 
+    /// Creates a bot framework service config instance with the specified authorization
+    /// token and region.
+    /// Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
+    /// expires, the caller needs to refresh it by calling this setter with a new valid token.
+    /// As configuration values are copied when creating a new connector, the new token value will not apply to connectors that have
+    /// already been created.
+    /// For connectors that have been created before, you need to set authorization token of the corresponding connector
+    /// to refresh the token. Otherwise, the connectors will encounter errors during operation.
     pub fn from_auth_token<S>(authorization_token: S, region: S) -> Result<Self>
     where
         S: Into<Vec<u8>>,
@@ -102,6 +115,14 @@ impl BotFrameworkConfig {
         }
     }
 
+    /// Creates a bot framework service config instance with the specified authorization
+    /// token and region and botID.
+    /// Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
+    /// expires, the caller needs to refresh it by calling this setter with a new valid token.
+    /// As configuration values are copied when creating a new connector, the new token value will not apply to connectors that have
+    /// already been created.
+    /// For connectors that have been created before, you need to set authorization token of the corresponding connector
+    /// to refresh the token. Otherwise, the connectors will encounter errors during operation.    
     pub fn from_auth_token_and_bot_id<S>(
         authorization_token: S,
         region: S,

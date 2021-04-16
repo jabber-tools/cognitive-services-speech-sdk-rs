@@ -6,18 +6,21 @@ use crate::ffi::{
 };
 use std::ffi::{CStr, CString};
 
+/// PropertyCollection is a class to retrieve or set a property value from a property collection.
 #[derive(Debug)]
 pub struct PropertyCollection {
     pub handle: SmartHandle<SPXPROPERTYBAGHANDLE>,
 }
 
 impl PropertyCollection {
+    /// Creates a PropertyCollection from a handle (for internal use)
     pub fn from_handle(handle: SPXPROPERTYBAGHANDLE) -> PropertyCollection {
         PropertyCollection {
             handle: SmartHandle::create("PropertyCollection", handle, property_bag_release),
         }
     }
 
+    /// SetProperty sets the value of a property.
     pub fn set_property_by_string<S>(&mut self, prop_name: S, prop_val: S) -> Result<()>
     where
         S: Into<Vec<u8>>,
@@ -33,6 +36,7 @@ impl PropertyCollection {
         Ok(())
     }
 
+    /// SetProperty sets the value of a property.
     pub fn set_property<S>(&mut self, prop_id: PropertyId, prop_val: S) -> Result<()>
     where
         S: Into<Vec<u8>>,
@@ -51,6 +55,8 @@ impl PropertyCollection {
         Ok(())
     }
 
+    /// Returns value of a property.
+    /// If the property value is not defined, the specified default value is returned.
     pub fn get_property<S>(&self, prop_id: PropertyId, default_val: S) -> Result<String>
     where
         S: Into<Vec<u8>>,
@@ -76,6 +82,8 @@ impl PropertyCollection {
         }
     }
 
+    /// Returns value of a property.
+    /// If the property value is not defined, the specified default value is returned.
     pub fn get_property_by_string<S>(&self, prop_name: S, default_val: S) -> Result<String>
     where
         S: Into<Vec<u8>>,

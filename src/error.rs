@@ -1,3 +1,4 @@
+//! Package error contains struct Error used to wrap library errors.
 use crate::ffi::SPX_NOERROR;
 use std::ffi::NulError;
 use std::num::TryFromIntError;

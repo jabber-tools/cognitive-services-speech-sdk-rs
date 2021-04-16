@@ -1,3 +1,4 @@
+/// ProfanityOption defines the profanity option.
 #[derive(Debug)]
 pub enum ProfanityOption {
     /// Masked profanity option.

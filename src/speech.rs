@@ -1,3 +1,4 @@
+//! Package speech provides functionality for speech recognizers along with their related configuration and event objects.
 mod audio_data_stream;
 mod auto_detect_source_language_config;
 mod cancellation_details;

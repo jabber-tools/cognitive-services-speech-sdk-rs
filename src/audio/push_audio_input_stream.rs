@@ -11,6 +11,8 @@ use log::*;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
+/// PushAudioInputStream represents audio input stream with audio data pushed by audio producer *write* method.
+/// Passing audio input is controlled by audio producer.
 #[derive(Debug)]
 pub struct PushAudioInputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,

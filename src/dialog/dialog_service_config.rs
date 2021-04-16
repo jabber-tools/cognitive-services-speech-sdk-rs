@@ -3,6 +3,8 @@ use crate::error::Result;
 use crate::ffi::SPXSPEECHCONFIGHANDLE;
 use crate::speech::SpeechConfig;
 
+/// DialogServiceConfig defines base configurations for
+/// the dialog service connector and custom commands config objects.
 pub trait DialogServiceConfig {
     fn get_speech_config(&mut self) -> &mut SpeechConfig;
     fn get_handle(&self) -> SPXSPEECHCONFIGHANDLE;
@@ -48,6 +50,8 @@ pub trait DialogServiceConfig {
             .set_proxy_with_usrname_and_pwd(hostname, port, username, password)
     }
 
+    /// SetLanguage sets the input language to the connector.
+    /// The language is specified in BCP-47 format.
     fn set_language(&mut self, lang: String) -> Result<()> {
         self.get_speech_config()
             .set_property(PropertyId::SpeechServiceConnectionRecoLanguage, lang)

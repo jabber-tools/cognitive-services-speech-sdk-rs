@@ -10,12 +10,12 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_int, c_void};
 
-/// Trait that must be implemented by callback struct
+/// This trait that must be implemented by callback struct
 /// passed into  push audio output stream during initialization.
 /// Methods of this trait will be called by Speech Synthetizer.
 /// When Synthetizer has syntehtized data it
-/// will call write method. Structs implementing
-/// PushAudioOutputStreamCallbacks must also implement Send trait
+/// will call **write** method. Structs implementing
+/// **PushAudioOutputStreamCallbacks** must also implement **Send** trait.
 pub trait PushAudioOutputStreamCallbacks: Send {
     /// called by synthetizer when new data are synthetized
     /// callback implementation should then write data to
@@ -27,6 +27,8 @@ pub trait PushAudioOutputStreamCallbacks: Send {
     fn close(&mut self);
 }
 
+/// PushAudioOutputStream represents audio output stream with audio data pushed by Speech Synthetizer via *write* method.
+/// Speech Synthetizer's caller is passivelly receiving already synthetized audio data via registered *write* callback.
 pub struct PushAudioOutputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
     callbacks: Option<Box<dyn PushAudioOutputStreamCallbacks>>,
@@ -63,6 +65,7 @@ impl PushAudioOutputStream {
         }
     }
 
+    /// Registers callbacks for speech synthetizer.
     pub fn set_callbacks(
         &mut self,
         callbacks: Box<dyn PushAudioOutputStreamCallbacks>,

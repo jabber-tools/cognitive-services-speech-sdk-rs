@@ -7,6 +7,8 @@ use crate::ffi::{
 use std::convert::TryFrom;
 use std::mem::MaybeUninit;
 
+/// PullAudioOutputStream represents audio output stream with audio data pulled (read) by service calling Speech Synthetizer via *read* method.
+/// Speech Synthetizer's caller is activelly pulling (reading) already synthetized audio data.
 #[derive(Debug)]
 pub struct PullAudioOutputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
