@@ -11,3 +11,11 @@ pub mod dialog;
 pub mod error;
 pub mod ffi;
 pub mod speech;
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}
