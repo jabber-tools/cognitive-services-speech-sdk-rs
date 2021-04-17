@@ -21,11 +21,6 @@ async fn speech_to_text() {
     let filename = env::var("WAVFILENAME").unwrap();
     let audio_config = msspeech::audio::AudioConfig::from_wav_file_input(&filename).unwrap();
 
-    // before running this text export the below listed variables. Example:
-    // export MSSubscriptionKey=32...
-    // export MSServiceRegion=westeurope
-    // export WAVFILENAME=/tmp/hello_rust.wav
-    // cargo test
     let speech_config = msspeech::speech::SpeechConfig::from_subscription(
         env::var("MSSubscriptionKey").unwrap(),
         env::var("MSServiceRegion").unwrap(),
@@ -64,8 +59,6 @@ async fn speech_to_text() {
 
     let result = speech_recognizer.recognize_once_async().await.unwrap();
     info!("got recognition {:?}", result);
-    // actual result might differ as the speech api evolves :)
-    // assert_eq!(result.text, "Hello rust.");
 }
 ```
 
@@ -79,10 +72,6 @@ async fn text_to_speech() {
     let pull_stream = msspeech::audio::PullAudioOutputStream::create_pull_stream().unwrap();
     let audio_config = msspeech::audio::AudioConfig::from_stream_output(&pull_stream).unwrap();
 
-    // before running this text export the below listed variables. Example:
-    // export MSSubscriptionKey=32...
-    // export MSServiceRegion=westeurope
-    // cargo test
     let speech_config = msspeech::speech::SpeechConfig::from_subscription(
         env::var("MSSubscriptionKey").unwrap(),
         env::var("MSServiceRegion").unwrap(),
