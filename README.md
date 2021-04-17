@@ -105,7 +105,7 @@ async fn text_to_speech() {
 }
 ```
 
-For more see github integration tests (tests folder) and samples (examples folder).
+For more see github integration tests (*tests* folder) and samples (*examples* folder).
 
 ## Build prerequisites
 
