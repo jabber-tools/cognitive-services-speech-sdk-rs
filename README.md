@@ -12,7 +12,7 @@ Pure Rust implementation of Microsoft Cognitive Speech Services SDK. Provides th
 Pull requests welcome!
 
 ### Speech to text 
-```
+```rust
 use cognitive_services_speech_sdk_rs as msspeech;
 use log::*;
 use std::env;
@@ -63,7 +63,7 @@ async fn speech_to_text() {
 ```
 
 ### Text to speech
-```
+```rust
 use cognitive_services_speech_sdk_rs as msspeech;
 use log::*;
 use std::env;
