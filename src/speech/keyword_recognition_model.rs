@@ -8,6 +8,7 @@ use crate::ffi::{
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
+/// KeywordRecognitionModel represents the keyword recognition model used with start_keyword_recognition_async methods.
 #[derive(Debug)]
 pub struct KeywordRecognitionModel {
     pub handle: SmartHandle<SPXKEYWORDHANDLE>,

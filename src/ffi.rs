@@ -12,6 +12,10 @@ pub const NULL_C_STR_PTR: *const c_char = 0 as *const c_char;
 // using std::mem::MaybeUninit::uninit().assume_init(); instead
 // pub const SPXHANDLE_EMPTY: SPXHANDLE = 0 as SPXHANDLE;
 
+/// Wrapper struct around underlying native handles
+/// Apart from handle it wraps release function
+/// that is automatically called when SmartHandle
+/// is dropped (see Drop trait implementation).
 #[derive(Debug)]
 pub struct SmartHandle<T: Copy + Debug> {
     inner: T,
@@ -19,6 +23,8 @@ pub struct SmartHandle<T: Copy + Debug> {
     name: &'static str,
 }
 
+/// Creates SmartHandle from underlying native
+/// handle and respective release function.
 impl<T: Copy + Debug> SmartHandle<T> {
     #[inline(always)]
     pub fn create(
@@ -41,6 +47,8 @@ impl<T: Copy + Debug> SmartHandle<T> {
     }
 }
 
+/// Calls release function when handle is being dropped
+/// This ensures underlying native resources are released properly.
 impl<T: Copy + Debug> Drop for SmartHandle<T> {
     fn drop(&mut self) {
         trace!("Drop SmartHandle {}.", self);
@@ -57,4 +65,6 @@ impl<T: Copy + Debug> Display for SmartHandle<T> {
     }
 }
 
+/// Send implementation so that we can send SmartHandles
+/// accross threads.
 unsafe impl<T: Copy + Debug> Send for SmartHandle<T> {}

@@ -11,13 +11,13 @@ use crate::speech::SourceLanguageConfig;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
+/// AutoDetectSourceLanguageConfig defines auto detection source configuration
 #[derive(Debug)]
 pub struct AutoDetectSourceLanguageConfig {
     pub handle: SmartHandle<SPXAUTODETECTSOURCELANGCONFIGHANDLE>,
     pub properties: PropertyCollection,
 }
 
-// TBD: implement from_language_configs
 impl AutoDetectSourceLanguageConfig {
     fn from_handle(
         handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE,
@@ -40,6 +40,7 @@ impl AutoDetectSourceLanguageConfig {
         }
     }
 
+    /// Creates an instance of the AutoDetectSourceLanguageConfig with source languages.
     pub fn from_languages(languages: Vec<String>) -> Result<AutoDetectSourceLanguageConfig> {
         unsafe {
             let languages_str = languages.join(",");
@@ -55,6 +56,7 @@ impl AutoDetectSourceLanguageConfig {
         }
     }
 
+    /// Creates an instance of the AutoDetectSourceLanguageConfig with a list of source language config
     pub fn from_language_configs(
         languages: Vec<SourceLanguageConfig>,
     ) -> Result<AutoDetectSourceLanguageConfig> {

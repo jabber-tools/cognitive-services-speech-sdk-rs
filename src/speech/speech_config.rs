@@ -11,6 +11,7 @@ use crate::ffi::{
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
+/// SpeechConfig is the class that defines configurations for speech / intent recognition, or speech synthesis.
 #[derive(Debug)]
 pub struct SpeechConfig {
     pub handle: SmartHandle<SPXSPEECHCONFIGHANDLE>,
@@ -18,6 +19,7 @@ pub struct SpeechConfig {
 }
 
 impl SpeechConfig {
+    /// Creates a SpeechConfig instance from a valid handle. This is for internal use only.
     pub fn from_handle(handle: SPXHANDLE) -> Result<SpeechConfig> {
         unsafe {
             let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
@@ -37,6 +39,7 @@ impl SpeechConfig {
         }
     }
 
+    /// Creates an instance of the speech config with specified subscription key and region.
     pub fn from_subscription<S>(subscription: S, region: S) -> Result<SpeechConfig>
     where
         S: Into<Vec<u8>>,
@@ -53,6 +56,14 @@ impl SpeechConfig {
         }
     }
 
+    /// Creates an instance of the speech config with specified authorization token and
+    /// region.
+    /// Note: The caller needs to ensure that the authorization token is valid. Before the authorization token expires, the
+    /// caller needs to refresh it by calling this setter with a new valid token.
+    /// As configuration values are copied when creating a new recognizer, the new token value will not apply to recognizers
+    /// that have already been created.
+    /// For recognizers that have been created before, you need to set authorization token of the corresponding recognizer
+    /// to refresh the token. Otherwise, the recognizers will encounter errors during recognition.
     pub fn from_auth_token<S>(auth_token: S, region: S) -> Result<SpeechConfig>
     where
         S: Into<Vec<u8>>,
@@ -72,6 +83,16 @@ impl SpeechConfig {
         }
     }
 
+    // Creates an instance of the speech config with specified endpoint
+    /// and subscription.
+    /// This method is intended only for users who use a non-standard service endpoint.
+    /// Note: The query parameters specified in the endpoint URI are not changed, even if they are set by any other APIs.
+    /// For example, if the recognition language is defined in URI as query parameter "language=de-DE", and also set by
+    /// SetSpeechRecognitionLanguage("en-US"), the language setting in URI takes precedence, and the effective language
+    /// is "de-DE".
+    /// Only the parameters that are not specified in the endpoint URI can be set by other APIs.
+    /// Note: To use an authorization token with endoint, use FromEndpoint,
+    /// and then call SetAuthorizationToken() on the created SpeechConfig instance.
     pub fn from_endpoint_with_subscription<S>(endpoint: S, subscription: S) -> Result<SpeechConfig>
     where
         S: Into<Vec<u8>>,
@@ -91,6 +112,17 @@ impl SpeechConfig {
         }
     }
 
+    /// Creates an instance of SpeechConfig with specified endpoint.
+    /// This method is intended only for users who use a non-standard service endpoint.
+    /// Note: The query parameters specified in the endpoint URI are not changed, even if they are set by any other APIs.
+    /// For example, if the recognition language is defined in URI as query parameter "language=de-DE", and also set by
+    /// SetSpeechRecognitionLanguage("en-US"), the language setting in URI takes precedence, and the effective language is
+    /// "de-DE".
+    /// Only the parameters that are not specified in the endpoint URI can be set by other APIs.
+    /// Note: If the endpoint requires a subscription key for authentication, use NewSpeechConfigFromEndpointWithSubscription
+    /// to pass the subscription key as parameter.
+    /// To use an authorization token with FromEndpoint, use this method to create a SpeechConfig instance, and then
+    /// call SetAuthorizationToken() on the created SpeechConfig instance.
     pub fn from_endpoint<S>(endpoint: S) -> Result<SpeechConfig>
     where
         S: Into<Vec<u8>>,
@@ -106,6 +138,12 @@ impl SpeechConfig {
         }
     }
 
+    /// Creates an instance of the speech config with specified host and subscription.
+    /// This method is intended only for users who use a non-default service host. Standard resource path will be assumed.
+    /// For services with a non-standard resource path or no path at all, use FromEndpoint instead.
+    /// Note: Query parameters are not allowed in the host URI and must be set by other APIs.
+    /// Note: To use an authorization token with host, use NewSpeechConfigFromHost,
+    /// and then call SetAuthorizationToken() on the created SpeechConfig instance.
     pub fn from_host_with_subscription<S>(host: S, subscription: S) -> Result<SpeechConfig>
     where
         S: Into<Vec<u8>>,
@@ -122,6 +160,14 @@ impl SpeechConfig {
         }
     }
 
+    /// Creates an instance of SpeechConfig with specified host.
+    /// This method is intended only for users who use a non-default service host. Standard resource path will be assumed.
+    /// For services with a non-standard resource path or no path at all, use FromEndpoint instead.
+    /// Note: Query parameters are not allowed in the host URI and must be set by other APIs.
+    /// Note: If the host requires a subscription key for authentication, use NewSpeechConfigFromHostWithSubscription to pass
+    /// the subscription key as parameter.
+    /// To use an authorization token with FromHost, use this method to create a SpeechConfig instance, and then
+    /// call SetAuthorizationToken() on the created SpeechConfig instance.    
     pub fn from_host<S>(host: S) -> Result<SpeechConfig>
     where
         S: Into<Vec<u8>>,
@@ -136,6 +182,8 @@ impl SpeechConfig {
         }
     }
 
+    /// Sets proxy configuration
+    /// Note: Proxy functionality is not available on macOS. This function will have no effect on this platform.
     pub fn set_proxy(&mut self, hostname: String, port: u64) -> Result<()> {
         self.set_property(PropertyId::SpeechServiceConnectionProxyHostName, hostname)?;
         self.set_property(
@@ -144,6 +192,8 @@ impl SpeechConfig {
         )
     }
 
+    /// Sets proxy configuration with username and password
+    ///  Note: Proxy functionality is not available on macOS. This function will have no effect on this platform.
     pub fn set_proxy_with_usrname_and_pwd(
         &mut self,
         hostname: String,
@@ -191,6 +241,7 @@ impl SpeechConfig {
         )
     }
 
+    /// Includes word-level timestamps in response result.
     pub fn request_word_level_timestamps(&mut self) -> Result<()> {
         self.set_property(
             PropertyId::SpeechServiceResponseRequestWordLevelTimestamps,
@@ -198,6 +249,7 @@ impl SpeechConfig {
         )
     }
 
+    /// Enables dictation mode. Only supported in speech continuous recognition.
     pub fn enable_dictation(&mut self) -> Result<()> {
         self.set_property(
             PropertyId::SpeechServiceConnectionRecoMode,
@@ -221,22 +273,36 @@ impl SpeechConfig {
         self.properties.get_property_by_string(name, "".into())
     }
 
+    /// Subscription key that is used to create Speech Recognizer or Intent Recognizer or Translation
+    /// Recognizer or Speech Synthesizer
     pub fn get_subscription_key(&self) -> Result<String> {
         self.get_property(PropertyId::SpeechServiceConnectionKey)
     }
 
+    /// Region key that used to create Speech Recognizer or Intent Recognizer or Translation Recognizer or
+    /// Speech Synthesizer.
     pub fn get_region(&self) -> Result<String> {
         self.get_property(PropertyId::SpeechServiceConnectionRegion)
     }
 
+    /// Authorization token to connect to the service.
     pub fn get_auth_token(&self) -> Result<String> {
         self.get_property(PropertyId::SpeechServiceAuthorizationToken)
     }
 
+    /// Sets the authorization token to connect to the service.
+    /// Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
+    /// expires, the caller needs to refresh it by calling this setter with a new valid token.
+    /// As configuration values are copied when creating a new recognizer, the new token value will not apply to
+    /// recognizers that have already been created.
+    /// For recognizers that have been created before, you need to set authorization token of the corresponding recognizer
+    /// to refresh the token. Otherwise, the recognizers will encounter errors during recognition.
     pub fn set_auth_token(&mut self, auth_token: String) -> Result<()> {
         self.set_property(PropertyId::SpeechServiceAuthorizationToken, auth_token)
     }
 
+    /// Gets input language to the speech recognition.
+    /// The language is specified in BCP-47 format.
     pub fn get_speech_recognition_language(&self) -> Result<String> {
         self.get_property(PropertyId::SpeechServiceConnectionRecoLanguage)
     }
@@ -254,6 +320,7 @@ impl SpeechConfig {
         }
     }
 
+    // Sets the speech synthesis output format (e.g. Riff16Khz16BitMonoPcm).
     pub fn set_get_output_format(&mut self, output_format: OutputFormat) -> Result<()> {
         match output_format {
             OutputFormat::Simple => self.set_property(

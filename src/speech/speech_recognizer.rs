@@ -30,6 +30,7 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::c_void;
 
+/// SpeechRecognizer struct holds functionality for speech-to-text recognition.
 pub struct SpeechRecognizer {
     handle: SmartHandle<SPXRECOHANDLE>,
     properties: PropertyCollection,
@@ -214,6 +215,9 @@ impl SpeechRecognizer {
         }
     }
 
+    /// Canceled signals for events containing canceled recognition results
+    /// (indicating a recognition attempt that was canceled as a result or a direct cancellation request
+    /// or, alternatively, a transport or protocol failure).
     pub fn set_canceled_cb<F>(&mut self, f: F) -> Result<()>
     where
         F: Fn(SpeechRecognitionCanceledEvent) + 'static + Send,
@@ -430,6 +434,12 @@ impl SpeechRecognizer {
         }
     }
 
+    /// Starts speech recognition, and returns after a single utterance is recognized.
+    /// The end of a single utterance is determined by listening for silence at the end or until a maximum
+    /// of 15 seconds of audio is processed.  The task returns the recognition text as result.
+    /// Note: Since RecognizeOnceAsync() returns only a single utterance, it is suitable only for single
+    /// shot recognition like command or query.
+    /// For long-running multi-utterance recognition, use StartContinuousRecognitionAsync() instead.
     pub async fn recognize_once_async(&mut self) -> Result<SpeechRecognitionResult> {
         unsafe {
             let mut handle_result: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
@@ -439,6 +449,7 @@ impl SpeechRecognizer {
         }
     }
 
+    /// Asynchronously initiates continuous speech recognition operation.
     pub async fn start_continuous_recognition_async(&mut self) -> Result<()> {
         unsafe {
             let mut handle_async_start_continuous: SPXASYNCHANDLE =
@@ -469,6 +480,7 @@ impl SpeechRecognizer {
         Ok(())
     }
 
+    /// Asynchronously terminates ongoing continuous speech recognition operation.
     pub async fn stop_continuous_recognition_async(&mut self) -> Result<()> {
         unsafe {
             let mut handle_async_stop_continuous: SPXASYNCHANDLE =
@@ -499,6 +511,7 @@ impl SpeechRecognizer {
         Ok(())
     }
 
+    /// Asynchronously initiates keyword recognition operation.
     pub async fn start_keyword_recognition_async(
         &mut self,
         model: KeywordRecognitionModel,
@@ -534,6 +547,7 @@ impl SpeechRecognizer {
         Ok(())
     }
 
+    /// Asynchronously terminates keyword recognition operation.
     pub async fn stop_keyword_recognition_async(&mut self) -> Result<()> {
         unsafe {
             let mut handle_async_stop_keyword: SPXASYNCHANDLE = MaybeUninit::uninit().assume_init();
@@ -574,6 +588,10 @@ impl SpeechRecognizer {
             .get_property(PropertyId::SpeechServiceAuthorizationToken, "")
     }
 
+    /// Sets the authorization token that will be used for connecting to the service.
+    /// Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
+    /// expires, the caller needs to refresh it by calling this setter with a new valid token.
+    /// Otherwise, the recognizer will encounter errors during recognition.
     pub fn set_auth_token(&mut self, token: &str) -> Result<()> {
         self.properties
             .set_property(PropertyId::SpeechServiceAuthorizationToken, token)

@@ -21,6 +21,7 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::c_void;
 
+/// SpeechSynthesizer struct holds functionality for text-to-speech synthesis.
 pub struct SpeechSynthesizer {
     handle: SmartHandle<SPXSYNTHHANDLE>,
     properties: PropertyCollection,
@@ -104,6 +105,7 @@ impl SpeechSynthesizer {
         }
     }
 
+    /// Executes the speech synthesis on plain text, asynchronously.
     pub async fn speak_text_async(&self, text: &str) -> Result<SpeechSynthesisResult> {
         unsafe {
             let c_text = CString::new(text)?;
@@ -120,6 +122,7 @@ impl SpeechSynthesizer {
         }
     }
 
+    /// Executes the speech synthesis on SSML, asynchronously.
     pub async fn speak_ssml_async(&self, ssml: &str) -> Result<SpeechSynthesisResult> {
         unsafe {
             let c_ssml = CString::new(ssml)?;
@@ -136,6 +139,9 @@ impl SpeechSynthesizer {
         }
     }
 
+    /// Starts the speech synthesis on plain text, asynchronously.
+    /// It returns when the synthesis request is started to process
+    /// (the result reason is SynthesizingAudioStarted).
     pub async fn start_speaking_text_async(&self, text: &str) -> Result<SpeechSynthesisResult> {
         unsafe {
             let c_text = CString::new(text)?;
@@ -152,6 +158,9 @@ impl SpeechSynthesizer {
         }
     }
 
+    /// Starts the speech synthesis on SSML, asynchronously.
+    /// It returns when the synthesis request is started to process
+    ///(the result reason is SynthesizingAudioStarted).
     pub async fn start_speaking_ssml_async(&self, ssml: &str) -> Result<SpeechSynthesisResult> {
         unsafe {
             let c_ssml = CString::new(ssml)?;
@@ -168,6 +177,8 @@ impl SpeechSynthesizer {
         }
     }
 
+    /// Stops the speech synthesis, asynchronously.
+    /// It stops audio speech synthesis and discards any unread data in audio.PullAudioOutputStream.
     pub async fn stop_speaking_async(&self) -> Result<()> {
         unsafe {
             let ret = synthesizer_stop_speaking(self.handle.inner());
@@ -181,6 +192,10 @@ impl SpeechSynthesizer {
             .get_property(PropertyId::SpeechServiceAuthorizationToken, "")
     }
 
+    /// Sets the authorization token that will be used for connecting to the service.
+    /// Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
+    /// expires, the caller needs to refresh it by calling this setter with a new valid token.
+    /// Otherwise, the synthesizer will encounter errors during synthesizing.
     pub fn set_auth_token(&mut self, token: &str) -> Result<()> {
         self.properties
             .set_property(PropertyId::SpeechServiceAuthorizationToken, token)

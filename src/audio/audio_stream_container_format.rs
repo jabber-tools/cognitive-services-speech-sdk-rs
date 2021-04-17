@@ -1,3 +1,4 @@
+#![allow(warnings)]
 /// AudioStreamContainerFormat defines supported audio stream container format.
 #[derive(Debug)]
 pub enum AudioStreamContainerFormat {
@@ -6,8 +7,10 @@ pub enum AudioStreamContainerFormat {
     Flac = 259,
     Alaw = 260,
     Mulaw = 261,
+
     /// Currently not supported
     Amrnb = 262,
+
     /// Currently not supported
     Amrwb = 263,
 }
