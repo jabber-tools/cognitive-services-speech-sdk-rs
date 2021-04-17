@@ -16,8 +16,9 @@ use std::os::raw::{c_int, c_void};
 /// passed into  pull audio input stream during initialization.
 /// Methods of this trait will be called by Speech Recognizer.
 /// When Speech recognizer is ready to process more data it
-/// will call **read** method. Structs implementing
-/// **PullAudioInputStreamCallbacks** must also implement **Send** trait.
+/// will call **read** method. <br/>Structs implementing
+/// **PullAudioInputStreamCallbacks** must also implement **Send** trait.<br/>
+/// To see how to use see example: **recognizer/continuous_recognition_pull_stream**.
 pub trait PullAudioInputStreamCallbacks: Send {
     /// Reads (pulls) data from this audio stream instance
     /// data_buffer - data buffer to populate. It is prepolutated
@@ -29,15 +30,15 @@ pub trait PullAudioInputStreamCallbacks: Send {
     /// until next data becomes available.
     fn read(&mut self, data_buffer: &mut [u8]) -> u32;
 
-    /// Closes this audio stream instance
+    /// Closes underlying resources of struct implementing this trait.
     fn close(&mut self);
 
     /// retrieves specific property related to read audio frame
-    /// recognizer will be trying to retrieve following properties:
-    /// ConversationTranscribingService_DataBufferTimeStamp (11001)
-    /// ConversationTranscribingService_DataBufferUserId (11002)
+    /// recognizer will be trying to retrieve following properties:<br/>
+    /// **ConversationTranscribingService_DataBufferTimeStamp (11001)**<br/>
+    /// **ConversationTranscribingService_DataBufferUserId (11002)**<br/>
     /// For mor details see:
-    /// https://docs.microsoft.com/en-us/dotnet/api/microsoft.cognitiveservices.speech.propertyid?view=azure-dotnet
+    /// [PropertyId Enum definition](https://docs.microsoft.com/en-us/dotnet/api/microsoft.cognitiveservices.speech.propertyid?view=azure-dotnet).
     fn get_property(&mut self, id: i32) -> Result<String>;
 }
 

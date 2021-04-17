@@ -14,8 +14,9 @@ use std::os::raw::{c_int, c_void};
 /// passed into  push audio output stream during initialization.
 /// Methods of this trait will be called by Speech Synthetizer.
 /// When Synthetizer has syntehtized data it
-/// will call **write** method. Structs implementing
-/// **PushAudioOutputStreamCallbacks** must also implement **Send** trait.
+/// will call **write** method. <br/>Structs implementing
+/// **PushAudioOutputStreamCallbacks** must also implement **Send** trait.<br/>
+/// To see how to use see example: **synthesizer/speak_ssml_async**.
 pub trait PushAudioOutputStreamCallbacks: Send {
     /// called by synthetizer when new data are synthetized
     /// callback implementation should then write data to
@@ -24,6 +25,7 @@ pub trait PushAudioOutputStreamCallbacks: Send {
     /// bytes (in most cases it will return data_buffer.len())
     fn write(&mut self, data_buffer: &[u8]) -> u32;
 
+    /// Closes underlying resources of struct implementing this trait.
     fn close(&mut self);
 }
 

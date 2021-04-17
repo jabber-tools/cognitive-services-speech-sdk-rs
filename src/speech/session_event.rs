@@ -8,7 +8,7 @@ use std::ffi::CStr;
 use std::fmt;
 use std::os::raw::c_char;
 
-// #[derive(Debug)]
+/// Base *SpeechRecognizer* event passed into callbacks *set_session_started_cb* and *set_session_stopped_cb*. 
 pub struct SessionEvent {
     pub session_id: String,
     pub handle: SmartHandle<SPXEVENTHANDLE>,

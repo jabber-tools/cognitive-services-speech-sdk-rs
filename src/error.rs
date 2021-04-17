@@ -6,6 +6,8 @@ use std::result;
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
 
+/// Enumeration of error root causes. Where appropriate
+/// it wraps underlying error.
 #[derive(Debug)]
 pub enum ErrorRootCause {
     ApiError(usize),
@@ -16,6 +18,8 @@ pub enum ErrorRootCause {
     TryFromIntError(TryFromIntError),
 }
 
+/// Error struct represents error than can occur
+/// during library processing/execution.
 #[derive(Debug)]
 pub struct Error {
     pub message: String,
@@ -23,13 +27,12 @@ pub struct Error {
 }
 
 impl Error {
+    /// Creates new error from custom message and underlying root cause.
     pub fn new(message: String, caused_by: ErrorRootCause) -> Self {
         Error { message, caused_by }
     }
 
-    /// returns description based on API error code
-    /// TBD: check if we are getting codes really in hex
-    /// for other than API errors returns None
+    /// Returns description based on API error code.
     pub fn api_error_desc(error_root_cause: &ErrorRootCause) -> Option<String> {
         match error_root_cause {
             ErrorRootCause::ApiError(api_code) => {
@@ -92,8 +95,12 @@ impl Error {
     }
 }
 
+/// Convenience type so that we can use *Result&lt;T&gt;*
+/// instead of *Result<T, E>*.
 pub type Result<T> = result::Result<T, Error>;
 
+/// Converts underlying C API error represented by error code
+/// into Error structure.
 #[inline(always)]
 pub fn convert_err(hr: usize, err_msg: &str) -> Result<()> {
     if hr != SPX_NOERROR as usize {

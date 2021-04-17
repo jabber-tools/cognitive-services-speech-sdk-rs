@@ -12,6 +12,7 @@ use std::ffi::CStr;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_ulong};
 
+/// Event passed into callback registered by *DialogServiceConnector::set_activity_received_cb*.
 #[derive(Debug)]
 pub struct ActivityReceivedEvent {
     pub handle: SmartHandle<SPXEVENTHANDLE>,

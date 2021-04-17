@@ -11,6 +11,7 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_uint};
 
+/// Represents speech synthetis result contained in SpeechSynthesisEvent callback event.
 pub struct SpeechSynthesisResult {
     pub handle: SmartHandle<SPXRESULTHANDLE>,
     pub result_id: String,

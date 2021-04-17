@@ -4,6 +4,7 @@ use crate::speech::SessionEvent;
 use log::*;
 use std::mem::MaybeUninit;
 
+/// Recognition event extending *SessionEvent* passed into callbacks *set_speech_start_detected_cb* and *set_speech_end_detected_cb*.
 #[derive(Debug)]
 pub struct RecognitionEvent {
     pub base: SessionEvent,

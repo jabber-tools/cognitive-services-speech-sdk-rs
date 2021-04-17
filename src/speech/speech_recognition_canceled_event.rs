@@ -8,6 +8,7 @@ use crate::speech::SpeechRecognitionEvent;
 use log::*;
 use std::mem::MaybeUninit;
 
+/// Recognition event extending *SpeechRecognitionEvent* passed into callback *set_canceled_cb*.
 #[derive(Debug)]
 pub struct SpeechRecognitionCanceledEvent {
     pub base: SpeechRecognitionEvent,

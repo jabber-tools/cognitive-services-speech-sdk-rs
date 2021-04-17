@@ -10,6 +10,7 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_uint};
 
+/// Represents speech recognition result contained within callback event *SpeechRecognitionEvent*.
 pub struct SpeechRecognitionResult {
     pub handle: SmartHandle<SPXRESULTHANDLE>,
     pub result_id: String,

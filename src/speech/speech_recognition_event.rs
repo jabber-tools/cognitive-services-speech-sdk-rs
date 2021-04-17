@@ -4,6 +4,7 @@ use crate::speech::{RecognitionEvent, SpeechRecognitionResult};
 use log::*;
 use std::mem::MaybeUninit;
 
+/// Recognition event extending *RecognitionEvent* passed into callbacks *set_recognizing_cb* and *set_recognized_cb*.
 #[derive(Debug)]
 pub struct SpeechRecognitionEvent {
     pub base: RecognitionEvent,
