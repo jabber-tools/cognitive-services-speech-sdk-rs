@@ -42,6 +42,9 @@ pub enum ResultReason {
 
     /// SynthesizingAudioStarted indicates the speech synthesis is now started
     SynthesizingAudioStarted = 12,
+
+    /// VoicesListRetrieved indicates the voices list has been retrieved successfully.
+    VoicesListRetrieved = 23,
 }
 
 impl ResultReason {
@@ -59,7 +62,8 @@ impl ResultReason {
             9 => ResultReason::SynthesizingAudioCompleted,
             10 => ResultReason::RecognizingKeyword,
             11 => ResultReason::RecognizedKeyword,
-            _ => ResultReason::SynthesizingAudioStarted,
+            12 => ResultReason::SynthesizingAudioStarted,
+            _ => ResultReason::VoicesListRetrieved,
         };
     }
 }
