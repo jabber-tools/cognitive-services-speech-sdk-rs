@@ -9,7 +9,7 @@
 
 ## How to build
 
-```
+```rust
 cargo build --examples
 ```
 
