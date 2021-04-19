@@ -444,6 +444,9 @@ pub const PropertyId_SpeechServiceConnection_UserDefinedQueryParameters: Propert
 pub const PropertyId_SpeechServiceConnection_SynthLanguage: PropertyId = 3100;
 pub const PropertyId_SpeechServiceConnection_SynthVoice: PropertyId = 3101;
 pub const PropertyId_SpeechServiceConnection_SynthOutputFormat: PropertyId = 3102;
+pub const PropertyId_SpeechServiceConnection_SynthEnableCompressedAudioTransmission: PropertyId =
+    3103;
+pub const PropertyId_SpeechServiceConnection_VoicesListEndpoint: PropertyId = 3130;
 pub const PropertyId_SpeechServiceConnection_InitialSilenceTimeoutMs: PropertyId = 3200;
 pub const PropertyId_SpeechServiceConnection_EndSilenceTimeoutMs: PropertyId = 3201;
 pub const PropertyId_SpeechServiceConnection_EnableAudioLogging: PropertyId = 3202;
@@ -727,6 +730,10 @@ pub const Audio_Stream_Container_Format_StreamFormat_Amrnb: Audio_Stream_Contain
 #[doc = " </summary>"]
 pub const Audio_Stream_Container_Format_StreamFormat_Amrwb: Audio_Stream_Container_Format = 263;
 #[doc = " <summary>"]
+#[doc = " Stream ContainerFormat definition for any other or unknown format."]
+#[doc = " </summary>"]
+pub const Audio_Stream_Container_Format_StreamFormat_Any: Audio_Stream_Container_Format = 264;
+#[doc = " <summary>"]
 #[doc = " Defines supported audio stream container format."]
 #[doc = " Changed in version 1.4.0."]
 #[doc = " </summary>"]
@@ -805,6 +812,11 @@ pub const Result_NoMatchReason_NoMatchReason_InitialSilenceTimeout: Result_NoMat
 pub const Result_NoMatchReason_NoMatchReason_InitialBabbleTimeout: Result_NoMatchReason = 3;
 pub const Result_NoMatchReason_NoMatchReason_KeywordNotRecognized: Result_NoMatchReason = 4;
 pub type Result_NoMatchReason = ::std::os::raw::c_uint;
+pub const Synthesis_VoiceType_SynthesisVoiceType_OnlineNeural: Synthesis_VoiceType = 1;
+pub const Synthesis_VoiceType_SynthesisVoiceType_OnlineStandard: Synthesis_VoiceType = 2;
+pub const Synthesis_VoiceType_SynthesisVoiceType_OfflineNeural: Synthesis_VoiceType = 3;
+pub const Synthesis_VoiceType_SynthesisVoiceType_OfflineStandard: Synthesis_VoiceType = 4;
+pub type Synthesis_VoiceType = ::std::os::raw::c_uint;
 extern "C" {
     pub fn result_get_reason(hresult: SPXRESULTHANDLE, reason: *mut Result_Reason) -> SPXHR;
 }
@@ -894,6 +906,71 @@ extern "C" {
 extern "C" {
     pub fn synth_result_get_property_bag(
         hresult: SPXRESULTHANDLE,
+        hpropbag: *mut SPXPROPERTYBAGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesis_voices_result_get_result_id(
+        hresult: SPXRESULTHANDLE,
+        resultId: *mut ::std::os::raw::c_char,
+        resultIdLength: u32,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesis_voices_result_get_reason(
+        hresult: SPXRESULTHANDLE,
+        reason: *mut Result_Reason,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesis_voices_result_get_voice_num(
+        hresult: SPXRESULTHANDLE,
+        voiceNum: *mut u32,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesis_voices_result_get_voice_info(
+        hresult: SPXRESULTHANDLE,
+        index: u32,
+        hVoiceInfo: *mut SPXRESULTHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesis_voices_result_get_property_bag(
+        hresult: SPXRESULTHANDLE,
+        hpropbag: *mut SPXPROPERTYBAGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn voice_info_handle_release(hVoiceInfo: SPXRESULTHANDLE) -> SPXHR;
+}
+extern "C" {
+    pub fn voice_info_get_name(hVoiceInfo: SPXRESULTHANDLE) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn voice_info_get_locale(hVoiceInfo: SPXRESULTHANDLE) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn voice_info_get_short_name(hVoiceInfo: SPXRESULTHANDLE) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn voice_info_get_local_name(hVoiceInfo: SPXRESULTHANDLE) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn voice_info_get_style_list(hVoiceInfo: SPXRESULTHANDLE) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn voice_info_get_voice_path(hVoiceInfo: SPXRESULTHANDLE) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn voice_info_get_voice_type(
+        hVoiceInfo: SPXRESULTHANDLE,
+        voiceType: *mut Synthesis_VoiceType,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn voice_info_get_property_bag(
+        hVoiceInfo: SPXRESULTHANDLE,
         hpropbag: *mut SPXPROPERTYBAGHANDLE,
     ) -> SPXHR;
 }
@@ -1229,6 +1306,12 @@ pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Riff48Khz16
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Audio48Khz96KBitRateMonoMp3:
     Speech_Synthesis_Output_Format = 22;
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Audio48Khz192KBitRateMonoMp3 : Speech_Synthesis_Output_Format = 23 ;
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Ogg48Khz16BitMonoOpus:
+    Speech_Synthesis_Output_Format = 24;
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Webm16Khz16BitMonoOpus:
+    Speech_Synthesis_Output_Format = 25;
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Webm24Khz16BitMonoOpus:
+    Speech_Synthesis_Output_Format = 26;
 pub type Speech_Synthesis_Output_Format = ::std::os::raw::c_uint;
 pub const SpeechConfig_ServicePropertyChannel_SpeechConfig_ServicePropertyChannel_UriQueryParameter : SpeechConfig_ServicePropertyChannel = 0 ;
 pub const SpeechConfig_ServicePropertyChannel_SpeechConfig_ServicePropertyChannel_HttpHeader:
@@ -1775,6 +1858,27 @@ extern "C" {
         milliseconds: u32,
     ) -> SPXHR;
 }
+extern "C" {
+    pub fn synthesizer_get_voices_list(
+        hsynth: SPXSYNTHHANDLE,
+        locale: *const ::std::os::raw::c_char,
+        phresult: *mut SPXRESULTHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesizer_get_voices_list_async(
+        hsynth: SPXSYNTHHANDLE,
+        locale: *const ::std::os::raw::c_char,
+        phasync: *mut SPXASYNCHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesizer_get_voices_list_async_wait_for(
+        hasync: SPXASYNCHANDLE,
+        milliseconds: u32,
+        phresult: *mut SPXRESULTHANDLE,
+    ) -> SPXHR;
+}
 pub type PSYNTHESIS_CALLBACK_FUNC = ::std::option::Option<
     unsafe extern "C" fn(
         hsynth: SPXSYNTHHANDLE,
@@ -1818,6 +1922,20 @@ extern "C" {
     ) -> SPXHR;
 }
 extern "C" {
+    pub fn synthesizer_viseme_received_set_callback(
+        hsynth: SPXSYNTHHANDLE,
+        pCallback: PSYNTHESIS_CALLBACK_FUNC,
+        pvContext: *mut ::std::os::raw::c_void,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesizer_bookmark_reached_set_callback(
+        hsynth: SPXSYNTHHANDLE,
+        pCallback: PSYNTHESIS_CALLBACK_FUNC,
+        pvContext: *mut ::std::os::raw::c_void,
+    ) -> SPXHR;
+}
+extern "C" {
     pub fn synthesizer_synthesis_event_get_result(
         hevent: SPXEVENTHANDLE,
         phresult: *mut SPXRESULTHANDLE,
@@ -1830,6 +1948,29 @@ extern "C" {
         pTextOffset: *mut u32,
         pWordLength: *mut u32,
     ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesizer_viseme_event_get_values(
+        hevent: SPXEVENTHANDLE,
+        pAudioOffset: *mut u64,
+        pVisemeId: *mut u32,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesizer_viseme_event_get_animation(
+        hEvent: SPXEVENTHANDLE,
+    ) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn synthesizer_bookmark_event_get_values(
+        hevent: SPXEVENTHANDLE,
+        pAudioOffset: *mut u64,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn synthesizer_bookmark_event_get_text(
+        hEvent: SPXEVENTHANDLE,
+    ) -> *const ::std::os::raw::c_char;
 }
 pub const GrammarList_RecognitionFactorScope_PartialPhrase: GrammarList_RecognitionFactorScope = 1;
 pub type GrammarList_RecognitionFactorScope = ::std::os::raw::c_uint;
@@ -2955,7 +3096,19 @@ extern "C" {
     ) -> SPXHR;
 }
 extern "C" {
+    pub fn voice_profile_get_type(
+        hVoiceProfile: SPXVOICEPROFILEHANDLE,
+        ptype: *mut ::std::os::raw::c_int,
+    ) -> SPXHR;
+}
+extern "C" {
     pub fn voice_profile_release_handle(hVoiceProfile: SPXVOICEPROFILEHANDLE) -> SPXHR;
+}
+extern "C" {
+    pub fn voice_profile_get_property_bag(
+        voiceprofilehandle: SPXVOICEPROFILEHANDLE,
+        pProperties: *mut SPXPROPERTYBAGHANDLE,
+    ) -> SPXHR;
 }
 extern "C" {
     pub fn delete_voice_profile(
@@ -2972,24 +3125,12 @@ extern "C" {
     ) -> SPXHR;
 }
 extern "C" {
-    pub fn get_voice_profile_status(
+    pub fn retrieve_enrollment_result(
         hVoiceProfileClient: SPXVOICEPROFILECLIENTHANDLE,
-        hProfileHandle: SPXVOICEPROFILEHANDLE,
-        phresult: *mut SPXRESULTHANDLE,
-    ) -> SPXHR;
-}
-extern "C" {
-    pub fn get_voice_profiles(
-        hVoiceProfileClient: SPXVOICEPROFILECLIENTHANDLE,
+        pId: *const ::std::os::raw::c_char,
         type_: ::std::os::raw::c_int,
-        pProfileHandle: *mut *mut SPXVOICEPROFILEHANDLE,
+        phVoiceProfile: *mut SPXVOICEPROFILEHANDLE,
     ) -> SPXHR;
-}
-extern "C" {
-    pub fn get_num_of_voice_profiles(
-        hVoiceProfileClient: SPXVOICEPROFILECLIENTHANDLE,
-        type_: ::std::os::raw::c_int,
-    ) -> size_t;
 }
 extern "C" {
     pub fn recognizer_create_speaker_recognizer_from_config(
@@ -3041,6 +3182,59 @@ extern "C" {
 }
 extern "C" {
     pub fn speaker_verification_model_release_handle(hsvmodel: SPXSVMODELHANDLE) -> SPXHR;
+}
+pub const Pronunciation_Assessment_Grading_System_PronunciationAssessmentGradingSystem_FivePoint:
+    Pronunciation_Assessment_Grading_System = 1;
+pub const Pronunciation_Assessment_Grading_System_PronunciationAssessmentGradingSystem_HundredMark : Pronunciation_Assessment_Grading_System = 2 ;
+pub type Pronunciation_Assessment_Grading_System = ::std::os::raw::c_uint;
+pub const Pronunciation_Assessment_Granularity_PronunciationAssessmentGranularity_Phoneme:
+    Pronunciation_Assessment_Granularity = 1;
+pub const Pronunciation_Assessment_Granularity_PronunciationAssessmentGranularity_Word:
+    Pronunciation_Assessment_Granularity = 2;
+pub const Pronunciation_Assessment_Granularity_PronunciationAssessmentGranularity_FullText:
+    Pronunciation_Assessment_Granularity = 3;
+pub type Pronunciation_Assessment_Granularity = ::std::os::raw::c_uint;
+extern "C" {
+    pub fn create_pronunciation_assessment_config(
+        hPronunciationAssessmentConfig: *mut SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE,
+        referenceText: *const ::std::os::raw::c_char,
+        gradingSystem: Pronunciation_Assessment_Grading_System,
+        granularity: Pronunciation_Assessment_Granularity,
+        enableMiscue: bool,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn create_pronunciation_assessment_config_from_json(
+        hPronunciationAssessmentConfig: *mut SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE,
+        json: *const ::std::os::raw::c_char,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn pronunciation_assessment_config_is_handle_valid(
+        hPronunciationAssessmentConfig: SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE,
+    ) -> bool;
+}
+extern "C" {
+    pub fn pronunciation_assessment_config_release(
+        hPronunciationAssessmentConfig: SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn pronunciation_assessment_config_get_property_bag(
+        hPronunciationAssessmentConfig: SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE,
+        hpropbag: *mut SPXPROPERTYBAGHANDLE,
+    ) -> SPXHR;
+}
+extern "C" {
+    pub fn pronunciation_assessment_config_to_json(
+        hPronunciationAssessmentConfig: SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE,
+    ) -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn pronunciation_assessment_config_apply_to_recognizer(
+        hPronunciationAssessmentConfig: SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE,
+        hreco: SPXRECOHANDLE,
+    ) -> SPXHR;
 }
 extern "C" {
     pub fn source_lang_config_from_language(
