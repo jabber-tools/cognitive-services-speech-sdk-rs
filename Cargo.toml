@@ -8,8 +8,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["speech", "microsoft", "cognitive", "recognition", "synthesizing"]
 categories = ["multimedia", "multimedia::audio", "text-processing"]
 exclude = [
-    "examples/*",
-    "SpeechSDK/*"
+    "examples/*"
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
