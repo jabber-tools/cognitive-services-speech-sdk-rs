@@ -7,6 +7,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE-MIT)
 [![Build Status](https://www.travis-ci.com/jabber-tools/cognitive-services-speech-sdk-rs.svg?branch=main)](https://www.travis-ci.com/github/jabber-tools/cognitive-services-speech-sdk-rs)
 
-## How to build
+## Repository location
 
 Speech SDK files can be found in separate repository [cognitive-services-speech-sdk-rs-files](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs-files).

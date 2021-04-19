@@ -14,6 +14,8 @@ mod speech_recognizer;
 mod speech_synthesis_bookmark_event;
 mod speech_synthesis_event;
 mod speech_synthesis_result;
+mod speech_synthesis_viseme_event;
+mod speech_synthesis_word_boundary_event;
 mod speech_synthesizer;
 
 // re-export structs directly under speech module
@@ -32,4 +34,6 @@ pub use self::speech_recognizer::SpeechRecognizer;
 pub use self::speech_synthesis_bookmark_event::SpeechSynthesisBookmarkEvent;
 pub use self::speech_synthesis_event::SpeechSynthesisEvent;
 pub use self::speech_synthesis_result::SpeechSynthesisResult;
+pub use self::speech_synthesis_viseme_event::SpeechSynthesisVisemeEvent;
+pub use self::speech_synthesis_word_boundary_event::SpeechSynthesisWordBoundaryEvent;
 pub use self::speech_synthesizer::SpeechSynthesizer;
