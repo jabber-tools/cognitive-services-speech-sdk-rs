@@ -1,4 +1,4 @@
-# cognitive-services-speech-sdk-rs examples
+# cognitive-services-speech-sdk-rs SpeechSDK
 
 ---
 [![made-with-Rust](https://img.shields.io/badge/Made%20with-Rust-1f425f.svg)](https://www.rust-lang.org/)
