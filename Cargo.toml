@@ -7,6 +7,10 @@ description = "Pure Rust binding to Microsoft Speech SDK with thin convenience a
 license = "MIT OR Apache-2.0"
 keywords = ["speech", "microsoft", "cognitive", "recognition", "synthesizing"]
 categories = ["multimedia", "multimedia::audio", "text-processing"]
+exclude = [
+    "examples/*",
+    "SpeechSDK/*"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
