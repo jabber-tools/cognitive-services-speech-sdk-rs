@@ -17,6 +17,7 @@ mod speech_synthesis_result;
 mod speech_synthesis_viseme_event;
 mod speech_synthesis_word_boundary_event;
 mod speech_synthesizer;
+mod voice_info;
 
 // re-export structs directly under speech module
 pub use self::audio_data_stream::AudioDataStream;
@@ -37,3 +38,4 @@ pub use self::speech_synthesis_result::SpeechSynthesisResult;
 pub use self::speech_synthesis_viseme_event::SpeechSynthesisVisemeEvent;
 pub use self::speech_synthesis_word_boundary_event::SpeechSynthesisWordBoundaryEvent;
 pub use self::speech_synthesizer::SpeechSynthesizer;
+pub use self::voice_info::VoiceInfo;
