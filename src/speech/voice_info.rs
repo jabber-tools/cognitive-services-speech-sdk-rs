@@ -20,7 +20,7 @@ pub struct VoiceInfo {
     pub voice_type: SynthesisVoiceType,
     pub style_list: Vec<String>,
     pub voice_path: String,
-    properties: PropertyCollection,
+    pub properties: PropertyCollection,
 }
 
 impl VoiceInfo {
