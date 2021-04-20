@@ -2,18 +2,21 @@ use crate::audio::AudioConfig;
 use crate::common::{PropertyCollection, PropertyId};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    synthesizer_canceled_set_callback, synthesizer_completed_set_callback,
+    synthesizer_bookmark_reached_set_callback, synthesizer_canceled_set_callback,
+    synthesizer_completed_set_callback,
     synthesizer_create_speech_synthesizer_from_auto_detect_source_lang_config,
     synthesizer_create_speech_synthesizer_from_config, synthesizer_get_property_bag,
     synthesizer_get_voices_list, synthesizer_handle_release, synthesizer_speak_ssml,
     synthesizer_speak_text, synthesizer_start_speaking_ssml, synthesizer_start_speaking_text,
     synthesizer_started_set_callback, synthesizer_stop_speaking,
-    synthesizer_synthesizing_set_callback, SmartHandle, SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE,
+    synthesizer_synthesizing_set_callback, synthesizer_viseme_received_set_callback,
+    synthesizer_word_boundary_set_callback, SmartHandle, SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE,
     SPXRESULTHANDLE, SPXSYNTHHANDLE,
 };
 use crate::speech::{
-    AutoDetectSourceLanguageConfig, SpeechConfig, SpeechSynthesisEvent, SpeechSynthesisResult,
-    SynthesisVoicesResult,
+    AutoDetectSourceLanguageConfig, SpeechConfig, SpeechSynthesisBookmarkEvent,
+    SpeechSynthesisEvent, SpeechSynthesisResult, SpeechSynthesisVisemeEvent,
+    SpeechSynthesisWordBoundaryEvent, SynthesisVoicesResult,
 };
 use log::*;
 use std::boxed::Box;
@@ -30,6 +33,9 @@ pub struct SpeechSynthesizer {
     synthesizer_synthesizing_cb: Option<Box<dyn Fn(SpeechSynthesisEvent) + Send>>,
     synthesizer_completed_cb: Option<Box<dyn Fn(SpeechSynthesisEvent) + Send>>,
     synthesizer_canceled_cb: Option<Box<dyn Fn(SpeechSynthesisEvent) + Send>>,
+    synthesizer_word_boundary_cb: Option<Box<dyn Fn(SpeechSynthesisWordBoundaryEvent) + Send>>,
+    synthesizer_viseme_cb: Option<Box<dyn Fn(SpeechSynthesisVisemeEvent) + Send>>,
+    synthesizer_bookmark_cb: Option<Box<dyn Fn(SpeechSynthesisBookmarkEvent) + Send>>,
 }
 
 // to allow to move synthetizer to tokio::spawn
@@ -67,6 +73,9 @@ impl SpeechSynthesizer {
                 synthesizer_synthesizing_cb: None,
                 synthesizer_completed_cb: None,
                 synthesizer_canceled_cb: None,
+                synthesizer_word_boundary_cb: None,
+                synthesizer_viseme_cb: None,
+                synthesizer_bookmark_cb: None,
             })
         }
     }
@@ -285,6 +294,57 @@ impl SpeechSynthesizer {
         }
     }
 
+    pub fn set_synthesizer_word_boundary_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SpeechSynthesisWordBoundaryEvent) + 'static + Send,
+    {
+        self.synthesizer_word_boundary_cb = Some(Box::new(f));
+        unsafe {
+            let ret = synthesizer_word_boundary_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_synthesizer_word_boundary),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(
+                ret,
+                "SpeechSynthesizer.set_synthesizer_word_boundary_cb error",
+            )?;
+            Ok(())
+        }
+    }
+
+    pub fn set_synthesizer_viseme_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SpeechSynthesisVisemeEvent) + 'static + Send,
+    {
+        self.synthesizer_viseme_cb = Some(Box::new(f));
+        unsafe {
+            let ret = synthesizer_viseme_received_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_synthesizer_viseme),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechSynthesizer.set_synthesizer_viseme_cb error")?;
+            Ok(())
+        }
+    }
+
+    pub fn set_synthesizer_bookmark_cb<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Fn(SpeechSynthesisBookmarkEvent) + 'static + Send,
+    {
+        self.synthesizer_bookmark_cb = Some(Box::new(f));
+        unsafe {
+            let ret = synthesizer_bookmark_reached_set_callback(
+                self.handle.inner(),
+                Some(Self::cb_synthesizer_bookmark),
+                self as *const _ as *mut c_void,
+            );
+            convert_err(ret, "SpeechSynthesizer.set_synthesizer_bookmark_cb error")?;
+            Ok(())
+        }
+    }
+
     #[allow(non_snake_case)]
     #[allow(unused_variables)]
     unsafe extern "C" fn cb_synthesizer_started(
@@ -382,6 +442,84 @@ impl SpeechSynthesizer {
                 Err(err) => {
                     error!(
                         "SpeechSynthesisEvent::cb_synthesizer_canceled error {:?}",
+                        err
+                    );
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_synthesizer_word_boundary(
+        hsynth: SPXSYNTHHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("SpeechSynthesizer::cb_synthesizer_word_boundary called");
+        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
+        if let Some(cb) = &speech_synthesizer.synthesizer_word_boundary_cb {
+            trace!("synthesizer_word_boundary_cb defined");
+            match SpeechSynthesisWordBoundaryEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!(
+                        "SpeechSynthesisEvent::cb_synthesizer_word_boundary error {:?}",
+                        err
+                    );
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_synthesizer_viseme(
+        hsynth: SPXSYNTHHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("SpeechSynthesizer::cb_synthesizer_viseme called");
+        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
+        if let Some(cb) = &speech_synthesizer.synthesizer_viseme_cb {
+            trace!("synthesizer_viseme_cb defined");
+            match SpeechSynthesisVisemeEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!(
+                        "SpeechSynthesisEvent::cb_synthesizer_viseme error {:?}",
+                        err
+                    );
+                }
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(unused_variables)]
+    unsafe extern "C" fn cb_synthesizer_bookmark(
+        hsynth: SPXSYNTHHANDLE,
+        hevent: SPXEVENTHANDLE,
+        pvContext: *mut c_void,
+    ) {
+        trace!("SpeechSynthesizer::cb_synthesizer_bookmark called");
+        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
+        if let Some(cb) = &speech_synthesizer.synthesizer_bookmark_cb {
+            trace!("synthesizer_bookmark_cb defined");
+            match SpeechSynthesisBookmarkEvent::from_handle(hevent) {
+                Ok(event) => {
+                    trace!("calling cb with event {:?}", event);
+                    cb(event);
+                }
+                Err(err) => {
+                    error!(
+                        "SpeechSynthesisEvent::cb_synthesizer_bookmark error {:?}",
                         err
                     );
                 }
