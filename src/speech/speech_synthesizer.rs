@@ -5,14 +5,15 @@ use crate::ffi::{
     synthesizer_canceled_set_callback, synthesizer_completed_set_callback,
     synthesizer_create_speech_synthesizer_from_auto_detect_source_lang_config,
     synthesizer_create_speech_synthesizer_from_config, synthesizer_get_property_bag,
-    synthesizer_handle_release, synthesizer_speak_ssml, synthesizer_speak_text,
-    synthesizer_start_speaking_ssml, synthesizer_start_speaking_text,
+    synthesizer_get_voices_list, synthesizer_handle_release, synthesizer_speak_ssml,
+    synthesizer_speak_text, synthesizer_start_speaking_ssml, synthesizer_start_speaking_text,
     synthesizer_started_set_callback, synthesizer_stop_speaking,
     synthesizer_synthesizing_set_callback, SmartHandle, SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE,
     SPXRESULTHANDLE, SPXSYNTHHANDLE,
 };
 use crate::speech::{
     AutoDetectSourceLanguageConfig, SpeechConfig, SpeechSynthesisEvent, SpeechSynthesisResult,
+    SynthesisVoicesResult,
 };
 use log::*;
 use std::boxed::Box;
@@ -117,7 +118,7 @@ impl SpeechSynthesizer {
                 text_len as u32,
                 &mut result_handle,
             );
-            convert_err(ret, "SpeechSynthesizer::speak_text_async error")?;
+            convert_err(ret, "SpeechSynthesizer.speak_text_async error")?;
             SpeechSynthesisResult::from_handle(result_handle)
         }
     }
@@ -134,7 +135,7 @@ impl SpeechSynthesizer {
                 ssml_len as u32,
                 &mut result_handle,
             );
-            convert_err(ret, "SpeechSynthesizer::speak_ssml_async error")?;
+            convert_err(ret, "SpeechSynthesizer.speak_ssml_async error")?;
             SpeechSynthesisResult::from_handle(result_handle)
         }
     }
@@ -153,7 +154,7 @@ impl SpeechSynthesizer {
                 text_len as u32,
                 &mut result_handle,
             );
-            convert_err(ret, "SpeechSynthesizer::start_speaking_text_async error")?;
+            convert_err(ret, "SpeechSynthesizer.start_speaking_text_async error")?;
             SpeechSynthesisResult::from_handle(result_handle)
         }
     }
@@ -172,7 +173,7 @@ impl SpeechSynthesizer {
                 ssml_len as u32,
                 &mut result_handle,
             );
-            convert_err(ret, "SpeechSynthesizer::start_speaking_ssml_async error")?;
+            convert_err(ret, "SpeechSynthesizer.start_speaking_ssml_async error")?;
             SpeechSynthesisResult::from_handle(result_handle)
         }
     }
@@ -182,8 +183,24 @@ impl SpeechSynthesizer {
     pub async fn stop_speaking_async(&self) -> Result<()> {
         unsafe {
             let ret = synthesizer_stop_speaking(self.handle.inner());
-            convert_err(ret, "SpeechSynthesizer::stop_speaking_async error")?;
+            convert_err(ret, "SpeechSynthesizer.stop_speaking_async error")?;
             Ok(())
+        }
+    }
+
+    /// Gets the available voices, asynchronously.
+    /// The parameter locale specifies the locale of voices, in BCP-47 format; or leave it empty to get all available voices.
+    pub async fn get_voices_async(&self, locale: &str) -> Result<SynthesisVoicesResult> {
+        unsafe {
+            let c_locale_str = CString::new(locale)?;
+            let mut v_result: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let ret = synthesizer_get_voices_list(
+                self.handle.inner(),
+                c_locale_str.as_ptr(),
+                &mut v_result,
+            );
+            convert_err(ret, "SpeechSynthesizer.get_voices_async error")?;
+            SynthesisVoicesResult::from_handle(v_result)
         }
     }
 
