@@ -42,6 +42,38 @@ pub fn set_callbacks(speech_synthesizer: &mut SpeechSynthesizer) {
         .unwrap();
 }
 
+pub fn set_callbacks_all(speech_synthesizer: &mut SpeechSynthesizer) {
+    speech_synthesizer
+        .set_synthesizer_started_cb(|event| info!(">synthesizer_started_cb {:?}", event))
+        .unwrap();
+
+    speech_synthesizer
+        .set_synthesizer_synthesizing_cb(|event| info!(">synthesizer_synthesizing_cb {:?}", event))
+        .unwrap();
+
+    speech_synthesizer
+        .set_synthesizer_completed_cb(|event| info!(">synthesizer_completed_cb {:?}", event))
+        .unwrap();
+
+    speech_synthesizer
+        .set_synthesizer_canceled_cb(|event| info!(">synthesizer_canceled_cb {:?}", event))
+        .unwrap();
+
+    speech_synthesizer
+        .set_synthesizer_word_boundary_cb(|event| {
+            info!(">set_synthesizer_word_boundary_cb {:?}", event)
+        })
+        .unwrap();
+
+    speech_synthesizer
+        .set_synthesizer_viseme_cb(|event| info!(">set_synthesizer_viseme_cb {:?}", event))
+        .unwrap();
+
+    speech_synthesizer
+        .set_synthesizer_bookmark_cb(|event| info!(">set_synthesizer_bookmark_cb {:?}", event))
+        .unwrap();
+}
+
 pub fn push_bytes_vec_into_stream(bytes_vec: Vec<u8>, mut audio_push_stream: PushAudioInputStream) {
     let chunk_size = 1000;
 

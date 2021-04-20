@@ -49,7 +49,7 @@ pub async fn run_example() {
         .set_callbacks(Box::new(BinaryAudioStreamWriter::new(tx)))
         .unwrap();
 
-    helpers::set_callbacks(&mut speech_synthesizer);
+    helpers::set_callbacks_all(&mut speech_synthesizer);
 
     let handle = tokio::spawn(async move {
         if let Err(err) = speech_synthesizer

@@ -10,7 +10,7 @@ mod recognize_once_async_from_push_stream;
 async fn main() {
     // requires MS Azure key for subscription with Cognitive Services enabled
     // for convenience MS subscription key can be put into file read by set_env_vars
-    helpers::set_env_vars("/path/to/msskey");
+    helpers::set_env_vars("/tmp/path/to/subscription/key");
     env_logger::init();
 
     recognize_once_async_from_file::run_example().await;

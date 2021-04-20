@@ -11,11 +11,11 @@ pub async fn run_example() {
 
     let text = "This is sample text to transcribe";
 
-    let (mut speech_synthesize, _) = helpers::speech_synthesizer();
+    let (mut speech_synthesizer, _) = helpers::speech_synthesizer();
 
-    helpers::set_callbacks(&mut speech_synthesize);
+    helpers::set_callbacks(&mut speech_synthesizer);
 
-    match speech_synthesize.speak_text_async(text).await {
+    match speech_synthesizer.speak_text_async(text).await {
         Err(err) => error!("speak_text_async error {:?}", err),
         Ok(result) => {
             info!("got result!");

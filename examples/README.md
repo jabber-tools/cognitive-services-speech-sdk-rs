@@ -36,6 +36,6 @@ cargo run --example synthesizer
 *IMPORTANT*: before running examples proper MS subscription key must be provided. Each example section (recognizer/dialog/synthetizer) contains following line  in *main.rs* file:
 
 ```rust
-helpers::set_env_vars("/path/to/msskey");
+helpers::set_env_vars("/tmp/path/to/subscription/key");
 ```
 *set_env_vars* convenience function loads MS subscription key from text file.
