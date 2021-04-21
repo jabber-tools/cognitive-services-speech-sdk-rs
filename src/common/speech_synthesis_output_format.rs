@@ -51,4 +51,40 @@ pub enum SpeechSynthesisOutputFormat {
 
     /// Raw8Khz16BitMonoPcm stands for raw-8khz-16bit-mono-pcm
     Raw8Khz16BitMonoPcm = 17,
+
+    /// Ogg16Khz16BitMonoOpus stands for ogg-16khz-16bit-mono-opus
+    Ogg16Khz16BitMonoOpus = 18,
+
+    /// Ogg24Khz16BitMonoOpus stands for ogg-24khz-16bit-mono-opus
+    Ogg24Khz16BitMonoOpus = 19,
+
+    /// Raw48Khz16BitMonoPcm stands for raw-48khz-16bit-mono-pcm
+    Raw48Khz16BitMonoPcm = 20,
+
+    /// Riff48Khz16BitMonoPcm stands for riff-48khz-16bit-mono-pcm
+    Riff48Khz16BitMonoPcm = 21,
+
+    /// Audio48Khz96KBitRateMonoMp3 stands for audio-48khz-96kbitrate-mono-mp3
+    Audio48Khz96KBitRateMonoMp3 = 22,
+
+    /// Audio48Khz192KBitRateMonoMp3 stands for audio-48khz-192kbitrate-mono-mp3
+    Audio48Khz192KBitRateMonoMp3 = 23,
+
+    /// Ogg48Khz16BitMonoOpus stands for ogg-48khz-16bit-mono-opus
+    Ogg48Khz16BitMonoOpus = 24,
+
+    /// Webm16Khz16BitMonoOpus stands for webm-16khz-16bit-mono-opus
+    Webm16Khz16BitMonoOpus = 25,
+
+    /// Webm24Khz16BitMonoOpus stands for webm-24khz-16bit-mono-opus
+    Webm24Khz16BitMonoOpus = 26,
+
+    /// Raw24Khz16BitMonoTrueSilk stands for raw-24khz-16bit-mono-truesilk
+    Raw24Khz16BitMonoTrueSilk = 27,
+
+    /// Raw8Khz8BitMonoALaw stands for raw-8khz-8bit-mono-alaw
+    Raw8Khz8BitMonoALaw = 28,
+
+    /// Riff8Khz8BitMonoALaw stands for riff-8khz-8bit-mono-alaw
+    Riff8Khz8BitMonoALaw = 29,
 }
