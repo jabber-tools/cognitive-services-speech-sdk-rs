@@ -4,6 +4,7 @@ use crate::ffi::{
     add_source_lang_config_to_auto_detect_source_lang_config,
     auto_detect_source_lang_config_get_property_bag, auto_detect_source_lang_config_release,
     create_auto_detect_source_lang_config_from_languages,
+    create_auto_detect_source_lang_config_from_open_range,
     create_auto_detect_source_lang_config_from_source_lang_config, SmartHandle,
     SPXAUTODETECTSOURCELANGCONFIGHANDLE, SPXPROPERTYBAGHANDLE,
 };
@@ -19,9 +20,7 @@ pub struct AutoDetectSourceLanguageConfig {
 }
 
 impl AutoDetectSourceLanguageConfig {
-    fn from_handle(
-        handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE,
-    ) -> Result<AutoDetectSourceLanguageConfig> {
+    fn from_handle(handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE) -> Result<Self> {
         unsafe {
             let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
 
@@ -41,7 +40,7 @@ impl AutoDetectSourceLanguageConfig {
     }
 
     /// Creates an instance of the AutoDetectSourceLanguageConfig with source languages.
-    pub fn from_languages(languages: Vec<String>) -> Result<AutoDetectSourceLanguageConfig> {
+    pub fn from_languages(languages: Vec<String>) -> Result<Self> {
         unsafe {
             let languages_str = languages.join(",");
             let c_languages_str = CString::new(languages_str)?;
@@ -57,9 +56,7 @@ impl AutoDetectSourceLanguageConfig {
     }
 
     /// Creates an instance of the AutoDetectSourceLanguageConfig with a list of source language config
-    pub fn from_language_configs(
-        languages: Vec<SourceLanguageConfig>,
-    ) -> Result<AutoDetectSourceLanguageConfig> {
+    pub fn from_language_configs(languages: Vec<SourceLanguageConfig>) -> Result<Self> {
         unsafe {
             let mut first = true;
             let mut handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE =
@@ -84,6 +81,17 @@ impl AutoDetectSourceLanguageConfig {
                 )?;
             }
 
+            Ok(AutoDetectSourceLanguageConfig::from_handle(handle)?)
+        }
+    }
+
+    /// Creates an instance of the AutoDetectSourceLanguageConfig with open range as source languages.
+    pub fn from_open_range() -> Result<Self> {
+        unsafe {
+            let mut handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE =
+                MaybeUninit::uninit().assume_init();
+            let ret = create_auto_detect_source_lang_config_from_open_range(&mut handle);
+            convert_err(ret, "AutoDetectSourceLanguageConfig::from_open_range error")?;
             Ok(AutoDetectSourceLanguageConfig::from_handle(handle)?)
         }
     }
