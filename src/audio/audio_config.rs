@@ -6,6 +6,7 @@ use crate::ffi::{
     audio_config_create_audio_input_from_default_microphone,
     audio_config_create_audio_input_from_stream,
     audio_config_create_audio_input_from_wav_file_name,
+    audio_config_create_audio_output_from_a_speaker,
     audio_config_create_audio_output_from_default_speaker,
     audio_config_create_audio_output_from_stream,
     audio_config_create_audio_output_from_wav_file_name, audio_config_get_property_bag,
@@ -86,6 +87,21 @@ impl AudioConfig {
                     c_device_name.as_ptr(),
                 ),
                 "AudioConfig::from_microphone_input",
+            )?;
+            AudioConfig::from_handle(handle)
+        }
+    }
+
+    pub fn from_speaker_output(device_name: &str) -> Result<AudioConfig> {
+        unsafe {
+            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let c_device_name = CString::new(device_name)?;
+            convert_err(
+                audio_config_create_audio_output_from_a_speaker(
+                    &mut handle,
+                    c_device_name.as_ptr(),
+                ),
+                "AudioConfig::from_speaker_output",
             )?;
             AudioConfig::from_handle(handle)
         }
