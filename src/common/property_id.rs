@@ -110,6 +110,13 @@ pub enum PropertyId {
     /// SpeechServiceConnectionSynthOutputFormat is the string to specify TTS output audio format.
     SpeechServiceConnectionSynthOutputFormat = 3102,
 
+    /// SpeechServiceConnectionSynthEnableCompressedAudioTransmission indicates if use compressed audio format
+    /// for speech synthesis audio transmission.
+    /// This property only affects when SpeechServiceConnectionSynthOutputFormat is set to a pcm format.
+    /// If this property is not set and GStreamer is available, SDK will use compressed format for synthesized audio transmission,
+    /// and decode it. You can set this property to "false" to use raw pcm format for transmission on wire.
+    SpeechServiceConnectionSynthEnableCompressedAudioTransmission = 3103,
+
     /// SpeechServiceConnectionInitialSilenceTimeoutMs is the initial silence timeout value (in milliseconds) used by the
     /// service.
     SpeechServiceConnectionInitialSilenceTimeoutMs = 3200,
@@ -172,6 +179,29 @@ pub enum PropertyId {
     /// the speech service.
     SpeechServiceResponseRecognitionLatencyMs = 5002,
 
+    /// SpeechServiceResponseSynthesisFirstByteLatencyMs is the speech synthesis first byte latency in milliseconds.
+    /// Read-only, available on final speech synthesis results.
+    /// This measures the latency between when the synthesis is started to be processed, and the moment the first byte audio is available.
+    /// Added in version 1.17.0.
+    SpeechServiceResponseSynthesisFirstByteLatencyMs = 5010,
+
+    /// SpeechServiceResponseSynthesisFinishLatencyMs is the speech synthesis all bytes latency in milliseconds.
+    /// Read-only, available on final speech synthesis results.
+    /// This measures the latency between when the synthesis is started to be processed, and the moment the whole audio is synthesized.
+    /// Added in version 1.17.0.
+    SpeechServiceResponseSynthesisFinishLatencyMs = 5011,
+
+    /// SpeechServiceResponseSynthesisUnderrunTimeMs is the underrun time for speech synthesis in milliseconds.
+    /// Read-only, available on results in SynthesisCompleted events.
+    /// This measures the total underrun time from AudioConfigPlaybackBufferLengthInMs is filled to synthesis completed.
+    /// Added in version 1.17.0.
+    SpeechServiceResponseSynthesisUnderrunTimeMs = 5012,
+
+    /// SpeechServiceResponseSynthesisBackend indicates which backend the synthesis is finished by.
+    /// Read-only, available on speech synthesis results, except for the result in SynthesisStarted event
+    /// Added in version 1.17.0.
+    SpeechServiceResponseSynthesisBackend = 5020,
+
     /// CancellationDetailsReason is the cancellation reason. Currently unused.
     CancellationDetailsReason = 6000,
 
@@ -201,6 +231,14 @@ pub enum PropertyId {
 
     /// AudioConfigAudioSource is the audio source. Allowed values are "Microphones", "File", and "Stream".
     AudioConfigAudioSource = 8004,
+
+    // AudioConfigDeviceNameForRender indicates the device name for audio render. Under normal circumstances,
+    /// you shouldn't have to use this property directly. Instead, use NewAudioConfigFromDefaultSpeakerOutput.
+    /// Added in version 1.17.0
+    AudioConfigDeviceNameForRender = 8005,
+
+    /// AudioConfigPlaybackBufferLengthInMs indicates the playback buffer length in milliseconds, default is 50 milliseconds.
+    AudioConfigPlaybackBufferLengthInMs = 8006,
 
     /// SpeechLogFilename is the file name to write logs.
     SpeechLogFilename = 9001,
@@ -267,6 +305,7 @@ impl PropertyId {
             PropertyId::SpeechServiceConnectionSynthLanguage => 3100,
             PropertyId::SpeechServiceConnectionSynthVoice => 3101,
             PropertyId::SpeechServiceConnectionSynthOutputFormat => 3102,
+            PropertyId::SpeechServiceConnectionSynthEnableCompressedAudioTransmission => 3103,
             PropertyId::SpeechServiceConnectionInitialSilenceTimeoutMs => 3200,
             PropertyId::SpeechServiceConnectionEndSilenceTimeoutMs => 3201,
             PropertyId::SpeechServiceConnectionEnableAudioLogging => 3202,
@@ -284,6 +323,11 @@ impl PropertyId {
             PropertyId::SpeechServiceResponseJsonErrorDetails => 5001,
             PropertyId::SpeechServiceResponseRecognitionLatencyMs => 5002,
 
+            PropertyId::SpeechServiceResponseSynthesisFirstByteLatencyMs => 5010,
+            PropertyId::SpeechServiceResponseSynthesisFinishLatencyMs => 5011,
+            PropertyId::SpeechServiceResponseSynthesisUnderrunTimeMs => 5012,
+            PropertyId::SpeechServiceResponseSynthesisBackend => 5020,
+
             PropertyId::CancellationDetailsReason => 6000,
             PropertyId::CancellationDetailsReasonText => 6001,
             PropertyId::CancellationDetailsReasonDetailedText => 6002,
@@ -295,6 +339,9 @@ impl PropertyId {
             PropertyId::AudioConfigSampleRateForCapture => 8002,
             PropertyId::AudioConfigBitsPerSampleForCapture => 8003,
             PropertyId::AudioConfigAudioSource => 8004,
+
+            PropertyId::AudioConfigDeviceNameForRender => 8005,
+            PropertyId::AudioConfigPlaybackBufferLengthInMs => 8006,
 
             PropertyId::SpeechLogFilename => 9001,
 
