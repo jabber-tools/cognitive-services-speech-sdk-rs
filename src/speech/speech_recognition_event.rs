@@ -22,10 +22,7 @@ impl SpeechRecognitionEvent {
             convert_err(ret, "SpeechRecognitionEvent::from_handle error")?;
             trace!("called recognizer_recognition_event_get_result");
             let result = SpeechRecognitionResult::from_handle(result_handle)?;
-            Ok(SpeechRecognitionEvent {
-                base,
-                result,
-            })
+            Ok(SpeechRecognitionEvent { base, result })
         }
     }
 }

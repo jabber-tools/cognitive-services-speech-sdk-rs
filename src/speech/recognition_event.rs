@@ -21,10 +21,7 @@ impl RecognitionEvent {
             let ret = recognizer_recognition_event_get_offset(handle, &mut offset);
             convert_err(ret, "RecognitionEvent::from_handle error")?;
             trace!("recognizer_recognition_event_get_offset offset: {}", offset);
-            Ok(RecognitionEvent {
-                base,
-                offset,
-            })
+            Ok(RecognitionEvent { base, offset })
         }
     }
 }
