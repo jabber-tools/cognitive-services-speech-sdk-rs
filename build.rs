@@ -71,6 +71,14 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", lib_path.display());
     println!("cargo:rustc-link-lib=dylib=Microsoft.CognitiveServices.Speech.core");
 
+    let skip_bindgen = env::var("MS_COG_SVC_SPEECH_SKIP_BINDGEN")
+        .map(|v| v == "1")
+        .unwrap_or(false);
+
+    if skip_bindgen {
+        return;
+    }
+
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
     // the resulting bindings.
