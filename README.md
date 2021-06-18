@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE-MIT)
 [![Crates.io][crates-badge]][crates-url]
 [![rustdoc][rustdoc-badge]][rustdoc-url]
-[![Build Status](https://www.travis-ci.com/jabber-tools/cognitive-services-speech-sdk-rs.svg?branch=main)](https://www.travis-ci.com/github/jabber-tools/cognitive-services-speech-sdk-rs)
+[![CI](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/actions/workflows/github-actions-rust-ci.yml/badge.svg)](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/actions/workflows/github-actions-rust-ci.yml)
 
 [crates-badge]: https://img.shields.io/crates/v/cognitive-services-speech-sdk-rs.svg
 [crates-url]: https://crates.io/crates/cognitive-services-speech-sdk-rs
