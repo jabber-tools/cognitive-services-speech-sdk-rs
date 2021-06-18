@@ -123,7 +123,7 @@ sudo apt-get update
 sudo apt-get install clang build-essential libssl1.0.0 libasound2 wget
 ```
 
-Build is generating Rust bindings for Speech SDK native functions. These are already prebuilt and put into ffi/bindings.rs file. In most cases it is not necessary to regenerate them. Set followingto skip bindings regeneration:
+Build is generating Rust bindings for Speech SDK native functions. These are already prebuilt and put into *ffi/bindings.rs* file. In most cases it is not necessary to regenerate them. Set following to skip bindings regeneration:
 
 ```
 export MS_COG_SVC_SPEECH_SKIP_BINDGEN=1
