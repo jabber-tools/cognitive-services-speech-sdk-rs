@@ -277,7 +277,7 @@ pub enum PropertyId {
 
 impl PropertyId {
     pub fn to_i32(&self) -> i32 {
-        return match self {
+        match self {
             PropertyId::SpeechServiceConnectionKey => 1000,
             PropertyId::SpeechServiceConnectionEndpoint => 1001,
             PropertyId::SpeechServiceConnectionRegion => 1002,
@@ -354,6 +354,6 @@ impl PropertyId {
             PropertyId::ConversationSpeechActivityTemplate => 10006,
             PropertyId::DataBufferTimeStamp => 11001,
             PropertyId::DataBufferUserID => 11002,
-        };
+        }
     }
 }

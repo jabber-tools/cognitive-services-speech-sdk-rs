@@ -29,7 +29,7 @@ pub enum CancellationErrorCode {
 
 impl CancellationErrorCode {
     pub fn from_u32(code: u32) -> Self {
-        return match code {
+        match code {
             0 => CancellationErrorCode::NoError,
             1 => CancellationErrorCode::AuthenticationFailure,
             2 => CancellationErrorCode::BadRequest,
@@ -40,6 +40,6 @@ impl CancellationErrorCode {
             7 => CancellationErrorCode::ServiceError,
             8 => CancellationErrorCode::ServiceUnavailable,
             _ => CancellationErrorCode::RuntimeError,
-        };
+        }
     }
 }

@@ -42,7 +42,7 @@ impl VoiceInfo {
             let style_list_str = CStr::from_ptr(c_style_list).to_str()?.to_owned();
 
             let style_list: Vec<String> =
-                style_list_str.split("|").map(|s| s.to_string()).collect();
+                style_list_str.split('|').map(|s| s.to_string()).collect();
 
             let c_voice_path = voice_info_get_voice_path(handle);
             let voice_path = CStr::from_ptr(c_voice_path).to_str()?.to_owned();

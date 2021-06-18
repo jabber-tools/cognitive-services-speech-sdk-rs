@@ -90,6 +90,7 @@ impl AudioDataStream {
     /// It returns size of data filled to the buffer and any write error encountered.
     pub fn read(&self, buffer: &mut [u8]) -> Result<u32> {
         unsafe {
+            #[allow(clippy::len_without_is_empty)]
             if buffer.len() == 0 {
                 let rootc = ErrorRootCause::ApiError(0x005);
                 return Err(Error::new(Error::api_error_desc(&rootc).unwrap(), rootc));
@@ -112,6 +113,7 @@ impl AudioDataStream {
     /// It returns size of data filled to the buffer and any write error encountered.
     pub fn read_at(&self, buffer: &mut [u8], offset: u32) -> Result<u32> {
         unsafe {
+            #[allow(clippy::len_without_is_empty)]
             if buffer.len() == 0 {
                 let rootc = ErrorRootCause::ApiError(0x005);
                 return Err(Error::new(Error::api_error_desc(&rootc).unwrap(), rootc));

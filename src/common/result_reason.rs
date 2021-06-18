@@ -49,7 +49,7 @@ pub enum ResultReason {
 
 impl ResultReason {
     pub fn from_u32(reason: u32) -> Self {
-        return match reason {
+        match reason {
             0 => ResultReason::NoMatch,
             1 => ResultReason::Canceled,
             2 => ResultReason::RecognizingSpeech,
@@ -64,6 +64,6 @@ impl ResultReason {
             11 => ResultReason::RecognizedKeyword,
             12 => ResultReason::SynthesizingAudioStarted,
             _ => ResultReason::VoicesListRetrieved,
-        };
+        }
     }
 }

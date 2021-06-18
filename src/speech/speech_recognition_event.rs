@@ -24,7 +24,7 @@ impl SpeechRecognitionEvent {
             let result = SpeechRecognitionResult::from_handle(result_handle)?;
             Ok(SpeechRecognitionEvent {
                 base,
-                result: result,
+                result,
             })
         }
     }

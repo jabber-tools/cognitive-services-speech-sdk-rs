@@ -23,7 +23,7 @@ impl RecognitionEvent {
             trace!("recognizer_recognition_event_get_offset offset: {}", offset);
             Ok(RecognitionEvent {
                 base,
-                offset: offset,
+                offset,
             })
         }
     }

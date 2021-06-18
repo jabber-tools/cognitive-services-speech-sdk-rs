@@ -12,7 +12,7 @@
 [rustdoc-badge]: https://img.shields.io/badge/rustdoc-0.1.2-green.svg
 [rustdoc-url]: https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/0.1.2/cognitive_services_speech_sdk_rs/index.html
 
-Pure Rust implementation of Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
+Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
 
 Pull requests welcome!
 

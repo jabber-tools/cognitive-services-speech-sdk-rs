@@ -16,11 +16,11 @@ pub enum SynthesisVoiceType {
 
 impl SynthesisVoiceType {
     pub fn from_u32(reason: u32) -> Self {
-        return match reason {
+        match reason {
             1 => SynthesisVoiceType::OnlineNeural,
             2 => SynthesisVoiceType::OnlineStandard,
             3 => SynthesisVoiceType::OfflineNeural,
             _ => SynthesisVoiceType::OfflineStandard,
-        };
+        }
     }
 }
