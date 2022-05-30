@@ -1,9 +1,9 @@
 use crate::common::{PropertyCollection, ResultReason};
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    synth_result_get_audio_data, synth_result_get_audio_length, synth_result_get_property_bag,
-    synth_result_get_reason, synth_result_get_result_id, synthesizer_result_handle_release,
-    SmartHandle, SPXPROPERTYBAGHANDLE, SPXRESULTHANDLE,
+    synth_result_get_audio_data, synth_result_get_audio_length_duration,
+    synth_result_get_property_bag, synth_result_get_reason, synth_result_get_result_id,
+    synthesizer_result_handle_release, SmartHandle, SPXPROPERTYBAGHANDLE, SPXRESULTHANDLE,
 };
 use std::convert::TryFrom;
 use std::ffi::CStr;
@@ -17,6 +17,7 @@ pub struct SpeechSynthesisResult {
     pub result_id: String,
     pub reason: ResultReason,
     pub audio_data: Vec<u8>,
+    pub audio_duration_ms: u64,
     pub properties: PropertyCollection,
 }
 
@@ -44,7 +45,12 @@ impl SpeechSynthesisResult {
     pub fn from_handle(handle: SPXRESULTHANDLE) -> Result<Self> {
         unsafe {
             let mut audio_length: u32 = MaybeUninit::uninit().assume_init();
-            let mut ret = synth_result_get_audio_length(handle, &mut audio_length);
+            let mut audio_duration: u64 = MaybeUninit::uninit().assume_init();
+            let mut ret = synth_result_get_audio_length_duration(
+                handle,
+                &mut audio_length,
+                &mut audio_duration,
+            );
             convert_err(
                 ret,
                 "SpeechSynthesisResult::from_handle(synth_result_get_audio_length) error",
@@ -101,6 +107,7 @@ impl SpeechSynthesisResult {
                 result_id,
                 reason: ResultReason::from_u32(reason),
                 audio_data: slice_buffer.to_vec(),
+                audio_duration_ms: audio_duration,
                 properties,
             };
             Ok(speech_synthesis_result)

@@ -1,8 +1,7 @@
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    property_bag_free_string, synthesizer_bookmark_event_get_text,
-    synthesizer_bookmark_event_get_values, synthesizer_event_handle_release, SmartHandle,
-    SPXEVENTHANDLE,
+    property_bag_free_string, synthesizer_bookmark_event_get_values, synthesizer_event_get_text,
+    synthesizer_event_handle_release, SmartHandle, SPXEVENTHANDLE,
 };
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
@@ -22,7 +21,7 @@ impl SpeechSynthesisBookmarkEvent {
             let mut ret = synthesizer_bookmark_event_get_values(handle, &mut audio_offset);
             convert_err(ret, "SpeechSynthesisBookmarkEvent::from_handle error")?;
 
-            let c_text = synthesizer_bookmark_event_get_text(handle);
+            let c_text = synthesizer_event_get_text(handle);
             let text = CStr::from_ptr(c_text).to_str()?.to_owned();
 
             ret = property_bag_free_string(c_text);
