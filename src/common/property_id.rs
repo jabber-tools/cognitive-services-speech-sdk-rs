@@ -101,6 +101,18 @@ pub enum PropertyId {
     /// to the service as URL query parameters.
     SpeechServiceConnectionUserDefinedQueryParameters = 3003,
 
+    /// The name of the model to be used for speech recognition.
+    /// Under normal circumstances, you shouldn't use this property directly.
+    /// Currently this is only valid when EmbeddedSpeechConfig is used.
+    /// Added in version 1.19.0
+    SpeechServiceConnectionRecoModelName = 3005,
+
+    /// The decryption key of the model to be used for speech recognition.
+    /// Under normal circumstances, you shouldn't use this property directly.
+    /// Currently this is only valid when EmbeddedSpeechConfig is used.
+    /// Added in version 1.19.0
+    SpeechServiceConnectionRecoModelKey = 3006,
+
     //// SpeechServiceConnectionSynthLanguage is the spoken language to be synthesized (e.g. en-US)
     SpeechServiceConnectionSynthLanguage = 3100,
 
@@ -116,6 +128,16 @@ pub enum PropertyId {
     /// If this property is not set and GStreamer is available, SDK will use compressed format for synthesized audio transmission,
     /// and decode it. You can set this property to "false" to use raw pcm format for transmission on wire.
     SpeechServiceConnectionSynthEnableCompressedAudioTransmission = 3103,
+
+    /// The name of the offline TTS voice to be used for speech synthesis
+    /// Under normal circumstances, you shouldn't use this property directly.
+    /// Added in version 1.19.0
+    SpeechServiceConnectionSynthOfflineVoice = 3113,
+
+    /// The decryption key of the voice to be used for speech synthesis.
+    /// Under normal circumstances, you shouldn't use this property directly.
+    /// Added in version 1.19.0
+    SpeechServiceConnectionSynthModelKey = 3114,
 
     /// SpeechServiceConnectionInitialSilenceTimeoutMs is the initial silence timeout value (in milliseconds) used by the
     /// service.
@@ -301,11 +323,15 @@ impl PropertyId {
             PropertyId::SpeechServiceConnectionRecoLanguage => 3001,
             PropertyId::SpeechSessionId => 3002,
             PropertyId::SpeechServiceConnectionUserDefinedQueryParameters => 3003,
+            PropertyId::SpeechServiceConnectionRecoModelName => 3005,
+            PropertyId::SpeechServiceConnectionRecoModelKey => 3006,
 
             PropertyId::SpeechServiceConnectionSynthLanguage => 3100,
             PropertyId::SpeechServiceConnectionSynthVoice => 3101,
             PropertyId::SpeechServiceConnectionSynthOutputFormat => 3102,
             PropertyId::SpeechServiceConnectionSynthEnableCompressedAudioTransmission => 3103,
+            PropertyId::SpeechServiceConnectionSynthOfflineVoice => 3113,
+            PropertyId::SpeechServiceConnectionSynthModelKey => 3114,
             PropertyId::SpeechServiceConnectionInitialSilenceTimeoutMs => 3200,
             PropertyId::SpeechServiceConnectionEndSilenceTimeoutMs => 3201,
             PropertyId::SpeechServiceConnectionEnableAudioLogging => 3202,

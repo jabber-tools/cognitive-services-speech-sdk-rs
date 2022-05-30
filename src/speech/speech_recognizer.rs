@@ -20,9 +20,9 @@ use crate::ffi::{
     SPXRESULTHANDLE,
 };
 use crate::speech::{
-    AutoDetectSourceLanguageConfig, KeywordRecognitionModel, RecognitionEvent, SessionEvent,
-    SourceLanguageConfig, SpeechConfig, SpeechRecognitionCanceledEvent, SpeechRecognitionEvent,
-    SpeechRecognitionResult,
+    AutoDetectSourceLanguageConfig, EmbeddedSpeechConfig, KeywordRecognitionModel,
+    RecognitionEvent, SessionEvent, SourceLanguageConfig, SpeechConfig,
+    SpeechRecognitionCanceledEvent, SpeechRecognitionEvent, SpeechRecognitionResult,
 };
 use log::*;
 use std::boxed::Box;
@@ -100,6 +100,13 @@ impl SpeechRecognizer {
             )?;
             SpeechRecognizer::from_handle(handle)
         }
+    }
+
+    pub fn from_embedded_config(
+        speech_config: EmbeddedSpeechConfig,
+        audio_config: AudioConfig,
+    ) -> Result<SpeechRecognizer> {
+        SpeechRecognizer::from_config(speech_config.into(), audio_config)
     }
 
     pub fn from_auto_detect_source_lang_config(
