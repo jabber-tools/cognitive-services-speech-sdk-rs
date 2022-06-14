@@ -10,7 +10,7 @@ use std::convert::TryFrom;
 use std::ffi::CString;
 use std::fmt;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_int, c_void};
+use std::os::raw::{c_char, c_int, c_void};
 
 /// This trait that must be implemented by callback struct
 /// passed into  pull audio input stream during initialization.
@@ -188,7 +188,7 @@ impl PullAudioInputStream {
                     }
                     std::ptr::copy_nonoverlapping(
                         c_prop_value.as_ptr(),
-                        value as *mut i8,
+                        value as *mut c_char,
                         bytes_count_to_copy,
                     );
                 }
