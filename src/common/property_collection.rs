@@ -1,8 +1,8 @@
 use crate::common::PropertyId;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    property_bag_get_string, property_bag_release, property_bag_set_string, SmartHandle,
-    NULL_C_STR_PTR, SPXPROPERTYBAGHANDLE,
+    property_bag_free_string, property_bag_get_string, property_bag_release,
+    property_bag_set_string, SmartHandle, NULL_C_STR_PTR, SPXPROPERTYBAGHANDLE,
 };
 use std::ffi::{CStr, CString};
 
@@ -77,7 +77,14 @@ impl PropertyCollection {
                 // happnening in SpeechRecognitionCanceledEvent::from_handle
                 // when getting property SpeechServiceResponseJsonErrorDetails
                 // valid UTF-8 data -> we use to_string_lossy()
-                Ok(CStr::from_ptr(ret).to_string_lossy().into_owned())
+                let value = CStr::from_ptr(ret).to_string_lossy().into_owned();
+
+                convert_err(
+                    property_bag_free_string(ret),
+                    "PropertyCollection::get_property(property_bag_free_string) error",
+                )?;
+
+                Ok(value)
             }
         }
     }
@@ -96,7 +103,14 @@ impl PropertyCollection {
                 Ok("".to_owned())
             } else {
                 // Ok(CStr::from_ptr(ret).to_str()?.to_owned())
-                Ok(CStr::from_ptr(ret).to_string_lossy().into_owned())
+                let value = CStr::from_ptr(ret).to_string_lossy().into_owned();
+
+                convert_err(
+                    property_bag_free_string(ret),
+                    "PropertyCollection::get_property_by_string(property_bag_free_string) error",
+                )?;
+
+                Ok(value)
             }
         }
     }
