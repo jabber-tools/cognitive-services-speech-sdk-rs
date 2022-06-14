@@ -87,4 +87,44 @@ pub enum SpeechSynthesisOutputFormat {
 
     /// Riff8Khz8BitMonoALaw stands for riff-8khz-8bit-mono-alaw
     Riff8Khz8BitMonoALaw = 29,
+
+    /// webm-24khz-16bit-24kbps-mono-opus
+    /// Audio compressed by OPUS codec in a WebM container, with bitrate of 24kbps, optimized for IoT scenario.
+    /// (Added in 1.19.0)
+    Webm24Khz16Bit24KbpsMonoOpus = 30,
+
+    /// audio-16khz-16bit-32kbps-mono-opus
+    /// Audio compressed by OPUS codec without container, with bitrate of 32kbps.
+    /// (Added in 1.20.0)
+    Audio16Khz16Bit32KbpsMonoOpus = 31,
+
+    /// audio-24khz-16bit-48kbps-mono-opus
+    /// Audio compressed by OPUS codec without container, with bitrate of 48kbps.
+    /// (Added in 1.20.0)
+    Audio24Khz16Bit48KbpsMonoOpus = 32,
+
+    /// audio-24khz-16bit-24kbps-mono-opus
+    /// Audio compressed by OPUS codec without container, with bitrate of 24kbps.
+    /// (Added in 1.20.0)
+    Audio24Khz16Bit24KbpsMonoOpus = 33,
+
+    /// raw-22050hz-16bit-mono-pcm
+    /// Raw PCM audio at 22050Hz sampling rate and 16-bit depth.
+    /// (Added in 1.22.0)
+    Raw22050Hz16BitMonoPcm = 34,
+
+    /// riff-22050hz-16bit-mono-pcm
+    /// PCM audio at 22050Hz sampling rate and 16-bit depth, with RIFF header.
+    /// (Added in 1.22.0)
+    Riff22050Hz16BitMonoPcm = 35,
+
+    /// raw-44100hz-16bit-mono-pcm
+    /// Raw PCM audio at 44100Hz sampling rate and 16-bit depth.
+    /// (Added in 1.22.0)
+    Raw44100Hz16BitMonoPcm = 36,
+
+    /// riff-44100hz-16bit-mono-pcm
+    /// PCM audio at 44100Hz sampling rate and 16-bit depth, with RIFF header.
+    /// (Added in 1.22.0)
+    Riff44100Hz16BitMonoPcm = 37,
 }
