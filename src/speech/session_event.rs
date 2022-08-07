@@ -6,7 +6,6 @@ use crate::ffi::{
 use log::*;
 use std::ffi::CStr;
 use std::fmt;
-use std::os::raw::c_char;
 
 /// Base *SpeechRecognizer* event passed into callbacks *set_session_started_cb* and *set_session_stopped_cb*.
 pub struct SessionEvent {
@@ -27,16 +26,19 @@ impl fmt::Debug for SessionEvent {
 
 impl SessionEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
-        let mut buffer: [u8; 37] = [0; 37];
+        let mut c_buf = [0; 37];
 
         unsafe {
-            let c_buf: *mut c_char = &mut buffer as *const _ as *mut c_char;
             trace!("calling recognizer_session_event_get_session_id");
-            let ret = recognizer_session_event_get_session_id(handle, c_buf, 37);
+            let ret = recognizer_session_event_get_session_id(
+                handle,
+                c_buf.as_mut_ptr(),
+                c_buf.len() as u32,
+            );
             convert_err(ret, "SessionEvent::from_handle error")?;
             trace!("called recognizer_session_event_get_session_id");
 
-            let c_str: &CStr = CStr::from_ptr(c_buf);
+            let c_str: &CStr = CStr::from_ptr(c_buf.as_ptr());
             let str_slice: &str = c_str.to_str()?;
             let str_buf: String = str_slice.to_owned();
             trace!("converted cstring to owned string");
