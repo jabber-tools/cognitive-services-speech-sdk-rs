@@ -1,3 +1,4 @@
+use crate::common::SpeechSynthesisBoundaryType;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     synthesizer_event_handle_release, synthesizer_word_boundary_event_get_values, SmartHandle,
@@ -13,6 +14,7 @@ pub struct SpeechSynthesisWordBoundaryEvent {
     pub duration_ms: u64,
     pub text_offset: u32,
     pub word_length: u32,
+    pub boundary_type: SpeechSynthesisBoundaryType,
 }
 
 impl SpeechSynthesisWordBoundaryEvent {
@@ -34,6 +36,8 @@ impl SpeechSynthesisWordBoundaryEvent {
             );
             convert_err(ret, "SpeechSynthesisWordBoundaryEvent::from_handle error")?;
 
+            let boundary_type = SpeechSynthesisBoundaryType::from_u32(boundary_type);
+
             Ok(SpeechSynthesisWordBoundaryEvent {
                 handle: SmartHandle::create(
                     "SpeechSynthesisWordBoundaryEvent",
@@ -44,6 +48,7 @@ impl SpeechSynthesisWordBoundaryEvent {
                 duration_ms,
                 text_offset,
                 word_length,
+                boundary_type,
             })
         }
     }
