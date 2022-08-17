@@ -7,7 +7,7 @@ use std::{
     str,
 };
 
-const LINUX_SDK_URL: &str  = "https://github.com/jabber-tools/cognitive-services-speech-sdk-rs-files/blob/main/SpeechSDK/1.16.0/linux/SpeechSDK-Linux-1.16.0.tar.gz?raw=true";
+const LINUX_SDK_URL: &str  = "https://github.com/jabber-tools/cognitive-services-speech-sdk-rs-files/blob/main/SpeechSDK/1.22.0/linux/SpeechSDK-Linux-1.22.0.tar.gz?raw=true";
 
 fn download_file(url: &str, dst: &str) {
     Command::new("curl")

@@ -2,6 +2,11 @@
 #![allow(warnings)]
 include!("ffi/bindings.rs");
 
+// manual entry as API v1.21.0 is using this types as #define so bindings.rs does not contains them
+pub type SPXPROPERTYBAGHANDLE = AZAC_HANDLE;
+pub type SPXHANDLE = AZAC_HANDLE;
+pub type SPXHR = AZACHR;
+
 use log::*;
 use std::fmt::Debug;
 use std::fmt::Display;

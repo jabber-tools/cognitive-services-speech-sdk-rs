@@ -1,6 +1,8 @@
 //! Package error contains struct Error used to wrap library errors.
-use crate::ffi::SPX_NOERROR;
-use std::ffi::NulError;
+use crate::ffi::{
+    error_get_error_code, error_get_message, error_release, AZAC_HANDLE, SPX_NOERROR,
+};
+use std::ffi::{CStr, NulError};
 use std::num::TryFromIntError;
 use std::result;
 use std::str::Utf8Error;
@@ -104,7 +106,20 @@ pub type Result<T> = result::Result<T, Error>;
 #[inline(always)]
 pub fn convert_err(hr: usize, err_msg: &str) -> Result<()> {
     if hr != SPX_NOERROR as usize {
-        Err(Error::new(err_msg.into(), ErrorRootCause::ApiError(hr)))
+        unsafe {
+            let error_handle = hr as AZAC_HANDLE;
+            let code = error_get_error_code(error_handle);
+            let message = CStr::from_ptr(error_get_message(error_handle))
+                .to_str()
+                .unwrap_or("");
+
+            error_release(error_handle);
+
+            Err(Error::new(
+                err_msg.to_string() + ": " + message,
+                ErrorRootCause::ApiError(code),
+            ))
+        }
     } else {
         Ok(())
     }

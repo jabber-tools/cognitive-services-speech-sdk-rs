@@ -8,7 +8,7 @@ use crate::ffi::{
 use std::ffi::CStr;
 use std::fmt;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::c_uint;
 
 /// Represents speech recognition result contained within callback event *SpeechRecognitionEvent*.
 pub struct SpeechRecognitionResult {
@@ -36,13 +36,13 @@ impl fmt::Debug for SpeechRecognitionResult {
 impl SpeechRecognitionResult {
     pub fn from_handle(handle: SPXRESULTHANDLE) -> Result<SpeechRecognitionResult> {
         unsafe {
-            let c_buf: *mut c_char = &mut [0u8; 1024] as *const _ as *mut c_char;
-            let mut ret = result_get_result_id(handle, c_buf, 1024);
+            let mut c_buf = [0; 1024];
+            let mut ret = result_get_result_id(handle, c_buf.as_mut_ptr(), c_buf.len() as u32);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_result_id) error",
             )?;
-            let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
+            let result_id = CStr::from_ptr(c_buf.as_ptr()).to_str()?.to_owned();
 
             let mut reason: c_uint = MaybeUninit::uninit().assume_init();
             ret = result_get_reason(handle, &mut reason);
@@ -51,13 +51,13 @@ impl SpeechRecognitionResult {
                 "SpeechRecognitionResult::from_handle(result_get_reason) error",
             )?;
 
-            let c_buf2: *mut c_char = &mut [0u8; 1024] as *const _ as *mut c_char;
-            ret = result_get_text(handle, c_buf2, 1024);
+            let mut c_buf2 = [0; 1024];
+            ret = result_get_text(handle, c_buf2.as_mut_ptr(), c_buf2.len() as u32);
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_text) error",
             )?;
-            let result_text = CStr::from_ptr(c_buf2).to_str()?.to_owned();
+            let result_text = CStr::from_ptr(c_buf2.as_ptr()).to_str()?.to_owned();
 
             let mut duration: u64 = MaybeUninit::uninit().assume_init();
             ret = result_get_duration(handle, &mut duration);
