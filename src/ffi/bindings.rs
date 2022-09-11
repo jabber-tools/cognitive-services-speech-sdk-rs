@@ -32,9 +32,9 @@ pub const __GLIBC__: u32 = 2;
 pub const __GLIBC_MINOR__: u32 = 31;
 pub const _SYS_CDEFS_H: u32 = 1;
 pub const __glibc_c99_flexarr_available: u32 = 1;
-pub const __MHWORDSIZE: u32 = 64;
 pub const __WORDSIZE: u32 = 64;
-pub const __WORDSIZE_TIME64_COMPAT32: u32 = 0;
+pub const __WORDSIZE_TIME64_COMPAT32: u32 = 1;
+pub const __SYSCALL_WORDSIZE: u32 = 64;
 pub const __LONG_DOUBLE_USES_FLOAT128: u32 = 0;
 pub const __HAVE_GENERIC_SELECTION: u32 = 1;
 pub const __GLIBC_USE_LIB_EXT2: u32 = 0;
@@ -259,20 +259,21 @@ pub const __AZAC_TRACE_LEVEL_VERBOSE: u32 = 16;
 pub const true_: u32 = 1;
 pub const false_: u32 = 0;
 pub const __bool_true_false_are_defined: u32 = 1;
+pub const __GNUC_VA_LIST: u32 = 1;
 pub const SPX_NOERROR: u32 = 0;
 pub const __SPX_TRACE_LEVEL_INFO: u32 = 8;
 pub const __SPX_TRACE_LEVEL_WARNING: u32 = 4;
 pub const __SPX_TRACE_LEVEL_ERROR: u32 = 2;
 pub const __SPX_TRACE_LEVEL_VERBOSE: u32 = 16;
 pub type size_t = ::std::os::raw::c_ulong;
-pub type wchar_t = ::std::os::raw::c_uint;
+pub type wchar_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[repr(align(16))]
 #[derive(Debug, Copy, Clone)]
 pub struct max_align_t {
-    pub __max_align_ll: ::std::os::raw::c_longlong,
+    pub __clang_max_align_nonce1: ::std::os::raw::c_longlong,
     pub __bindgen_padding_0: u64,
-    pub __max_align_ld: u128,
+    pub __clang_max_align_nonce2: u128,
 }
 #[test]
 fn bindgen_test_layout_max_align_t() {
@@ -287,23 +288,27 @@ fn bindgen_test_layout_max_align_t() {
         concat!("Alignment of ", stringify!(max_align_t))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<max_align_t>())).__max_align_ll as *const _ as usize },
+        unsafe {
+            &(*(::std::ptr::null::<max_align_t>())).__clang_max_align_nonce1 as *const _ as usize
+        },
         0usize,
         concat!(
             "Offset of field: ",
             stringify!(max_align_t),
             "::",
-            stringify!(__max_align_ll)
+            stringify!(__clang_max_align_nonce1)
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<max_align_t>())).__max_align_ld as *const _ as usize },
+        unsafe {
+            &(*(::std::ptr::null::<max_align_t>())).__clang_max_align_nonce2 as *const _ as usize
+        },
         16usize,
         concat!(
             "Offset of field: ",
             stringify!(max_align_t),
             "::",
-            stringify!(__max_align_ld)
+            stringify!(__clang_max_align_nonce2)
         )
     );
 }
@@ -337,7 +342,7 @@ pub type __gid_t = ::std::os::raw::c_uint;
 pub type __ino_t = ::std::os::raw::c_ulong;
 pub type __ino64_t = ::std::os::raw::c_ulong;
 pub type __mode_t = ::std::os::raw::c_uint;
-pub type __nlink_t = ::std::os::raw::c_uint;
+pub type __nlink_t = ::std::os::raw::c_ulong;
 pub type __off_t = ::std::os::raw::c_long;
 pub type __off64_t = ::std::os::raw::c_long;
 pub type __pid_t = ::std::os::raw::c_int;
@@ -380,7 +385,7 @@ pub type __daddr_t = ::std::os::raw::c_int;
 pub type __key_t = ::std::os::raw::c_int;
 pub type __clockid_t = ::std::os::raw::c_int;
 pub type __timer_t = *mut ::std::os::raw::c_void;
-pub type __blksize_t = ::std::os::raw::c_int;
+pub type __blksize_t = ::std::os::raw::c_long;
 pub type __blkcnt_t = ::std::os::raw::c_long;
 pub type __blkcnt64_t = ::std::os::raw::c_long;
 pub type __fsblkcnt_t = ::std::os::raw::c_ulong;
@@ -418,7 +423,7 @@ pub type uintmax_t = __uintmax_t;
 #[doc = " Type definition for Azure AI Core result codes."]
 #[doc = " </summary>"]
 pub type AZACHR = usize;
-pub type __gwchar_t = ::std::os::raw::c_uint;
+pub type __gwchar_t = ::std::os::raw::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct imaxdiv_t {
@@ -510,8 +515,8 @@ fn bindgen_test_layout__azac_empty() {
 }
 pub type _azachandle = *mut _azac_empty;
 pub type AZAC_HANDLE = _azachandle;
+pub type va_list = __builtin_va_list;
 pub type __gnuc_va_list = __builtin_va_list;
-pub type va_list = __gnuc_va_list;
 extern "C" {
     pub fn diagnostics_log_start_logging(
         hpropbag: AZAC_HANDLE,
@@ -590,7 +595,7 @@ extern "C" {
         fileName: *const ::std::os::raw::c_char,
         lineNumber: ::std::os::raw::c_int,
         pszFormat: *const ::std::os::raw::c_char,
-        argptr: va_list,
+        argptr: *mut __va_list_tag,
     );
 }
 extern "C" {
@@ -619,7 +624,7 @@ extern "C" {
         fileName: *const ::std::os::raw::c_char,
         lineNumber: ::std::os::raw::c_int,
         pszFormat: *const ::std::os::raw::c_char,
-        argptr: va_list,
+        argptr: *mut __va_list_tag,
     );
 }
 extern "C" {
@@ -1995,24 +2000,22 @@ pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Webm24Khz16
     Speech_Synthesis_Output_Format = 26;
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Raw24Khz16BitMonoTrueSilk:
     Speech_Synthesis_Output_Format = 27;
-#[doc = " raw-8khz-8bit-mono-alaw"]
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Raw8Khz8BitMonoALaw:
     Speech_Synthesis_Output_Format = 28;
-#[doc = " riff-8khz-8bit-mono-alaw"]
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Riff8Khz8BitMonoALaw:
     Speech_Synthesis_Output_Format = 29;
-#[doc = " webm-24khz-16bit-24kbps-mono-opus"]
-#[doc = " Audio compressed by OPUS codec in a WebM container, with bitrate of 24kbps, optimized for IoT scenario."]
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Webm24Khz16Bit24KbpsMonoOpus : Speech_Synthesis_Output_Format = 30 ;
-#[doc = " audio-16khz-16bit-32kbps-mono-opus"]
-#[doc = " Audio compressed by OPUS codec without container, with bitrate of 32kbps."]
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Audio16Khz16Bit32KbpsMonoOpus : Speech_Synthesis_Output_Format = 31 ;
-#[doc = " audio-24khz-48bit-mono-opus"]
-#[doc = " Audio compressed by OPUS codec without container, with bitrate of 48kbps."]
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Audio24Khz16Bit48KbpsMonoOpus : Speech_Synthesis_Output_Format = 32 ;
-#[doc = " audio-24khz-24bit-mono-opus"]
-#[doc = " Audio compressed by OPUS codec without container, with bitrate of 24kbps."]
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Audio24Khz16Bit24KbpsMonoOpus : Speech_Synthesis_Output_Format = 33 ;
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Raw22050Hz16BitMonoPcm:
+    Speech_Synthesis_Output_Format = 34;
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Riff22050Hz16BitMonoPcm:
+    Speech_Synthesis_Output_Format = 35;
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Raw44100Hz16BitMonoPcm:
+    Speech_Synthesis_Output_Format = 36;
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Riff44100Hz16BitMonoPcm:
+    Speech_Synthesis_Output_Format = 37;
 pub type Speech_Synthesis_Output_Format = ::std::os::raw::c_uint;
 pub const SpeechConfig_ServicePropertyChannel_SpeechConfig_ServicePropertyChannel_UriQueryParameter : SpeechConfig_ServicePropertyChannel = 0 ;
 pub const SpeechConfig_ServicePropertyChannel_SpeechConfig_ServicePropertyChannel_HttpHeader:
@@ -3958,7 +3961,9 @@ extern "C" {
     pub fn get_profiles_json(
         hVoiceProfileClient: SPXVOICEPROFILECLIENTHANDLE,
         type_: ::std::os::raw::c_int,
-    ) -> *const ::std::os::raw::c_char;
+        ppsz: *mut *mut ::std::os::raw::c_char,
+        pcch: *mut size_t,
+    ) -> AZACHR;
 }
 extern "C" {
     pub fn retrieve_enrollment_result(
@@ -4144,76 +4149,65 @@ extern "C" {
         hpropbag: *mut AZAC_HANDLE,
     ) -> AZACHR;
 }
-pub type __builtin_va_list = __va_list;
+pub type __builtin_va_list = [__va_list_tag; 1usize];
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct __va_list {
-    pub __stack: *mut ::std::os::raw::c_void,
-    pub __gr_top: *mut ::std::os::raw::c_void,
-    pub __vr_top: *mut ::std::os::raw::c_void,
-    pub __gr_offs: ::std::os::raw::c_int,
-    pub __vr_offs: ::std::os::raw::c_int,
+pub struct __va_list_tag {
+    pub gp_offset: ::std::os::raw::c_uint,
+    pub fp_offset: ::std::os::raw::c_uint,
+    pub overflow_arg_area: *mut ::std::os::raw::c_void,
+    pub reg_save_area: *mut ::std::os::raw::c_void,
 }
 #[test]
-fn bindgen_test_layout___va_list() {
+fn bindgen_test_layout___va_list_tag() {
     assert_eq!(
-        ::std::mem::size_of::<__va_list>(),
-        32usize,
-        concat!("Size of: ", stringify!(__va_list))
+        ::std::mem::size_of::<__va_list_tag>(),
+        24usize,
+        concat!("Size of: ", stringify!(__va_list_tag))
     );
     assert_eq!(
-        ::std::mem::align_of::<__va_list>(),
+        ::std::mem::align_of::<__va_list_tag>(),
         8usize,
-        concat!("Alignment of ", stringify!(__va_list))
+        concat!("Alignment of ", stringify!(__va_list_tag))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list>())).__stack as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).gp_offset as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
-            stringify!(__va_list),
+            stringify!(__va_list_tag),
             "::",
-            stringify!(__stack)
+            stringify!(gp_offset)
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list>())).__gr_top as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).fp_offset as *const _ as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(__va_list_tag),
+            "::",
+            stringify!(fp_offset)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).overflow_arg_area as *const _ as usize },
         8usize,
         concat!(
             "Offset of field: ",
-            stringify!(__va_list),
+            stringify!(__va_list_tag),
             "::",
-            stringify!(__gr_top)
+            stringify!(overflow_arg_area)
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list>())).__vr_top as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).reg_save_area as *const _ as usize },
         16usize,
         concat!(
             "Offset of field: ",
-            stringify!(__va_list),
+            stringify!(__va_list_tag),
             "::",
-            stringify!(__vr_top)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list>())).__gr_offs as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__va_list),
-            "::",
-            stringify!(__gr_offs)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list>())).__vr_offs as *const _ as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__va_list),
-            "::",
-            stringify!(__vr_offs)
+            stringify!(reg_save_area)
         )
     );
 }
