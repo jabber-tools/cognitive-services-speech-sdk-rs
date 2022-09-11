@@ -8,6 +8,7 @@ use crate::ffi::{
     speech_config_set_profanity, speech_config_set_service_property, SmartHandle, SPXHANDLE,
     SPXPROPERTYBAGHANDLE, SPXSPEECHCONFIGHANDLE,
 };
+use crate::speech::EmbeddedSpeechConfig;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
 
@@ -16,6 +17,12 @@ use std::mem::MaybeUninit;
 pub struct SpeechConfig {
     pub handle: SmartHandle<SPXSPEECHCONFIGHANDLE>,
     properties: PropertyCollection,
+}
+
+impl From<EmbeddedSpeechConfig> for SpeechConfig {
+    fn from(esc: EmbeddedSpeechConfig) -> SpeechConfig {
+        esc.config
+    }
 }
 
 impl SpeechConfig {

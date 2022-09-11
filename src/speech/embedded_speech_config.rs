@@ -20,7 +20,7 @@ use std::path::Path;
 /// Added in version 1.19.0
 #[derive(Debug)]
 pub struct EmbeddedSpeechConfig {
-    config: SpeechConfig,
+    pub config: SpeechConfig,
 }
 
 impl EmbeddedSpeechConfig {
@@ -163,12 +163,6 @@ impl EmbeddedSpeechConfig {
     /// Gets the speech synthesis output format.
     pub fn get_speech_synthesis_output_format(&self) -> Result<String> {
         self.config.get_speech_synthesis_output_format()
-    }
-}
-
-impl Into<SpeechConfig> for EmbeddedSpeechConfig {
-    fn into(self) -> SpeechConfig {
-        self.config
     }
 }
 
