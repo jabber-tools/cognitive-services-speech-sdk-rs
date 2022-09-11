@@ -51,7 +51,7 @@ impl AutoDetectSourceLanguageConfig {
                 c_languages_str.as_ptr(),
             );
             convert_err(ret, "AutoDetectSourceLanguageConfig::from_languages error")?;
-            Ok(AutoDetectSourceLanguageConfig::from_handle(handle)?)
+            AutoDetectSourceLanguageConfig::from_handle(handle)
         }
     }
 
@@ -81,7 +81,7 @@ impl AutoDetectSourceLanguageConfig {
                 )?;
             }
 
-            Ok(AutoDetectSourceLanguageConfig::from_handle(handle)?)
+            AutoDetectSourceLanguageConfig::from_handle(handle)
         }
     }
 
@@ -92,7 +92,7 @@ impl AutoDetectSourceLanguageConfig {
                 MaybeUninit::uninit().assume_init();
             let ret = create_auto_detect_source_lang_config_from_open_range(&mut handle);
             convert_err(ret, "AutoDetectSourceLanguageConfig::from_open_range error")?;
-            Ok(AutoDetectSourceLanguageConfig::from_handle(handle)?)
+            AutoDetectSourceLanguageConfig::from_handle(handle)
         }
     }
 }

@@ -31,7 +31,7 @@ impl KeywordRecognitionModel {
             let mut handle: SPXKEYWORDHANDLE = MaybeUninit::uninit().assume_init();
             let ret = keyword_recognition_model_create_from_file(c_filename.as_ptr(), &mut handle);
             convert_err(ret, "KeywordRecognitionModel::from_file error")?;
-            Ok(KeywordRecognitionModel::from_handle(handle)?)
+            KeywordRecognitionModel::from_handle(handle)
         }
     }
 }

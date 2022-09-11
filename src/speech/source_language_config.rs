@@ -41,7 +41,7 @@ impl SourceLanguageConfig {
             let mut handle: SPXSOURCELANGCONFIGHANDLE = MaybeUninit::uninit().assume_init();
             let ret = source_lang_config_from_language(&mut handle, c_language.as_ptr());
             convert_err(ret, "SourceLanguageConfig::from_language error")?;
-            Ok(SourceLanguageConfig::from_handle(handle)?)
+            SourceLanguageConfig::from_handle(handle)
         }
     }
 
@@ -62,7 +62,7 @@ impl SourceLanguageConfig {
                 ret,
                 "SourceLanguageConfig::from_language_and_endpoint_id error",
             )?;
-            Ok(SourceLanguageConfig::from_handle(handle)?)
+            SourceLanguageConfig::from_handle(handle)
         }
     }
 }
