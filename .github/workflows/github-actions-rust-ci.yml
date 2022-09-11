@@ -24,4 +24,4 @@ jobs:
     - name: Run fmt
       run: cargo fmt -- --check
     - name: Run clippy
-      run: cargo clippy -- -D warnings -A clippy::uninit_assumed_init -A clippy::bool_comparison
+      run: cargo clippy -- -D warnings -A clippy::uninit_assumed_init -A clippy::bool_comparison -A clippy::not_unsafe_ptr_arg_deref
