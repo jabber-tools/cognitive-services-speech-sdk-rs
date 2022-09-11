@@ -23,12 +23,11 @@ pub struct SpeechSynthesisResult {
 
 impl fmt::Debug for SpeechSynthesisResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let audio_data_truncated;
-        if self.audio_data.len() > 10 {
-            audio_data_truncated = &self.audio_data[..10];
+        let audio_data_truncated = if self.audio_data.len() > 10 {
+            &self.audio_data[..10]
         } else {
-            audio_data_truncated = &self.audio_data[..];
-        }
+            &self.audio_data[..]
+        };
         f.debug_struct("SpeechRecognitionResult")
             .field("result_id", &self.result_id)
             .field("reason", &self.reason)

@@ -179,13 +179,12 @@ impl PullAudioInputStream {
         match callbacks.get_property(id) {
             Ok(prop_value) => match CString::new(prop_value) {
                 Ok(c_prop_value) => {
-                    let bytes_count_to_copy;
                     let c_prop_value_bytes_count = c_prop_value.as_bytes().len();
-                    if c_prop_value_bytes_count < converted_size {
-                        bytes_count_to_copy = c_prop_value_bytes_count;
+                    let bytes_count_to_copy = if c_prop_value_bytes_count < converted_size {
+                        c_prop_value_bytes_count
                     } else {
-                        bytes_count_to_copy = converted_size;
-                    }
+                        converted_size
+                    };
                     std::ptr::copy_nonoverlapping(
                         c_prop_value.as_ptr(),
                         value as *mut c_char,
