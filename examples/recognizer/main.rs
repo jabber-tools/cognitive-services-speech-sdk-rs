@@ -1,6 +1,7 @@
 mod continuous_recognition_from_file;
 mod continuous_recognition_pull_stream;
 mod continuous_recognition_push_stream;
+mod embedded_recognize_once_async_from_file;
 mod from_microphone;
 mod helpers;
 mod recognize_once_async_from_file;
@@ -20,4 +21,7 @@ async fn main() {
     continuous_recognition_pull_stream::run_example().await;
     // works only on system with properly configured microphone
     // from_microphone::run_example().await;
+
+    // not available in public release yet
+    //embedded_recognize_once_async_from_file::run_example().await;
 }

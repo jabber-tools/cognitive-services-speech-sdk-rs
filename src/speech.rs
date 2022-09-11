@@ -2,6 +2,7 @@
 mod audio_data_stream;
 mod auto_detect_source_language_config;
 mod cancellation_details;
+mod embedded_speech_config;
 mod keyword_recognition_model;
 mod recognition_event;
 mod session_event;
@@ -24,6 +25,7 @@ mod voice_info;
 pub use self::audio_data_stream::AudioDataStream;
 pub use self::auto_detect_source_language_config::AutoDetectSourceLanguageConfig;
 pub use self::cancellation_details::CancellationDetails;
+pub use self::embedded_speech_config::EmbeddedSpeechConfig;
 pub use self::keyword_recognition_model::KeywordRecognitionModel;
 pub use self::recognition_event::RecognitionEvent;
 pub use self::session_event::SessionEvent;
