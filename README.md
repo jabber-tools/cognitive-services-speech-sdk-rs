@@ -132,11 +132,11 @@ cargo build
 
 ### How To Build On MacOS
 
-We are supporting MacOS arm64_x86_64 architecture.
+We are supporting MacOS **arm64_x86_64** architecture.
 
-In order to build on MacOS, download respective binaries of MS Speech SDK(v1.23.0) from [here](https://www.dropbox.com/s/w78qg20r60dm5ar/MicrosoftCognitiveServicesSpeech-XCFramework-1.23.0.zip?dl=0). You can also download [latest MacOS Speech SDK from MS page](https://aka.ms/csspeech/macosbinary) but the problem is these are always the latest binaries so current version of this library might be not tested with them and working well.
+In order to build on MacOS, download respective binaries of MS Speech SDK(v1.23.0) from [here](https://www.dropbox.com/s/w78qg20r60dm5ar/MicrosoftCognitiveServicesSpeech-XCFramework-1.23.0.zip?dl=0). You can also download [the latest MacOS Speech SDK from MS page](https://aka.ms/csspeech/macosbinary) but these are the latest binaries so current version of this library might be not tested with them and working well.
 
-Once downloaded extract the content of the zip file into dedicated folder, e.g. **/Users/xxx/speechsdk**. The content of the directory should look as follows:
+Once downloaded extract the content of the zip file (subfolder **MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64**) into dedicated folder, e.g. **/Users/xxx/speechsdk**. The content of the directory should look as follows:
 
 ```
 ➜  cd /Users/xxx/speechsdk 
