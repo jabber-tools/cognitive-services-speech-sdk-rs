@@ -9,7 +9,7 @@
 
 [crates-badge]: https://img.shields.io/crates/v/cognitive-services-speech-sdk-rs.svg
 [crates-url]: https://crates.io/crates/cognitive-services-speech-sdk-rs
-[rustdoc-badge]: https://img.shields.io/badge/rustdoc-0.2.0-green.svg
+[rustdoc-badge]: https://img.shields.io/badge/rustdoc-0.2.1-green.svg
 [rustdoc-url]: https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/0.2.0/cognitive_services_speech_sdk_rs/index.html
 
 Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
@@ -129,6 +129,18 @@ Build is generating Rust bindings for Speech SDK native functions. These are alr
 export MS_COG_SVC_SPEECH_SKIP_BINDGEN=1
 cargo build
 ```
+
+## Added in this version
+
+This version (0.2.0) brings following goodies:
+
+* Build support for ARM architecture.
+* Upgrade of Microsoft Speech SDK version to 1.22.0.
+* Preview of Embedded Speech Config (Details [here](https://docs.microsoft.com/en-us/cpp/cognitive-services/speech/embeddedspeechconfig)). See also *examples/recognizer/embedded_recognize_once_async_from_file*. 
+  *EmbeddedSpeechConfig* class is not yet available in public release (there are no tutorials/doc available how to create embedded speech models for this API) but Microsoft will be revealing this information in the near future (initially for selected customers only). 
+  This will hopefully make possible to run embedded speech models (possibly on ARM devices) in offline mode emerging some very interesting applications of this library.
+
+Version 0.2.1 brings on the top of that support for build on MacOs, see below.
 
 ### How To Build On MacOS
 
