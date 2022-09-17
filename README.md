@@ -132,4 +132,38 @@ cargo build
 
 ### How To Build On MacOS
 
-TBD
+We are supporting MacOS arm64_x86_64 architecture.
+
+In order to build on MacOS, download respective binaries of MS Speech SDK(v1.23.0) from [here](https://www.dropbox.com/s/w78qg20r60dm5ar/MicrosoftCognitiveServicesSpeech-XCFramework-1.23.0.zip?dl=0). You can also download [latest MacOS Speech SDK from MS page](https://aka.ms/csspeech/macosbinary) but the problem is these are always the latest binaries so current version of this library might be not tested with them and working well.
+
+Once downloaded extract the content of the zip file into dedicated folder, e.g. **/Users/xxx/speechsdk**. The content of the directory should look as follows:
+
+```
+➜  cd /Users/xxx/speechsdk 
+➜  speechsdk ls -la
+total 416
+drwxr-xr-x   6 xxx  staff     192 Sep 17 19:55 .
+drwxr-x---+ 66 xxx  staff    2112 Sep 17 23:21 ..
+drwxr-xr-x   7 xxx  staff     224 Sep 17 17:15 MicrosoftCognitiveServicesSpeech.xcframework
+-rw-r--r--   1 xxx  staff    1582 Jul 26 11:10 REDIST.txt
+-rw-r--r--   1 xxx  staff  191072 Jul 26 11:10 ThirdPartyNotices.md
+-rw-r--r--   1 xxx  staff   14893 Jul 26 11:10 license.md
+➜  speechsdk
+```
+
+Run following commands to build:
+```
+export MACOS_SPEECHSDK_ROOT=/Users/xxx/speechsdk
+cargo build
+```
+
+Speech SDK libraries are linked dynamically during the build and run.  When running the application use following environment variable to point to custom library location:
+
+```
+export DYLD_FALLBACK_FRAMEWORK_PATH=/Users/xxx/speechsdk/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64
+```
+
+The application or examples can be run, e.g.:
+```
+cargo run --example recognizer
+```
