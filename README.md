@@ -129,3 +129,7 @@ Build is generating Rust bindings for Speech SDK native functions. These are alr
 export MS_COG_SVC_SPEECH_SKIP_BINDGEN=1
 cargo build
 ```
+
+### How To Build On MacOS
+
+TBD
