@@ -7,8 +7,10 @@ use std::{
     str,
 };
 
+#[cfg(not(target_os = "macos"))]
 const LINUX_SDK_URL: &str  = "https://github.com/jabber-tools/cognitive-services-speech-sdk-rs-files/blob/main/SpeechSDK/1.22.0/linux/SpeechSDK-Linux-1.22.0.tar.gz?raw=true";
 
+#[cfg(not(target_os = "macos"))]
 fn download_file(url: &str, dst: &str) {
     Command::new("curl")
         .args(&["-SL", url, "-o", dst])
@@ -16,6 +18,7 @@ fn download_file(url: &str, dst: &str) {
         .expect("failed to download Speech SDK!");
 }
 
+#[cfg(not(target_os = "macos"))]
 fn main() {
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     // copying SpeechSDK from local folder just worked fine but crates.io allows
@@ -118,6 +121,39 @@ fn main() {
         .expect("Unable to generate bindings");
 
     // Write the bindings to the $OUT_DIR/bindings.rs file.
+    bindings
+        .write_to_file("src/ffi/bindings.rs")
+        .expect("Couldn't write bindings!");
+}
+
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+fn main() {
+    let speek_sdk_root = env::var("MACOS_SPEECHSDK_ROOT").expect(
+        "Set environment variable MACOS_SPEECHSDK_ROOT with location of MS Speech SDK library.",
+    );
+
+    println!("cargo:rustc-link-search=framework={}/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64", speek_sdk_root);
+    println!("cargo:rustc-link-lib=framework=MicrosoftCognitiveServicesSpeech");
+
+    let inc_arg = format!("-I{}/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64/MicrosoftCognitiveServicesSpeech.framework/Headers", speek_sdk_root);
+
+    let bindings_builder = bindgen::Builder::default()
+        .header("c_api/wrapper.h")
+        .clang_arg(inc_arg);
+
+    #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+    let bindings_builder = bindings_builder.clang_arg(
+        Command::new("gcc")
+            .arg("--print-file-name=include")
+            .output()
+            .map(|o| format!("-I{}", String::from_utf8_lossy(&o.stdout).trim()))
+            .unwrap(),
+    );
+
+    let bindings = bindings_builder
+        .generate()
+        .expect("Unable to generate bindings");
+
     bindings
         .write_to_file("src/ffi/bindings.rs")
         .expect("Couldn't write bindings!");
