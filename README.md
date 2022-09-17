@@ -157,13 +157,13 @@ export MACOS_SPEECHSDK_ROOT=/Users/xxx/speechsdk
 cargo build
 ```
 
-Speech SDK libraries are linked dynamically during the build and run.  When running the application use following environment variable to point to custom library location:
+Speech SDK libraries are linked dynamically during build and run. When running the application use following environment variable to point to custom library location:
 
 ```
 export DYLD_FALLBACK_FRAMEWORK_PATH=/Users/xxx/speechsdk/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64
 ```
 
-The application or examples can be run, e.g.:
+Then run your application utilizing **cognitive-services-speech-sdk-rs** or examples e.g.:
 ```
 cargo run --example recognizer
 ```
