@@ -9,7 +9,7 @@
 
 [crates-badge]: https://img.shields.io/crates/v/cognitive-services-speech-sdk-rs.svg
 [crates-url]: https://crates.io/crates/cognitive-services-speech-sdk-rs
-[rustdoc-badge]: https://img.shields.io/badge/rustdoc-0.2.1-green.svg
+[rustdoc-badge]: https://img.shields.io/badge/rustdoc-0.2.2-green.svg
 [rustdoc-url]: https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/0.2.0/cognitive_services_speech_sdk_rs/index.html
 
 Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
@@ -140,11 +140,13 @@ This version (0.2.0) brings following goodies:
   *EmbeddedSpeechConfig* class is not yet available in public release (there are no tutorials/doc available how to create embedded speech models for this API) but Microsoft will be revealing this information in the near future (initially for selected customers only). 
   This will hopefully make possible to run embedded speech models (possibly on ARM devices) in offline mode emerging some very interesting applications of this library.
 
-Version 0.2.1 brings on the top of that support for build on MacOs, see below.
+Version 0.2.1 brings on the top of that support for build on MacOs (target architecture **aarch64**), see below.
+
+Version 0.2.2 adds MacOS support for target architecture **arm**.
 
 ### How To Build On MacOS
 
-We are supporting MacOS **arm64_x86_64** architecture.
+We are supporting MacOS **arm** and **aarch64** architectures.
 
 In order to build on MacOS, download respective binaries of MS Speech SDK(v1.23.0) from [here](https://www.dropbox.com/s/w78qg20r60dm5ar/MicrosoftCognitiveServicesSpeech-XCFramework-1.23.0.zip?dl=0). You can also download the latest MacOS Speech SDK from [Microsoft page](https://aka.ms/csspeech/macosbinary) but this will be the latest version of MS Speech SDK which might be not tested and working well with current version of **cognitive-services-speech-sdk-rs**.
 
