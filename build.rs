@@ -128,7 +128,8 @@ fn main() {
 
 #[cfg(any(
     all(target_os = "macos", target_arch = "aarch64"),
-    all(target_os = "macos", target_arch = "arm")
+    all(target_os = "macos", target_arch = "arm"),
+    all(target_os = "macos", target_arch = "x86_64")
 ))]
 fn main() {
     let speek_sdk_root = env::var("MACOS_SPEECHSDK_ROOT").expect(
