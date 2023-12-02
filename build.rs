@@ -145,7 +145,6 @@ fn main() {
         .header("c_api/wrapper.h")
         .clang_arg(inc_arg);
 
-    #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
     let bindings_builder = bindings_builder.clang_arg(
         Command::new("gcc")
             .arg("--print-file-name=include")

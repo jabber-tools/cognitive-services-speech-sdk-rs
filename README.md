@@ -146,7 +146,7 @@ Version 0.2.2 adds MacOS support for target architecture **arm**.
 
 ### How To Build On MacOS
 
-We are supporting MacOS **arm** and **aarch64** architectures.
+We are supporting MacOS **arm** and **aarch64** and **x86_64** architectures.
 
 In order to build on MacOS, download respective binaries of MS Speech SDK(v1.23.0) from [here](https://www.dropbox.com/s/w78qg20r60dm5ar/MicrosoftCognitiveServicesSpeech-XCFramework-1.23.0.zip?dl=0). You can also download the latest MacOS Speech SDK from [Microsoft page](https://aka.ms/csspeech/macosbinary) but this will be the latest version of MS Speech SDK which might be not tested and working well with current version of **cognitive-services-speech-sdk-rs**.
 
