@@ -77,12 +77,8 @@ fn main() {
     // to bindgen, and lets you build up options for
     // the resulting bindings.
     let bindings_builder = bindgen::Builder::default()
-        // The input header we would like to generate
-        // bindings for.
+        // The input header we would like to generate bindings for.
         .header("c_api/wrapper.h")
-        // use line below when building from local SpeechSDK folder
-        //.clang_arg("-ISpeechSDK/include/c_api/")
-        // use this line when building from downloaded files in OUT_DIR
         .clang_arg(inc_arg.as_str());
 
     #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
@@ -102,7 +98,7 @@ fn main() {
         // Unwrap the Result and panic on failure.
         .expect("Unable to generate bindings");
 
-    // Write the bindings to the $OUT_DIR/bindings.rs file.
+    // Write the bindings to the src/ffi/bindings.rs file.
     bindings
         .write_to_file("src/ffi/bindings.rs")
         .expect("Couldn't write bindings!");
@@ -249,12 +245,8 @@ fn main() {
     // to bindgen, and lets you build up options for
     // the resulting bindings.
     let bindings_builder = bindgen::Builder::default()
-        // The input header we would like to generate
-        // bindings for.
+        // The input header we would like to generate bindings for.
         .header("c_api/wrapper.h")
-        // use line below when building from local SpeechSDK folder
-        //.clang_arg("-ISpeechSDK/include/c_api/")
-        // use this line when building from downloaded files in OUT_DIR
         .clang_arg(inc_arg.as_str());
 
     // Finish the builder and generate the bindings.
@@ -263,7 +255,7 @@ fn main() {
         // Unwrap the Result and panic on failure.
         .expect("Unable to generate bindings");
 
-    // Write the bindings to the $OUT_DIR/bindings.rs file.
+    // Write the bindings to the src/ffi/bindings.rs file.
     bindings
         .write_to_file("src/ffi/bindings.rs")
         .expect("Couldn't write bindings!");
