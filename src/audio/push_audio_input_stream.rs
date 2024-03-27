@@ -29,28 +29,34 @@ impl PushAudioInputStream {
         format: AudioStreamFormat,
     ) -> Result<PushAudioInputStream> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
-            let ret =
-                audio_stream_create_push_audio_input_stream(&mut handle, format.handle.inner());
+            let mut handle = MaybeUninit::uninit();
+            let ret = audio_stream_create_push_audio_input_stream(
+                handle.as_mut_ptr(),
+                format.handle.inner(),
+            );
             convert_err(
                 ret,
                 "PushAudioInputStream::create_push_stream_from_format error",
             )?;
             info!("create_push_stream_from_format ok");
             Ok(PushAudioInputStream {
-                handle: SmartHandle::create("PushAudioInputStream", handle, audio_stream_release),
+                handle: SmartHandle::create(
+                    "PushAudioInputStream",
+                    handle.assume_init(),
+                    audio_stream_release,
+                ),
             })
         }
     }
 
     pub fn create_push_stream() -> Result<PushAudioInputStream> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
 
             let default_format = AudioStreamFormat::get_default_input_format()?;
 
             let ret = audio_stream_create_push_audio_input_stream(
-                &mut handle,
+                handle.as_mut_ptr(),
                 default_format.handle.inner(),
             );
             convert_err(
@@ -59,7 +65,11 @@ impl PushAudioInputStream {
             )?;
             info!("create_push_stream_from_format ok");
             Ok(PushAudioInputStream {
-                handle: SmartHandle::create("PushAudioInputStream", handle, audio_stream_release),
+                handle: SmartHandle::create(
+                    "PushAudioInputStream",
+                    handle.assume_init(),
+                    audio_stream_release,
+                ),
             })
         }
     }

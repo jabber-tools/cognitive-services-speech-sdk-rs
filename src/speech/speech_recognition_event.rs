@@ -1,5 +1,5 @@
 use crate::error::{convert_err, Result};
-use crate::ffi::{recognizer_recognition_event_get_result, SPXEVENTHANDLE, SPXRESULTHANDLE};
+use crate::ffi::{recognizer_recognition_event_get_result, SPXEVENTHANDLE};
 use crate::speech::{RecognitionEvent, SpeechRecognitionResult};
 use log::*;
 use std::mem::MaybeUninit;
@@ -16,12 +16,12 @@ impl SpeechRecognitionEvent {
         let base = RecognitionEvent::from_handle(handle)?;
 
         unsafe {
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let mut result_handle = MaybeUninit::uninit();
             trace!("calling recognizer_recognition_event_get_result");
-            let ret = recognizer_recognition_event_get_result(handle, &mut result_handle);
+            let ret = recognizer_recognition_event_get_result(handle, result_handle.as_mut_ptr());
             convert_err(ret, "SpeechRecognitionEvent::from_handle error")?;
             trace!("called recognizer_recognition_event_get_result");
-            let result = SpeechRecognitionResult::from_handle(result_handle)?;
+            let result = SpeechRecognitionResult::from_handle(result_handle.assume_init())?;
             Ok(SpeechRecognitionEvent { base, result })
         }
     }

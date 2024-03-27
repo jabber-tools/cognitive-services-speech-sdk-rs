@@ -1,9 +1,6 @@
 use crate::common::{CancellationErrorCode, CancellationReason, PropertyId};
 use crate::error::{convert_err, Result};
-use crate::ffi::{
-    result_get_canceled_error_code, result_get_reason_canceled, Result_CancellationErrorCode,
-    Result_CancellationReason, SPXEVENTHANDLE,
-};
+use crate::ffi::{result_get_canceled_error_code, result_get_reason_canceled, SPXEVENTHANDLE};
 use crate::speech::SpeechRecognitionEvent;
 use log::*;
 use std::mem::MaybeUninit;
@@ -21,15 +18,16 @@ impl SpeechRecognitionCanceledEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionCanceledEvent> {
         let base = SpeechRecognitionEvent::from_handle(handle)?;
         unsafe {
-            let mut reason: Result_CancellationReason = MaybeUninit::uninit().assume_init();
-            let ret = result_get_reason_canceled(base.result.handle.inner(), &mut reason);
+            let mut reason = MaybeUninit::uninit();
+            let ret = result_get_reason_canceled(base.result.handle.inner(), reason.as_mut_ptr());
             convert_err(
                 ret,
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_reason_canceled) error",
             )?;
 
-            let mut error_code: Result_CancellationErrorCode = MaybeUninit::uninit().assume_init();
-            let ret = result_get_canceled_error_code(base.result.handle.inner(), &mut error_code);
+            let mut error_code = MaybeUninit::uninit();
+            let ret =
+                result_get_canceled_error_code(base.result.handle.inner(), error_code.as_mut_ptr());
             convert_err(
                 ret,
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_canceled_error_code) error",
@@ -50,12 +48,24 @@ impl SpeechRecognitionCanceledEvent {
                 error_details = error_details_res.unwrap();
             }
 
-            Ok(SpeechRecognitionCanceledEvent {
-                base,
-                reason: CancellationReason::from_u32(reason),
-                error_code: CancellationErrorCode::from_u32(error_code),
-                error_details,
-            })
+            #[cfg(target_os = "windows")]
+            {
+                Ok(SpeechRecognitionCanceledEvent {
+                    base,
+                    reason: CancellationReason::from_i32(reason.assume_init()),
+                    error_code: CancellationErrorCode::from_i32(error_code.assume_init()),
+                    error_details,
+                })
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                Ok(SpeechRecognitionCanceledEvent {
+                    base,
+                    reason: CancellationReason::from_u32(reason.assume_init()),
+                    error_code: CancellationErrorCode::from_u32(error_code.assume_init()),
+                    error_details,
+                })
+            }
         }
     }
 }

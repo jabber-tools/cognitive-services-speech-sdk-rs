@@ -6,7 +6,7 @@ use crate::ffi::{
     create_auto_detect_source_lang_config_from_languages,
     create_auto_detect_source_lang_config_from_open_range,
     create_auto_detect_source_lang_config_from_source_lang_config, SmartHandle,
-    SPXAUTODETECTSOURCELANGCONFIGHANDLE, SPXPROPERTYBAGHANDLE,
+    SPXAUTODETECTSOURCELANGCONFIGHANDLE,
 };
 use crate::speech::SourceLanguageConfig;
 use std::ffi::CString;
@@ -22,12 +22,15 @@ pub struct AutoDetectSourceLanguageConfig {
 impl AutoDetectSourceLanguageConfig {
     fn from_handle(handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE) -> Result<Self> {
         unsafe {
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut prop_bag_handle = MaybeUninit::uninit();
 
-            let ret = auto_detect_source_lang_config_get_property_bag(handle, &mut prop_bag_handle);
+            let ret = auto_detect_source_lang_config_get_property_bag(
+                handle,
+                prop_bag_handle.as_mut_ptr(),
+            );
             convert_err(ret, "AutoDetectSourceLanguageConfig::from_handle error")?;
 
-            let property_bag = PropertyCollection::from_handle(prop_bag_handle);
+            let property_bag = PropertyCollection::from_handle(prop_bag_handle.assume_init());
             Ok(AutoDetectSourceLanguageConfig {
                 handle: SmartHandle::create(
                     "AutoDetectSourceLanguageConfig",
@@ -44,14 +47,13 @@ impl AutoDetectSourceLanguageConfig {
         unsafe {
             let languages_str = languages.join(",");
             let c_languages_str = CString::new(languages_str)?;
-            let mut handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE =
-                MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let ret = create_auto_detect_source_lang_config_from_languages(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_languages_str.as_ptr(),
             );
             convert_err(ret, "AutoDetectSourceLanguageConfig::from_languages error")?;
-            AutoDetectSourceLanguageConfig::from_handle(handle)
+            AutoDetectSourceLanguageConfig::from_handle(handle.assume_init())
         }
     }
 
@@ -59,19 +61,18 @@ impl AutoDetectSourceLanguageConfig {
     pub fn from_language_configs(languages: Vec<SourceLanguageConfig>) -> Result<Self> {
         unsafe {
             let mut first = true;
-            let mut handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE =
-                MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             for language in &languages {
                 let ret;
-                if first == true {
+                if first {
                     first = false;
                     ret = create_auto_detect_source_lang_config_from_source_lang_config(
-                        &mut handle,
+                        handle.as_mut_ptr(),
                         language.handle.inner(),
                     );
                 } else {
                     ret = add_source_lang_config_to_auto_detect_source_lang_config(
-                        handle,
+                        handle.assume_init(),
                         language.handle.inner(),
                     );
                 }
@@ -81,18 +82,17 @@ impl AutoDetectSourceLanguageConfig {
                 )?;
             }
 
-            AutoDetectSourceLanguageConfig::from_handle(handle)
+            AutoDetectSourceLanguageConfig::from_handle(handle.assume_init())
         }
     }
 
     /// Creates an instance of the AutoDetectSourceLanguageConfig with open range as source languages.
     pub fn from_open_range() -> Result<Self> {
         unsafe {
-            let mut handle: SPXAUTODETECTSOURCELANGCONFIGHANDLE =
-                MaybeUninit::uninit().assume_init();
-            let ret = create_auto_detect_source_lang_config_from_open_range(&mut handle);
+            let mut handle = MaybeUninit::uninit();
+            let ret = create_auto_detect_source_lang_config_from_open_range(handle.as_mut_ptr());
             convert_err(ret, "AutoDetectSourceLanguageConfig::from_open_range error")?;
-            AutoDetectSourceLanguageConfig::from_handle(handle)
+            AutoDetectSourceLanguageConfig::from_handle(handle.assume_init())
         }
     }
 }

@@ -6,8 +6,7 @@ use crate::ffi::{
     embedded_speech_config_get_speech_reco_model, property_bag_free_string,
     speech_recognition_model_get_locales, speech_recognition_model_get_name,
     speech_recognition_model_get_path, speech_recognition_model_get_version,
-    speech_recognition_model_handle_release, SmartHandle, SPXSPEECHCONFIGHANDLE,
-    SPXSPEECHRECOMODELHANDLE,
+    speech_recognition_model_handle_release, SmartHandle, SPXSPEECHRECOMODELHANDLE,
 };
 use crate::speech::SpeechConfig;
 use std::convert::TryFrom;
@@ -41,12 +40,13 @@ impl EmbeddedSpeechConfig {
     ///           or direct paths to specific model folders.
     pub fn from_paths<P: AsRef<Path>>(paths: Vec<P>) -> Result<EmbeddedSpeechConfig> {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             convert_err(
-                embedded_speech_config_create(&mut handle),
+                embedded_speech_config_create(handle.as_mut_ptr()),
                 "EmbeddedSpeechConfig::create error",
             )?;
 
+            let handle = handle.assume_init();
             let config = SpeechConfig::from_handle(handle)?;
 
             for path in paths {
@@ -76,16 +76,16 @@ impl EmbeddedSpeechConfig {
 
             let mut models = Vec::with_capacity(usize::try_from(count).unwrap_or(0));
             for i in 0..count {
-                let mut handle: SPXSPEECHRECOMODELHANDLE = MaybeUninit::uninit().assume_init();
+                let mut handle = MaybeUninit::uninit();
                 convert_err(
                     embedded_speech_config_get_speech_reco_model(
                         self.config.handle.inner(),
                         i,
-                        &mut handle,
+                        handle.as_mut_ptr(),
                     ),
                     "EmbeddedSpeechConfig::get_model error",
                 )?;
-                models.push(SpeechRecognitionModel::from_handle(handle)?);
+                models.push(SpeechRecognitionModel::from_handle(handle.assume_init())?);
             }
             Ok(models)
         }

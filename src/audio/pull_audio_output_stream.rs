@@ -29,10 +29,10 @@ impl PullAudioOutputStream {
 
     pub fn create_pull_stream() -> Result<Self> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_stream_create_pull_audio_output_stream(&mut handle);
+            let mut handle = MaybeUninit::uninit();
+            let ret = audio_stream_create_pull_audio_output_stream(handle.as_mut_ptr());
             convert_err(ret, "PullAudioOutputStream::create_pull_stream error")?;
-            PullAudioOutputStream::from_handle(handle)
+            PullAudioOutputStream::from_handle(handle.assume_init())
         }
     }
 
@@ -44,12 +44,16 @@ impl PullAudioOutputStream {
             let mut buf_vec = vec![0u8; size as usize];
             let c_buf: *mut u8 = &mut buf_vec[..] as *const _ as *mut u8;
 
-            let mut filled_size: u32 = MaybeUninit::uninit().assume_init();
-            let ret =
-                pull_audio_output_stream_read(self.handle.inner(), c_buf, size, &mut filled_size);
+            let mut filled_size = MaybeUninit::uninit();
+            let ret = pull_audio_output_stream_read(
+                self.handle.inner(),
+                c_buf,
+                size,
+                filled_size.as_mut_ptr(),
+            );
             convert_err(ret, "PullAudioOutputStream.read error")?;
 
-            let converted_size = usize::try_from(filled_size)?;
+            let converted_size = usize::try_from(filled_size.assume_init())?;
             let slice_buffer = std::slice::from_raw_parts_mut(c_buf, converted_size);
             Ok(slice_buffer.to_vec())
         }
