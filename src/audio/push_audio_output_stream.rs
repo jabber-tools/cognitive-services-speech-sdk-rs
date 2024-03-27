@@ -60,10 +60,10 @@ impl PushAudioOutputStream {
 
     pub fn create_push_stream() -> Result<Self> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_stream_create_push_audio_output_stream(&mut handle);
+            let mut handle = MaybeUninit::uninit();
+            let ret = audio_stream_create_push_audio_output_stream(handle.as_mut_ptr());
             convert_err(ret, "PushAudioOutputStream::create_push_stream error")?;
-            PushAudioOutputStream::from_handle(handle)
+            PushAudioOutputStream::from_handle(handle.assume_init())
         }
     }
 

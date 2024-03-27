@@ -28,10 +28,13 @@ impl KeywordRecognitionModel {
     pub fn from_file(filename: &str) -> Result<KeywordRecognitionModel> {
         unsafe {
             let c_filename = CString::new(filename)?;
-            let mut handle: SPXKEYWORDHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = keyword_recognition_model_create_from_file(c_filename.as_ptr(), &mut handle);
+            let mut handle = MaybeUninit::uninit();
+            let ret = keyword_recognition_model_create_from_file(
+                c_filename.as_ptr(),
+                handle.as_mut_ptr(),
+            );
             convert_err(ret, "KeywordRecognitionModel::from_file error")?;
-            KeywordRecognitionModel::from_handle(handle)
+            KeywordRecognitionModel::from_handle(handle.assume_init())
         }
     }
 }

@@ -4,12 +4,12 @@ use crate::ffi::{
     synthesis_voices_result_get_property_bag, synthesis_voices_result_get_reason,
     synthesis_voices_result_get_result_id, synthesis_voices_result_get_voice_info,
     synthesis_voices_result_get_voice_num, synthesizer_result_handle_release, SmartHandle,
-    SPXPROPERTYBAGHANDLE, SPXRESULTHANDLE,
+    SPXRESULTHANDLE,
 };
 use crate::speech::VoiceInfo;
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::c_char;
 
 #[derive(Debug)]
 pub struct SynthesisVoicesResult {
@@ -32,43 +32,53 @@ impl SynthesisVoicesResult {
             )?;
             let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
 
-            let mut reason: c_uint = MaybeUninit::uninit().assume_init();
-            ret = synthesis_voices_result_get_reason(handle, &mut reason);
+            let mut reason = MaybeUninit::uninit();
+            ret = synthesis_voices_result_get_reason(handle, reason.as_mut_ptr());
             convert_err(
                 ret,
                 "SynthesisVoicesResult::from_handle(result_get_reason) error",
             )?;
 
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            ret = synthesis_voices_result_get_property_bag(handle, &mut prop_bag_handle);
+            let mut prop_bag_handle = MaybeUninit::uninit();
+            ret = synthesis_voices_result_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
             convert_err(
                 ret,
                 "SynthesisVoicesResult::from_handle(synthesis_voices_result_get_property_bag) error",
             )?;
 
-            let properties = PropertyCollection::from_handle(prop_bag_handle);
+            let properties = PropertyCollection::from_handle(prop_bag_handle.assume_init());
 
             let error_details =
                 properties.get_property(PropertyId::CancellationDetailsReasonDetailedText, "")?;
 
-            let mut voice_num = MaybeUninit::uninit().assume_init();
-            ret = synthesis_voices_result_get_voice_num(handle, &mut voice_num);
+            let mut voice_num = MaybeUninit::uninit();
+            ret = synthesis_voices_result_get_voice_num(handle, voice_num.as_mut_ptr());
             convert_err(
                 ret,
                 "SynthesisVoicesResult::from_handle(synthesis_voices_result_get_voice_num) error",
             )?;
+            let mut voice_num = voice_num.assume_init();
             voice_num -= 1;
             let mut voices = vec![];
             for idx in 0..voice_num {
-                let mut voice_info_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
-                ret = synthesis_voices_result_get_voice_info(handle, idx, &mut voice_info_handle);
+                let mut voice_info_handle = MaybeUninit::uninit();
+                ret = synthesis_voices_result_get_voice_info(
+                    handle,
+                    idx,
+                    voice_info_handle.as_mut_ptr(),
+                );
                 convert_err(
                     ret,
                     "SynthesisVoicesResult::from_handle(synthesis_voices_result_get_voice_info) error",
                 )?;
-                let voice_info = VoiceInfo::from_handle(voice_info_handle)?;
+                let voice_info = VoiceInfo::from_handle(voice_info_handle.assume_init())?;
                 voices.push(voice_info);
             }
+
+            #[cfg(target_os = "windows")]
+            let reason = ResultReason::from_i32(reason.assume_init());
+            #[cfg(not(target_os = "windows"))]
+            let reason = ResultReason::from_u32(reason.assume_init());
 
             Ok(SynthesisVoicesResult {
                 handle: SmartHandle::create(
@@ -78,7 +88,7 @@ impl SynthesisVoicesResult {
                 ),
                 voices,
                 result_id,
-                reason: ResultReason::from_u32(reason),
+                reason,
                 error_details,
                 properties,
             })

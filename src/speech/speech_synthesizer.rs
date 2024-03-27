@@ -10,8 +10,7 @@ use crate::ffi::{
     synthesizer_speak_text, synthesizer_start_speaking_ssml, synthesizer_start_speaking_text,
     synthesizer_started_set_callback, synthesizer_stop_speaking,
     synthesizer_synthesizing_set_callback, synthesizer_viseme_received_set_callback,
-    synthesizer_word_boundary_set_callback, SmartHandle, SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE,
-    SPXRESULTHANDLE, SPXSYNTHHANDLE,
+    synthesizer_word_boundary_set_callback, SmartHandle, SPXEVENTHANDLE, SPXSYNTHHANDLE,
 };
 use crate::speech::{
     AutoDetectSourceLanguageConfig, SpeechConfig, SpeechSynthesisBookmarkEvent,
@@ -57,11 +56,11 @@ impl fmt::Debug for SpeechSynthesizer {
 impl SpeechSynthesizer {
     fn from_handle(handle: SPXSYNTHHANDLE) -> Result<Self> {
         unsafe {
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = synthesizer_get_property_bag(handle, &mut prop_bag_handle);
+            let mut prop_bag_handle = MaybeUninit::uninit();
+            let ret = synthesizer_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
             convert_err(ret, "SpeechSynthesizer::from_handle error")?;
 
-            let property_bag = PropertyCollection::from_handle(prop_bag_handle);
+            let property_bag = PropertyCollection::from_handle(prop_bag_handle.assume_init());
             Ok(SpeechSynthesizer {
                 handle: SmartHandle::create(
                     "SpeechSynthesizer",
@@ -82,16 +81,16 @@ impl SpeechSynthesizer {
 
     pub fn from_config(speech_config: SpeechConfig, audio_config: AudioConfig) -> Result<Self> {
         unsafe {
-            let mut handle: SPXSYNTHHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             convert_err(
                 synthesizer_create_speech_synthesizer_from_config(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     speech_config.handle.inner(),
                     audio_config.handle.inner(),
                 ),
                 "SpeechSynthesizer.from_config error",
             )?;
-            SpeechSynthesizer::from_handle(handle)
+            SpeechSynthesizer::from_handle(handle.assume_init())
         }
     }
 
@@ -101,17 +100,17 @@ impl SpeechSynthesizer {
         lang_config: AutoDetectSourceLanguageConfig,
     ) -> Result<Self> {
         unsafe {
-            let mut handle: SPXSYNTHHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             convert_err(
                 synthesizer_create_speech_synthesizer_from_auto_detect_source_lang_config(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     speech_config.handle.inner(),
                     lang_config.handle.inner(),
                     audio_config.handle.inner(),
                 ),
                 "SpeechSynthesizer.from_auto_detect_source_lang_config error",
             )?;
-            SpeechSynthesizer::from_handle(handle)
+            SpeechSynthesizer::from_handle(handle.assume_init())
         }
     }
 
@@ -120,15 +119,15 @@ impl SpeechSynthesizer {
         unsafe {
             let c_text = CString::new(text)?;
             let text_len = c_text.as_bytes().len();
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let mut result_handle = MaybeUninit::uninit();
             let ret = synthesizer_speak_text(
                 self.handle.inner(),
                 c_text.as_ptr(),
                 text_len as u32,
-                &mut result_handle,
+                result_handle.as_mut_ptr(),
             );
             convert_err(ret, "SpeechSynthesizer.speak_text_async error")?;
-            SpeechSynthesisResult::from_handle(result_handle)
+            SpeechSynthesisResult::from_handle(result_handle.assume_init())
         }
     }
 
@@ -137,15 +136,15 @@ impl SpeechSynthesizer {
         unsafe {
             let c_ssml = CString::new(ssml)?;
             let ssml_len = c_ssml.as_bytes().len();
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let mut result_handle = MaybeUninit::uninit();
             let ret = synthesizer_speak_ssml(
                 self.handle.inner(),
                 c_ssml.as_ptr(),
                 ssml_len as u32,
-                &mut result_handle,
+                result_handle.as_mut_ptr(),
             );
             convert_err(ret, "SpeechSynthesizer.speak_ssml_async error")?;
-            SpeechSynthesisResult::from_handle(result_handle)
+            SpeechSynthesisResult::from_handle(result_handle.assume_init())
         }
     }
 
@@ -156,15 +155,15 @@ impl SpeechSynthesizer {
         unsafe {
             let c_text = CString::new(text)?;
             let text_len = c_text.as_bytes().len();
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let mut result_handle = MaybeUninit::uninit();
             let ret = synthesizer_start_speaking_text(
                 self.handle.inner(),
                 c_text.as_ptr(),
                 text_len as u32,
-                &mut result_handle,
+                result_handle.as_mut_ptr(),
             );
             convert_err(ret, "SpeechSynthesizer.start_speaking_text_async error")?;
-            SpeechSynthesisResult::from_handle(result_handle)
+            SpeechSynthesisResult::from_handle(result_handle.assume_init())
         }
     }
 
@@ -175,15 +174,15 @@ impl SpeechSynthesizer {
         unsafe {
             let c_ssml = CString::new(ssml)?;
             let ssml_len = c_ssml.as_bytes().len();
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let mut result_handle = MaybeUninit::uninit();
             let ret = synthesizer_start_speaking_ssml(
                 self.handle.inner(),
                 c_ssml.as_ptr(),
                 ssml_len as u32,
-                &mut result_handle,
+                result_handle.as_mut_ptr(),
             );
             convert_err(ret, "SpeechSynthesizer.start_speaking_ssml_async error")?;
-            SpeechSynthesisResult::from_handle(result_handle)
+            SpeechSynthesisResult::from_handle(result_handle.assume_init())
         }
     }
 
@@ -202,14 +201,14 @@ impl SpeechSynthesizer {
     pub async fn get_voices_async(&self, locale: &str) -> Result<SynthesisVoicesResult> {
         unsafe {
             let c_locale_str = CString::new(locale)?;
-            let mut v_result: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let mut v_result = MaybeUninit::uninit();
             let ret = synthesizer_get_voices_list(
                 self.handle.inner(),
                 c_locale_str.as_ptr(),
-                &mut v_result,
+                v_result.as_mut_ptr(),
             );
             convert_err(ret, "SpeechSynthesizer.get_voices_async error")?;
-            SynthesisVoicesResult::from_handle(v_result)
+            SynthesisVoicesResult::from_handle(v_result.assume_init())
         }
     }
 

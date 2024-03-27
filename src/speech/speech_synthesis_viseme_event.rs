@@ -19,10 +19,13 @@ pub struct SpeechSynthesisVisemeEvent {
 impl SpeechSynthesisVisemeEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
         unsafe {
-            let mut audio_offset: u64 = MaybeUninit::uninit().assume_init();
-            let mut viseme_id: u32 = MaybeUninit::uninit().assume_init();
-            let mut ret =
-                synthesizer_viseme_event_get_values(handle, &mut audio_offset, &mut viseme_id);
+            let mut audio_offset = MaybeUninit::uninit();
+            let mut viseme_id = MaybeUninit::uninit();
+            let mut ret = synthesizer_viseme_event_get_values(
+                handle,
+                audio_offset.as_mut_ptr(),
+                viseme_id.as_mut_ptr(),
+            );
             convert_err(ret, "SpeechSynthesisVisemeEvent::from_handle error")?;
 
             let c_animation = synthesizer_viseme_event_get_animation(handle);
@@ -34,6 +37,8 @@ impl SpeechSynthesisVisemeEvent {
                 "SpeechSynthesisVisemeEvent::from_handle(property_bag_free_string) error",
             )?;
 
+            let audio_offset = audio_offset.assume_init();
+            let viseme_id = viseme_id.assume_init();
             Ok(SpeechSynthesisVisemeEvent {
                 handle: SmartHandle::create(
                     "SpeechSynthesisVisemeEvent",

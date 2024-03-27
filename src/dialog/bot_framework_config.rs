@@ -38,11 +38,11 @@ impl BotFrameworkConfig {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let c_sub_key = CString::new(subscription_key)?;
             let c_region = CString::new(region)?;
             let ret = bot_framework_config_from_subscription(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_sub_key.as_ptr(),
                 c_region.as_ptr(),
                 std::ptr::null(),
@@ -50,7 +50,7 @@ impl BotFrameworkConfig {
             convert_err(ret, "DialogServiceConnector::from_subscription error")?;
             Ok(BotFrameworkConfig {
                 //handle: SmartHandle::create("DialogServiceConnector", handle, speech_config_release),
-                config: SpeechConfig::from_handle(handle)?,
+                config: SpeechConfig::from_handle(handle.assume_init())?,
             })
         }
     }
@@ -66,12 +66,12 @@ impl BotFrameworkConfig {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let c_sub_key = CString::new(subscription_key)?;
             let c_region = CString::new(region)?;
             let c_bot_id = CString::new(bot_id)?;
             let ret = bot_framework_config_from_subscription(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_sub_key.as_ptr(),
                 c_region.as_ptr(),
                 c_bot_id.as_ptr(),
@@ -81,7 +81,7 @@ impl BotFrameworkConfig {
                 "DialogServiceConnector::from_subscription_and_bot_id error",
             )?;
             Ok(BotFrameworkConfig {
-                config: SpeechConfig::from_handle(handle)?,
+                config: SpeechConfig::from_handle(handle.assume_init())?,
             })
         }
     }
@@ -99,18 +99,18 @@ impl BotFrameworkConfig {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let c_authorization_token = CString::new(authorization_token)?;
             let c_region = CString::new(region)?;
             let ret = bot_framework_config_from_authorization_token(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_authorization_token.as_ptr(),
                 c_region.as_ptr(),
                 std::ptr::null(),
             );
             convert_err(ret, "DialogServiceConnector::from_auth_token error")?;
             Ok(BotFrameworkConfig {
-                config: SpeechConfig::from_handle(handle)?,
+                config: SpeechConfig::from_handle(handle.assume_init())?,
             })
         }
     }
@@ -132,12 +132,12 @@ impl BotFrameworkConfig {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let c_authorization_token = CString::new(authorization_token)?;
             let c_region = CString::new(region)?;
             let c_bot_id = CString::new(bot_id)?;
             let ret = bot_framework_config_from_authorization_token(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_authorization_token.as_ptr(),
                 c_region.as_ptr(),
                 c_bot_id.as_ptr(),
@@ -147,7 +147,7 @@ impl BotFrameworkConfig {
                 "DialogServiceConnector::from_auth_token_and_bot_id error",
             )?;
             Ok(BotFrameworkConfig {
-                config: SpeechConfig::from_handle(handle)?,
+                config: SpeechConfig::from_handle(handle.assume_init())?,
             })
         }
     }

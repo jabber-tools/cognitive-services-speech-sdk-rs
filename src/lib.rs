@@ -1,3 +1,5 @@
+#![allow(clippy::not_unsafe_ptr_arg_deref)]
+
 //! # cognitive-services-speech-sdk-rs
 //!
 //! Pure Rust binding for the Microsoft Cognitive Service Speech SDK.

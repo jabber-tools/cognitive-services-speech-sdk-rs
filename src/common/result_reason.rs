@@ -66,4 +66,8 @@ impl ResultReason {
             _ => ResultReason::VoicesListRetrieved,
         }
     }
+
+    pub fn from_i32(reason: i32) -> Self {
+        ResultReason::from_u32(reason as u32)
+    }
 }

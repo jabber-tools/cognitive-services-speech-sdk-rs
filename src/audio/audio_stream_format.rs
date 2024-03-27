@@ -31,15 +31,15 @@ impl AudioStreamFormat {
         channels: Option<u8>,
     ) -> Result<AudioStreamFormat> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMFORMATHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let ret = audio_stream_format_create_from_waveformat_pcm(
-                &mut handle,
+                handle.as_mut_ptr(),
                 samples_per_second,
                 bits_per_sample.unwrap_or(16),
                 channels.unwrap_or(1),
             );
             convert_err(ret, "AudioStreamFormat::get_wave_format_pcm error")?;
-            AudioStreamFormat::from_handle(handle)
+            AudioStreamFormat::from_handle(handle.assume_init())
         }
     }
 
@@ -47,10 +47,10 @@ impl AudioStreamFormat {
     /// (16 kHz, 16 bit, mono PCM).
     pub fn get_default_input_format() -> Result<AudioStreamFormat> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMFORMATHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_stream_format_create_from_default_input(&mut handle);
+            let mut handle = MaybeUninit::uninit();
+            let ret = audio_stream_format_create_from_default_input(handle.as_mut_ptr());
             convert_err(ret, "AudioStreamFormat::get_default_format error")?;
-            AudioStreamFormat::from_handle(handle)
+            AudioStreamFormat::from_handle(handle.assume_init())
         }
     }
 
@@ -58,10 +58,10 @@ impl AudioStreamFormat {
     /// (16 kHz, 16 bit, mono PCM).
     pub fn get_default_output_format() -> Result<AudioStreamFormat> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMFORMATHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_stream_format_create_from_default_output(&mut handle);
+            let mut handle = MaybeUninit::<SPXAUDIOSTREAMFORMATHANDLE>::uninit();
+            let ret = audio_stream_format_create_from_default_output(handle.as_mut_ptr());
             convert_err(ret, "AudioStreamFormat::get_default_output_format error")?;
-            AudioStreamFormat::from_handle(handle)
+            AudioStreamFormat::from_handle(handle.assume_init())
         }
     }
 
@@ -71,13 +71,18 @@ impl AudioStreamFormat {
         compressed_format: AudioStreamContainerFormat,
     ) -> Result<AudioStreamFormat> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMFORMATHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
+            #[cfg(not(target_os = "windows"))]
+            let compressed_format = compressed_format.to_u32();
+            #[cfg(target_os = "windows")]
+            let compressed_format = compressed_format.to_i32();
+
             let ret = audio_stream_format_create_from_compressed_format(
-                &mut handle,
-                compressed_format.to_u32(),
+                handle.as_mut_ptr(),
+                compressed_format,
             );
             convert_err(ret, "AudioStreamFormat::get_compressed_format error")?;
-            AudioStreamFormat::from_handle(handle)
+            AudioStreamFormat::from_handle(handle.assume_init())
         }
     }
 }

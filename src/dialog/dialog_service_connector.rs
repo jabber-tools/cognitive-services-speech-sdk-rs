@@ -14,7 +14,7 @@ use crate::ffi::{
     dialog_service_connector_session_stopped_set_callback,
     dialog_service_connector_start_keyword_recognition,
     dialog_service_connector_stop_keyword_recognition, SmartHandle, SPXEVENTHANDLE, SPXHANDLE,
-    SPXPROPERTYBAGHANDLE, SPXRECOHANDLE, SPXRESULTHANDLE,
+    SPXRECOHANDLE,
 };
 use crate::speech::{
     KeywordRecognitionModel, SessionEvent, SpeechRecognitionCanceledEvent, SpeechRecognitionEvent,
@@ -55,11 +55,12 @@ impl fmt::Debug for DialogServiceConnector {
 impl DialogServiceConnector {
     fn from_handle(handle: SPXRECOHANDLE) -> Result<Self> {
         unsafe {
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = dialog_service_connector_get_property_bag(handle, &mut prop_bag_handle);
+            let mut prop_bag_handle = MaybeUninit::uninit();
+            let ret =
+                dialog_service_connector_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
             convert_err(ret, "DialogServiceConnector::from_handle error")?;
             Ok(DialogServiceConnector {
-                properties: PropertyCollection::from_handle(prop_bag_handle),
+                properties: PropertyCollection::from_handle(prop_bag_handle.assume_init()),
                 handle: SmartHandle::create(
                     "DialogServiceConnector",
                     handle,
@@ -83,25 +84,25 @@ impl DialogServiceConnector {
         audio_config: Option<AudioConfig>,
     ) -> Result<Self> {
         unsafe {
-            let mut handle: SPXRECOHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let speech_config_handle = dialog_service_config.get_handle();
             let ret;
             if let Some(audio_cfg) = audio_config {
                 ret = dialog_service_connector_create_dialog_service_connector_from_config(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     speech_config_handle,
                     audio_cfg.handle.inner(),
                 );
             } else {
                 let spxhandle_null: SPXHANDLE = 0 as SPXHANDLE;
                 ret = dialog_service_connector_create_dialog_service_connector_from_config(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     speech_config_handle,
                     spxhandle_null,
                 );
             }
             convert_err(ret, "DialogServiceConnector::from_config error")?;
-            DialogServiceConnector::from_handle(handle)
+            DialogServiceConnector::from_handle(handle.assume_init())
         }
     }
 
@@ -140,10 +141,13 @@ impl DialogServiceConnector {
     /// ListenOnceAsync starts a listening session that will terminate after the first utterance.
     pub async fn listen_once_async(&self) -> Result<SpeechRecognitionResult> {
         unsafe {
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = dialog_service_connector_listen_once(self.handle.inner(), &mut result_handle);
+            let mut result_handle = MaybeUninit::uninit();
+            let ret = dialog_service_connector_listen_once(
+                self.handle.inner(),
+                result_handle.as_mut_ptr(),
+            );
             convert_err(ret, "DialogServiceConnector.listen_once_async error")?;
-            SpeechRecognitionResult::from_handle(result_handle)
+            SpeechRecognitionResult::from_handle(result_handle.assume_init())
         }
     }
 

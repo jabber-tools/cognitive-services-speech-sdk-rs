@@ -17,8 +17,8 @@ pub struct SpeechSynthesisBookmarkEvent {
 impl SpeechSynthesisBookmarkEvent {
     pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
         unsafe {
-            let mut audio_offset: u64 = MaybeUninit::uninit().assume_init();
-            let mut ret = synthesizer_bookmark_event_get_values(handle, &mut audio_offset);
+            let mut audio_offset = MaybeUninit::uninit();
+            let mut ret = synthesizer_bookmark_event_get_values(handle, audio_offset.as_mut_ptr());
             convert_err(ret, "SpeechSynthesisBookmarkEvent::from_handle error")?;
 
             let c_text = synthesizer_event_get_text(handle);
@@ -30,6 +30,7 @@ impl SpeechSynthesisBookmarkEvent {
                 "SpeechSynthesisBookmarkEvent::from_handle(property_bag_free_string) error",
             )?;
 
+            let audio_offset = audio_offset.assume_init();
             Ok(SpeechSynthesisBookmarkEvent {
                 handle: SmartHandle::create(
                     "SpeechSynthesisBookmarkEvent",

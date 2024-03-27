@@ -30,4 +30,8 @@ impl AudioStreamContainerFormat {
             AudioStreamContainerFormat::Amrwb => 263,
         }
     }
+
+    pub fn to_i32(&self) -> i32 {
+        self.to_u32() as i32
+    }
 }

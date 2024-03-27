@@ -37,19 +37,19 @@ impl CustomCommandsConfig {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let c_sub_key = CString::new(subscription_key)?;
             let c_region = CString::new(region)?;
             let c_application_id = CString::new(application_id)?;
             let ret = custom_commands_config_from_subscription(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_application_id.as_ptr(),
                 c_sub_key.as_ptr(),
                 c_region.as_ptr(),
             );
             convert_err(ret, "CustomCommandsConfig::from_subscription error")?;
             Ok(CustomCommandsConfig {
-                config: SpeechConfig::from_handle(handle)?,
+                config: SpeechConfig::from_handle(handle.assume_init())?,
             })
         }
     }
@@ -71,19 +71,19 @@ impl CustomCommandsConfig {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle = MaybeUninit::uninit();
             let c_authorization_token = CString::new(authorization_token)?;
             let c_region = CString::new(region)?;
             let c_application_id = CString::new(application_id)?;
             let ret = custom_commands_config_from_authorization_token(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_application_id.as_ptr(),
                 c_authorization_token.as_ptr(),
                 c_region.as_ptr(),
             );
             convert_err(ret, "CustomCommandsConfig::from_auth_token error")?;
             Ok(CustomCommandsConfig {
-                config: SpeechConfig::from_handle(handle)?,
+                config: SpeechConfig::from_handle(handle.assume_init())?,
             })
         }
     }
