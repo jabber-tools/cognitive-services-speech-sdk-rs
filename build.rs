@@ -9,7 +9,6 @@ use std::{
 
 const SPEECH_SDK_VERSION: &str = "1.36.0";
 
-#[cfg(target_os = "linux")]
 fn download_file(url: &str, dst: &str) {
     Command::new("curl")
         .args(["-SL", url, "-o", dst])
@@ -117,14 +116,41 @@ fn main() {
     all(target_os = "macos", target_arch = "x86_64")
 ))]
 fn main() {
-    let speek_sdk_root = env::var("MACOS_SPEECHSDK_ROOT").expect(
-        "Set environment variable MACOS_SPEECHSDK_ROOT with location of MS Speech SDK library.",
-    );
+    let mac_sdk_url = format!("https://csspeechstorage.blob.core.windows.net/drop/{SPEECH_SDK_VERSION}/MicrosoftCognitiveServicesSpeech-MacOSXCFramework-{SPEECH_SDK_VERSION}.zip");
 
-    println!("cargo:rustc-link-search=framework={}/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64", speek_sdk_root);
+    let parent_dir = PathBuf::from("./SpeechSDK").join("macOS");
+    if !parent_dir.exists() {
+        fs::create_dir_all(&parent_dir).unwrap();
+    }
+
+    let mut renew = env::var("RENEW_SDK").map(|v| v == "1").unwrap_or(false);
+    let sdk_output_dir = parent_dir.join("sdk_output");
+    if !sdk_output_dir.exists() || fs::read_dir(&sdk_output_dir).unwrap().next().is_none() {
+        renew = true;
+        fs::create_dir_all(&sdk_output_dir).unwrap();
+    }
+
+    let sdk_zip_file = parent_dir.join(format!(
+        "MicrosoftCognitiveServicesSpeech-MacOSXCFramework-{SPEECH_SDK_VERSION}.zip"
+    ));
+    if !sdk_zip_file.exists() {
+        download_file(mac_sdk_url.as_str(), sdk_zip_file.to_str().unwrap());
+    }
+
+    if renew {
+        let args = [
+            "-o",                           // Overwrite files without prompting
+            sdk_zip_file.to_str().unwrap(), // The zip file
+            "-d",
+            sdk_output_dir.to_str().unwrap(), // The directory to extract to
+        ];
+        Command::new("unzip").args(args).status().unwrap();
+    }
+
+    println!("cargo:rustc-link-search=framework={}/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64", sdk_output_dir.display());
     println!("cargo:rustc-link-lib=framework=MicrosoftCognitiveServicesSpeech");
 
-    let inc_arg = format!("-I{}/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64/MicrosoftCognitiveServicesSpeech.framework/Headers", speek_sdk_root);
+    let inc_arg = format!("-I{}/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64/MicrosoftCognitiveServicesSpeech.framework/Headers", sdk_output_dir.display());
 
     let bindings_builder = bindgen::Builder::default()
         .header("c_api/wrapper.h")
