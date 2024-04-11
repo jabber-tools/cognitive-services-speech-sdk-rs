@@ -21,6 +21,30 @@ fn main() {
     let linux_sdk_url = format!(
         "https://csspeechstorage.blob.core.windows.net/drop/{SPEECH_SDK_VERSION}/SpeechSDK-Linux-{SPEECH_SDK_VERSION}.tar.gz");
 
+    // copying SpeechSDK from local folder just worked fine but crates.io allows
+    // only 10 MB to be uploaded per crate. Because of that SpeechSDK shared libraries
+    // were moved to separate repository (https://github.com/jabber-tools/cognitive-services-speech-sdk-rs-files)
+    // and must be downloaded during build from there.
+    /*
+    fs::copy(
+        "./SpeechSDK/lib/x64/libMicrosoft.CognitiveServices.Speech.core.so",
+        Path::new(&out_path).join("libMicrosoft.CognitiveServices.Speech.core.so"),
+    )
+    .unwrap();
+    fs::copy(
+        "./SpeechSDK/lib/x64/libMicrosoft.CognitiveServices.Speech.extension.kws.so",
+        Path::new(&out_path).join("libMicrosoft.CognitiveServices.Speech.extension.kws.so"),
+    )
+    .unwrap();
+    fs::copy(
+        "./SpeechSDK/lib/x64/libMicrosoft.CognitiveServices.Speech.extension.codec.so",
+        Path::new(&out_path).join("libMicrosoft.CognitiveServices.Speech.extension.codec.so"),
+    )
+    .unwrap();
+    println!("cargo:rustc-link-search=native={}", out_path.display());
+    println!("cargo:rustc-link-lib=dylib=Microsoft.CognitiveServices.Speech.core");
+    */
+
     let parent_dir = PathBuf::from("./SpeechSDK").join("linux");
     if !parent_dir.exists() {
         fs::create_dir_all(&parent_dir).unwrap();
