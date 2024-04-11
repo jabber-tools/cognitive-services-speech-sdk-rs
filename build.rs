@@ -147,6 +147,7 @@ fn main() {
     if !parent_dir.exists() {
         fs::create_dir_all(&parent_dir).unwrap();
     }
+    let parent_dir = fs::canonicalize(parent_dir).unwrap();
 
     let mut renew = env::var("RENEW_SDK").map(|v| v == "1").unwrap_or(false);
     let sdk_output_dir = parent_dir.join("sdk_output");
