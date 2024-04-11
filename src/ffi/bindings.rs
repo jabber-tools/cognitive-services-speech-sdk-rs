@@ -711,6 +711,7 @@ pub type SPXSVMODELHANDLE = AZAC_HANDLE;
 pub type SPXPRONUNCIATIONASSESSMENTCONFIGHANDLE = AZAC_HANDLE;
 pub type SPXAUDIOPROCESSINGOPTIONSHANDLE = AZAC_HANDLE;
 pub type SPXSPEECHRECOMODELHANDLE = AZAC_HANDLE;
+pub type SPXREQUESTHANDLE = AZAC_HANDLE;
 extern "C" {
     pub fn property_bag_create(hpropbag: *mut AZAC_HANDLE) -> AZACHR;
 }
@@ -1991,6 +1992,12 @@ extern "C" {
 extern "C" {
     pub fn audio_processing_options_release(hoptions: SPXAUDIOPROCESSINGOPTIONSHANDLE) -> AZACHR;
 }
+extern "C" {
+    pub fn audio_processing_options_get_property_bag(
+        hoptions: SPXAUDIOPROCESSINGOPTIONSHANDLE,
+        hpropbag: *mut AZAC_HANDLE,
+    ) -> AZACHR;
+}
 pub const SpeechOutputFormat_SpeechOutputFormat_Simple: SpeechOutputFormat = 0;
 pub const SpeechOutputFormat_SpeechOutputFormat_Detailed: SpeechOutputFormat = 1;
 pub type SpeechOutputFormat = ::std::os::raw::c_uint;
@@ -2629,6 +2636,37 @@ extern "C" {
     ) -> AZACHR;
 }
 extern "C" {
+    pub fn speech_synthesis_request_create(
+        textStreamingEnabled: bool,
+        isSSML: bool,
+        inputText: *const ::std::os::raw::c_char,
+        textLength: u32,
+        hrequest: *mut SPXREQUESTHANDLE,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn speech_synthesis_request_send_text_piece(
+        hrequest: SPXREQUESTHANDLE,
+        text: *const ::std::os::raw::c_char,
+        textLength: u32,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn speech_synthesis_request_finish(hrequest: SPXREQUESTHANDLE) -> AZACHR;
+}
+extern "C" {
+    pub fn speech_synthesis_request_handle_is_valid(hrequest: SPXREQUESTHANDLE) -> AZACHR;
+}
+extern "C" {
+    pub fn speech_synthesis_request_release(hrequest: SPXREQUESTHANDLE) -> AZACHR;
+}
+extern "C" {
+    pub fn speech_synthesis_request_get_property_bag(
+        hrequest: SPXREQUESTHANDLE,
+        hpropbag: *mut AZAC_HANDLE,
+    ) -> AZACHR;
+}
+extern "C" {
     pub fn connection_from_recognizer(
         recognizerHandle: SPXRECOHANDLE,
         connectionHandle: *mut SPXCONNECTIONHANDLE,
@@ -2825,6 +2863,13 @@ extern "C" {
     ) -> AZACHR;
 }
 extern "C" {
+    pub fn synthesizer_speak_request(
+        hsynth: SPXSYNTHHANDLE,
+        hrequest: SPXREQUESTHANDLE,
+        phresult: *mut SPXRESULTHANDLE,
+    ) -> AZACHR;
+}
+extern "C" {
     pub fn synthesizer_speak_text_async(
         hsynth: SPXSYNTHHANDLE,
         text: *const ::std::os::raw::c_char,
@@ -2841,6 +2886,13 @@ extern "C" {
     ) -> AZACHR;
 }
 extern "C" {
+    pub fn synthesizer_speak_request_async(
+        hsynth: SPXSYNTHHANDLE,
+        hrequest: SPXREQUESTHANDLE,
+        phasync: *mut SPXASYNCHANDLE,
+    ) -> AZACHR;
+}
+extern "C" {
     pub fn synthesizer_start_speaking_text(
         hsynth: SPXSYNTHHANDLE,
         text: *const ::std::os::raw::c_char,
@@ -2853,6 +2905,13 @@ extern "C" {
         hsynth: SPXSYNTHHANDLE,
         ssml: *const ::std::os::raw::c_char,
         ssmlLength: u32,
+        phresult: *mut SPXRESULTHANDLE,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn synthesizer_start_speaking_request(
+        hsynth: SPXSYNTHHANDLE,
+        hrequest: SPXREQUESTHANDLE,
         phresult: *mut SPXRESULTHANDLE,
     ) -> AZACHR;
 }

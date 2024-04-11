@@ -7,7 +7,7 @@ use std::{
     str,
 };
 
-const SPEECH_SDK_VERSION: &str = "1.36.0";
+const SPEECH_SDK_VERSION: &str = "1.37.0";
 
 fn download_file(url: &str, dst: &str) {
     Command::new("curl")
@@ -25,6 +25,7 @@ fn main() {
     if !parent_dir.exists() {
         fs::create_dir_all(&parent_dir).unwrap();
     }
+    let parent_dir = fs::canonicalize(parent_dir).unwrap();
 
     let mut renew = env::var("RENEW_SDK").map(|v| v == "1").unwrap_or(false);
     let sdk_output_dir = parent_dir.join("sdk_output");
@@ -51,13 +52,13 @@ fn main() {
     }
 
     #[cfg(target_arch = "x86")]
-    let lib_path = sdk_path.join("lib").join("x86");
+    let lib_path = sdk_output_dir.join("lib").join("x86");
     #[cfg(target_arch = "x86_64")]
     let lib_path = sdk_output_dir.join("lib").join("x64");
     #[cfg(target_arch = "arm")]
-    let lib_path = sdk_path.join("lib").join("arm32");
+    let lib_path = sdk_output_dir.join("lib").join("arm32");
     #[cfg(target_arch = "aarch64")]
-    let lib_path = sdk_path.join("lib").join("arm64");
+    let lib_path = sdk_output_dir.join("lib").join("arm64");
 
     let mut inc_arg = String::from("-I");
     inc_arg.push_str(
