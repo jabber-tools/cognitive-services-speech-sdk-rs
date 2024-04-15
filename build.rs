@@ -141,20 +141,18 @@ fn main() {
 fn main() {
     let mac_sdk_url = format!("https://csspeechstorage.blob.core.windows.net/drop/{SPEECH_SDK_VERSION}/MicrosoftCognitiveServicesSpeech-MacOSXCFramework-{SPEECH_SDK_VERSION}.zip");
 
-    let parent_dir = PathBuf::from("./SpeechSDK").join("macOS");
-    if !parent_dir.exists() {
-        fs::create_dir_all(&parent_dir).unwrap();
-    }
-    let parent_dir = fs::canonicalize(parent_dir).unwrap();
+    // Build scripts should not modify any files outside of the `OUT_DIR` directory,
+    // othersize `cargo publish` will fail.
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     let mut renew = env::var("RENEW_SDK").map(|v| v == "1").unwrap_or(false);
-    let sdk_output_dir = parent_dir.join("sdk_output");
+    let sdk_output_dir = out_path.join("sdk_output");
     if !sdk_output_dir.exists() || fs::read_dir(&sdk_output_dir).unwrap().next().is_none() {
         renew = true;
         fs::create_dir_all(&sdk_output_dir).unwrap();
     }
 
-    let sdk_zip_file = parent_dir.join(format!(
+    let sdk_zip_file = out_path.join(format!(
         "MicrosoftCognitiveServicesSpeech-MacOSXCFramework-{SPEECH_SDK_VERSION}.zip"
     ));
     if !sdk_zip_file.exists() {
