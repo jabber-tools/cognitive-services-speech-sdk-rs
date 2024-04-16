@@ -39,7 +39,7 @@ impl SpeechSynthesisWordBoundaryEvent {
             #[cfg(target_os = "windows")]
             let boundary_type = SpeechSynthesisBoundaryType::from_i32(boundary_type);
             #[cfg(not(target_os = "windows"))]
-            let boundary_type = SpeechSynthesisBoundaryType::from_u32(boundary_type.assume_init());
+            let boundary_type = SpeechSynthesisBoundaryType::from_u32(boundary_type);
 
             Ok(SpeechSynthesisWordBoundaryEvent {
                 handle: SmartHandle::create(
