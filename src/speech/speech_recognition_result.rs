@@ -8,7 +8,6 @@ use crate::ffi::{
 use std::ffi::CStr;
 use std::fmt;
 use std::mem::MaybeUninit;
-use std::os::raw::c_uint;
 
 /// Represents speech recognition result contained within callback event *SpeechRecognitionEvent*.
 pub struct SpeechRecognitionResult {
@@ -44,8 +43,8 @@ impl SpeechRecognitionResult {
             )?;
             let result_id = CStr::from_ptr(c_buf.as_ptr()).to_str()?.to_owned();
 
-            let mut reason: c_uint = MaybeUninit::uninit().assume_init();
-            ret = result_get_reason(handle, &mut reason);
+            let mut reason = MaybeUninit::uninit();
+            ret = result_get_reason(handle, reason.as_mut_ptr());
             convert_err(
                 ret,
                 "SpeechRecognitionResult::from_handle(result_get_reason) error",
@@ -81,6 +80,11 @@ impl SpeechRecognitionResult {
             )?;
             let properties = PropertyCollection::from_handle(properties_handle);
 
+            #[cfg(target_os = "windows")]
+            let reason = ResultReason::from_i32(reason.assume_init());
+            #[cfg(not(target_os = "windows"))]
+            let reason = ResultReason::from_u32(reason.assume_init());
+
             Ok(SpeechRecognitionResult {
                 handle: SmartHandle::create(
                     "SpeechRecognitionResult",
@@ -88,7 +92,7 @@ impl SpeechRecognitionResult {
                     recognizer_result_handle_release,
                 ),
                 result_id,
-                reason: ResultReason::from_u32(reason),
+                reason,
                 text: result_text,
                 duration: (duration).to_string(),
                 offset: (offset).to_string(),

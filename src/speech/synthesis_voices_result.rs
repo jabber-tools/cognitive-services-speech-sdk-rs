@@ -9,7 +9,7 @@ use crate::ffi::{
 use crate::speech::VoiceInfo;
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::c_char;
 
 #[derive(Debug)]
 pub struct SynthesisVoicesResult {
@@ -32,8 +32,8 @@ impl SynthesisVoicesResult {
             )?;
             let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
 
-            let mut reason: c_uint = MaybeUninit::uninit().assume_init();
-            ret = synthesis_voices_result_get_reason(handle, &mut reason);
+            let mut reason = MaybeUninit::uninit();
+            ret = synthesis_voices_result_get_reason(handle, reason.as_mut_ptr());
             convert_err(
                 ret,
                 "SynthesisVoicesResult::from_handle(result_get_reason) error",
@@ -70,6 +70,11 @@ impl SynthesisVoicesResult {
                 voices.push(voice_info);
             }
 
+            #[cfg(target_os = "windows")]
+            let reason = ResultReason::from_i32(reason.assume_init());
+            #[cfg(not(target_os = "windows"))]
+            let reason = ResultReason::from_u32(reason.assume_init());
+
             Ok(SynthesisVoicesResult {
                 handle: SmartHandle::create(
                     "SynthesisVoicesResult",
@@ -78,7 +83,7 @@ impl SynthesisVoicesResult {
                 ),
                 voices,
                 result_id,
-                reason: ResultReason::from_u32(reason),
+                reason,
                 error_details,
                 properties,
             })

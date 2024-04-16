@@ -198,3 +198,95 @@ fn main() {
         .write_to_file("src/ffi/bindings.rs")
         .expect("Couldn't write bindings!");
 }
+
+#[cfg(target_os = "windows")]
+fn main() {
+    use std::{fs::File, io::BufReader};
+    use zip::ZipArchive;
+
+    let nuget_package_url = format!("https://www.nuget.org/api/v2/package/Microsoft.CognitiveServices.Speech/{SPEECH_SDK_VERSION}");
+
+    // Build scripts should not modify any files outside of the `OUT_DIR` directory,
+    // othersize `cargo publish` will fail.
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+
+    let mut renew = env::var("RENEW_SDK").map(|v| v == "1").unwrap_or(false);
+    let sdk_output_dir = out_path.join("sdk_output");
+    if !sdk_output_dir.exists() {
+        renew = true;
+        fs::create_dir_all(&sdk_output_dir).unwrap();
+    }
+
+    let sdk_zip_file = out_path.join(format!(
+        "microsoft.cognitiveservices.speech.{SPEECH_SDK_VERSION}.nupkg"
+    ));
+    if !sdk_zip_file.exists() {
+        download_file(nuget_package_url.as_str(), sdk_zip_file.to_str().unwrap());
+    }
+
+    if renew {
+        let reader = File::open(sdk_zip_file).unwrap();
+        let mut archive = ZipArchive::new(BufReader::new(reader)).unwrap();
+
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i).unwrap();
+            let outpath = sdk_output_dir.join(file.mangled_name());
+
+            if file.name().ends_with('/') {
+                std::fs::create_dir_all(&outpath).unwrap();
+            } else {
+                if let Some(p) = outpath.parent() {
+                    if !p.exists() {
+                        std::fs::create_dir_all(p).unwrap();
+                    }
+                }
+                let mut outfile = std::fs::File::create(&outpath).unwrap();
+                std::io::copy(&mut file, &mut outfile).unwrap();
+            }
+        }
+    }
+
+    let native = sdk_output_dir.join("build").join("native");
+
+    #[cfg(target_arch = "x86")]
+    let lib_path = native.join("Win32").join("Release");
+    #[cfg(target_arch = "x86_64")]
+    let lib_path = native.join("x64").join("Release");
+    #[cfg(target_arch = "arm")]
+    let lib_path = native.join("ARM").join("Release");
+    #[cfg(target_arch = "aarch64")]
+    let lib_path = native.join("ARM64").join("Release");
+
+    let mut inc_arg = String::from("-I");
+    inc_arg.push_str(native.join("include").join("c_api").to_str().unwrap());
+
+    println!("cargo:rustc-link-search=native={}", lib_path.display());
+    println!("cargo:rustc-link-lib=dylib=Microsoft.CognitiveServices.Speech.core");
+
+    let skip_bindgen = env::var("MS_COG_SVC_SPEECH_SKIP_BINDGEN")
+        .map(|v| v == "1")
+        .unwrap_or(false);
+
+    if skip_bindgen {
+        return;
+    }
+
+    // The bindgen::Builder is the main entry point
+    // to bindgen, and lets you build up options for
+    // the resulting bindings.
+    let bindings_builder = bindgen::Builder::default()
+        // The input header we would like to generate bindings for.
+        .header("c_api/wrapper.h")
+        .clang_arg(inc_arg.as_str());
+
+    // Finish the builder and generate the bindings.
+    let bindings = bindings_builder
+        .generate()
+        // Unwrap the Result and panic on failure.
+        .expect("Unable to generate bindings");
+
+    // Write the bindings to the src/ffi/bindings.rs file.
+    bindings
+        .write_to_file("src/ffi/bindings.rs")
+        .expect("Couldn't write bindings!");
+}

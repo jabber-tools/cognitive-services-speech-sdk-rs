@@ -11,7 +11,6 @@ use crate::ffi::{
 use crate::speech::SpeechSynthesisResult;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
-use std::os::raw::c_uint;
 
 /// AudioDataStream represents audio data retrieved either from file
 /// or result of speech synthesis. Represents convenient option for
@@ -65,10 +64,14 @@ impl AudioDataStream {
 
     pub fn get_status(&self) -> Result<StreamStatus> {
         unsafe {
-            let mut status: c_uint = MaybeUninit::uninit().assume_init();
-            let ret = audio_data_stream_get_status(self.handle.inner(), &mut status);
+            let mut status = MaybeUninit::uninit();
+            let ret = audio_data_stream_get_status(self.handle.inner(), status.as_mut_ptr());
             convert_err(ret, "AudioDataStream.get_status error")?;
-            Ok(StreamStatus::from_u32(status))
+
+            #[cfg(target_os = "windows")]
+            return Ok(StreamStatus::from_i32(status.assume_init()));
+            #[cfg(not(target_os = "windows"))]
+            return Ok(StreamStatus::from_u32(status.assume_init()));
         }
     }
 

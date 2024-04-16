@@ -19,4 +19,8 @@ impl SpeechSynthesisBoundaryType {
             _ => SpeechSynthesisBoundaryType::SentenceBoundary,
         }
     }
+
+    pub fn from_i32(value: i32) -> Self {
+        SpeechSynthesisBoundaryType::from_u32(value as u32)
+    }
 }

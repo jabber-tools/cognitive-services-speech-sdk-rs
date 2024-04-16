@@ -9,7 +9,7 @@ use std::convert::TryFrom;
 use std::ffi::CStr;
 use std::fmt;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::c_char;
 
 /// Represents speech synthetis result contained in SpeechSynthesisEvent callback event.
 pub struct SpeechSynthesisResult {
@@ -70,8 +70,8 @@ impl SpeechSynthesisResult {
             )?;
             let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
 
-            let mut reason: c_uint = MaybeUninit::uninit().assume_init();
-            ret = synth_result_get_reason(handle, &mut reason);
+            let mut reason = MaybeUninit::uninit();
+            ret = synth_result_get_reason(handle, reason.as_mut_ptr());
             convert_err(
                 ret,
                 "SpeechSynthesisResult::from_handle(synth_result_get_reason) error",
@@ -97,6 +97,11 @@ impl SpeechSynthesisResult {
             )?;
             let properties = PropertyCollection::from_handle(properties_handle);
 
+            #[cfg(target_os = "windows")]
+            let reason = ResultReason::from_i32(reason.assume_init());
+            #[cfg(not(target_os = "windows"))]
+            let reason = ResultReason::from_u32(reason.assume_init());
+
             let speech_synthesis_result = SpeechSynthesisResult {
                 handle: SmartHandle::create(
                     "SpeechSynthesisResult",
@@ -104,7 +109,7 @@ impl SpeechSynthesisResult {
                     synthesizer_result_handle_release,
                 ),
                 result_id,
-                reason: ResultReason::from_u32(reason),
+                reason,
                 audio_data: slice_buffer.to_vec(),
                 audio_duration_ms: audio_duration,
                 properties,
