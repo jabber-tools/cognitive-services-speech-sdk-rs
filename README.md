@@ -130,7 +130,7 @@ export MS_COG_SVC_SPEECH_SKIP_BINDGEN=1
 cargo build
 ```
 
-Build process will download MS Speech SDK into SpeechSDK folder. When running compiled binary dynamic linking should be used:
+Build process will download MS Speech SDK into target folder. From here you can copy it into other folder, e.g. ./SpeechSDK. When running compiled binary dynamic linking should be used:
 
 Linux:
 ```

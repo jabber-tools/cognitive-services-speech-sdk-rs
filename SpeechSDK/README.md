@@ -16,4 +16,4 @@
 
 Speech SDK files can be found in separate repository [cognitive-services-speech-sdk-rs-files](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs-files).
 
-Starting from library version 0.3.0 SDK files are downloaded dynamically during build process into SpeechSDK folder.
+Starting from library version 0.3.0 SDK files are downloaded dynamically during build process into target folder.
