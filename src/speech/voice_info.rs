@@ -8,6 +8,7 @@ use crate::ffi::{
 };
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
+use std::os::raw::c_uint;
 
 #[derive(Debug)]
 pub struct VoiceInfo {
@@ -23,7 +24,9 @@ pub struct VoiceInfo {
 }
 
 impl VoiceInfo {
-    pub fn from_handle(handle: SPXRESULTHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid reference to a live voice info.
+    pub unsafe fn from_handle(handle: SPXRESULTHANDLE) -> Result<Self> {
         unsafe {
             let c_voice_name = voice_info_get_name(handle);
             let voice_name = CStr::from_ptr(c_voice_name).to_str()?.to_owned();
@@ -46,24 +49,24 @@ impl VoiceInfo {
             let c_voice_path = voice_info_get_voice_path(handle);
             let voice_path = CStr::from_ptr(c_voice_path).to_str()?.to_owned();
 
-            let mut voice_type = MaybeUninit::uninit();
-            let mut ret = voice_info_get_voice_type(handle, voice_type.as_mut_ptr());
+            let mut voice_type: c_uint = 0;
+            let mut ret = voice_info_get_voice_type(handle, &mut voice_type);
             convert_err(
                 ret,
                 "VoiceInfo::from_handle(voice_info_get_voice_type) error",
             )?;
 
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            ret = voice_info_get_property_bag(handle, &mut prop_bag_handle);
+            let mut prop_bag_handle: MaybeUninit<SPXPROPERTYBAGHANDLE> = MaybeUninit::uninit();
+            ret = voice_info_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
             convert_err(
                 ret,
                 "VoiceInfo::from_handle(voice_info_get_property_bag) error",
             )?;
 
             #[cfg(target_os = "windows")]
-            let voice_type = SynthesisVoiceType::from_i32(voice_type.assume_init());
+            let voice_type = SynthesisVoiceType::from_i32(voice_type);
             #[cfg(not(target_os = "windows"))]
-            let voice_type = SynthesisVoiceType::from_u32(voice_type.assume_init());
+            let voice_type = SynthesisVoiceType::from_u32(voice_type);
 
             Ok(VoiceInfo {
                 handle: SmartHandle::create("VoiceInfo", handle, voice_info_handle_release),
@@ -74,7 +77,7 @@ impl VoiceInfo {
                 voice_type,
                 style_list,
                 voice_path,
-                properties: PropertyCollection::from_handle(prop_bag_handle),
+                properties: PropertyCollection::from_handle(prop_bag_handle.assume_init()),
             })
         }
     }

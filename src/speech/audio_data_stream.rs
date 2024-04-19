@@ -11,6 +11,7 @@ use crate::ffi::{
 use crate::speech::SpeechSynthesisResult;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
+use std::os::raw::c_uint;
 
 /// AudioDataStream represents audio data retrieved either from file
 /// or result of speech synthesis. Represents convenient option for
@@ -23,13 +24,15 @@ pub struct AudioDataStream {
 }
 
 impl AudioDataStream {
-    fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live audio data stream.
+    unsafe fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
         unsafe {
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_data_stream_get_property_bag(handle, &mut prop_bag_handle);
+            let mut prop_bag_handle: MaybeUninit<SPXPROPERTYBAGHANDLE> = MaybeUninit::uninit();
+            let ret = audio_data_stream_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
             convert_err(ret, "AudioDataStream::from_handle error")?;
 
-            let property_bag = PropertyCollection::from_handle(prop_bag_handle);
+            let property_bag = PropertyCollection::from_handle(prop_bag_handle.assume_init());
 
             Ok(AudioDataStream {
                 handle: SmartHandle::create("AudioDataStream", handle, audio_stream_release),
@@ -41,10 +44,10 @@ impl AudioDataStream {
     pub fn from_wav_file(filename: &str) -> Result<Self> {
         unsafe {
             let c_filename = CString::new(filename)?;
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_data_stream_create_from_file(&mut handle, c_filename.as_ptr());
+            let mut handle: MaybeUninit<SPXAUDIOSTREAMHANDLE> = MaybeUninit::uninit();
+            let ret = audio_data_stream_create_from_file(handle.as_mut_ptr(), c_filename.as_ptr());
             convert_err(ret, "AudioDataStream::from_wav_file error")?;
-            AudioDataStream::from_handle(handle)
+            AudioDataStream::from_handle(handle.assume_init())
         }
     }
 
@@ -52,26 +55,26 @@ impl AudioDataStream {
         speech_synthesis_result: SpeechSynthesisResult,
     ) -> Result<Self> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOSTREAMHANDLE> = MaybeUninit::uninit();
             let ret = audio_data_stream_create_from_result(
-                &mut handle,
+                handle.as_mut_ptr(),
                 speech_synthesis_result.handle.inner(),
             );
             convert_err(ret, "AudioDataStream::from_speech_synthesis_result error")?;
-            AudioDataStream::from_handle(handle)
+            AudioDataStream::from_handle(handle.assume_init())
         }
     }
 
     pub fn get_status(&self) -> Result<StreamStatus> {
         unsafe {
-            let mut status = MaybeUninit::uninit();
-            let ret = audio_data_stream_get_status(self.handle.inner(), status.as_mut_ptr());
+            let mut status: c_uint = 0;
+            let ret = audio_data_stream_get_status(self.handle.inner(), &mut status);
             convert_err(ret, "AudioDataStream.get_status error")?;
 
             #[cfg(target_os = "windows")]
-            return Ok(StreamStatus::from_i32(status.assume_init()));
+            return Ok(StreamStatus::from_i32(status));
             #[cfg(not(target_os = "windows"))]
-            return Ok(StreamStatus::from_u32(status.assume_init()));
+            return Ok(StreamStatus::from_u32(status));
         }
     }
 
@@ -98,7 +101,7 @@ impl AudioDataStream {
                 let rootc = ErrorRootCause::ApiError(0x005);
                 return Err(Error::new(Error::api_error_desc(&rootc).unwrap(), rootc));
             }
-            let mut filled_size: u32 = MaybeUninit::uninit().assume_init();
+            let mut filled_size: u32 = 0;
             // let c_buffer: *mut u8 = buffer as *const _ as *mut u8;
             let c_buffer = buffer.as_mut_ptr();
             let ret = audio_data_stream_read(
@@ -121,7 +124,7 @@ impl AudioDataStream {
                 let rootc = ErrorRootCause::ApiError(0x005);
                 return Err(Error::new(Error::api_error_desc(&rootc).unwrap(), rootc));
             }
-            let mut filled_size: u32 = MaybeUninit::uninit().assume_init();
+            let mut filled_size: u32 = 0;
             // let c_buffer: *mut u8 = buffer as *const _ as *mut u8;
             let c_buffer = buffer.as_mut_ptr();
             let ret = audio_data_stream_read_from_position(
@@ -147,7 +150,7 @@ impl AudioDataStream {
 
     pub fn get_offset(&self) -> Result<u32> {
         unsafe {
-            let mut offset: u32 = MaybeUninit::uninit().assume_init();
+            let mut offset: u32 = 0;
             let ret = audio_data_stream_get_position(self.handle.inner(), &mut offset);
             convert_err(ret, "AudioDataStream.get_offset error")?;
             Ok(offset)

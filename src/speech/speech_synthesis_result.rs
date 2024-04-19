@@ -9,7 +9,7 @@ use std::convert::TryFrom;
 use std::ffi::CStr;
 use std::fmt;
 use std::mem::MaybeUninit;
-use std::os::raw::c_char;
+use std::os::raw::{c_char, c_uint};
 
 /// Represents speech synthetis result contained in SpeechSynthesisEvent callback event.
 pub struct SpeechSynthesisResult {
@@ -41,10 +41,12 @@ impl fmt::Debug for SpeechSynthesisResult {
 }
 
 impl SpeechSynthesisResult {
-    pub fn from_handle(handle: SPXRESULTHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech synthesis result.
+    pub unsafe fn from_handle(handle: SPXRESULTHANDLE) -> Result<Self> {
         unsafe {
-            let mut audio_length: u32 = MaybeUninit::uninit().assume_init();
-            let mut audio_duration: u64 = MaybeUninit::uninit().assume_init();
+            let mut audio_length: u32 = 0;
+            let mut audio_duration: u64 = 0;
             let mut ret = synth_result_get_audio_length_duration(
                 handle,
                 &mut audio_length,
@@ -70,8 +72,8 @@ impl SpeechSynthesisResult {
             )?;
             let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
 
-            let mut reason = MaybeUninit::uninit();
-            ret = synth_result_get_reason(handle, reason.as_mut_ptr());
+            let mut reason: c_uint = 0;
+            ret = synth_result_get_reason(handle, &mut reason);
             convert_err(
                 ret,
                 "SpeechSynthesisResult::from_handle(synth_result_get_reason) error",
@@ -79,7 +81,7 @@ impl SpeechSynthesisResult {
 
             let mut c_buf2_vec = vec![0u8; audio_length as usize];
             let c_buf2: *mut u8 = &mut c_buf2_vec[..] as *const _ as *mut u8;
-            let mut filled_size: u32 = MaybeUninit::uninit().assume_init();
+            let mut filled_size: u32 = 0;
             ret = synth_result_get_audio_data(handle, c_buf2, audio_length, &mut filled_size);
             convert_err(
                 ret,
@@ -89,18 +91,18 @@ impl SpeechSynthesisResult {
             let converted_size = usize::try_from(filled_size)?;
             let slice_buffer = std::slice::from_raw_parts_mut(c_buf2, converted_size);
 
-            let mut properties_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            ret = synth_result_get_property_bag(handle, &mut properties_handle);
+            let mut properties_handle: MaybeUninit<SPXPROPERTYBAGHANDLE> = MaybeUninit::uninit();
+            ret = synth_result_get_property_bag(handle, properties_handle.as_mut_ptr());
             convert_err(
                 ret,
                 "SpeechSynthesisResult::from_handle(synth_result_get_property_bag) error",
             )?;
-            let properties = PropertyCollection::from_handle(properties_handle);
+            let properties = PropertyCollection::from_handle(properties_handle.assume_init());
 
             #[cfg(target_os = "windows")]
-            let reason = ResultReason::from_i32(reason.assume_init());
+            let reason = ResultReason::from_i32(reason);
             #[cfg(not(target_os = "windows"))]
-            let reason = ResultReason::from_u32(reason.assume_init());
+            let reason = ResultReason::from_u32(reason);
 
             let speech_synthesis_result = SpeechSynthesisResult {
                 handle: SmartHandle::create(

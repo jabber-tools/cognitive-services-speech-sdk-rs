@@ -51,7 +51,9 @@ impl AudioOutputStream for PushAudioOutputStream {
 }
 
 impl PushAudioOutputStream {
-    pub fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live push audio output stream.
+    pub unsafe fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
         Ok(PushAudioOutputStream {
             handle: SmartHandle::create("PushAudioOutputStream", handle, audio_stream_release),
             callbacks: None,
@@ -60,10 +62,10 @@ impl PushAudioOutputStream {
 
     pub fn create_push_stream() -> Result<Self> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_stream_create_push_audio_output_stream(&mut handle);
+            let mut handle: MaybeUninit<SPXAUDIOSTREAMHANDLE> = MaybeUninit::uninit();
+            let ret = audio_stream_create_push_audio_output_stream(handle.as_mut_ptr());
             convert_err(ret, "PushAudioOutputStream::create_push_stream error")?;
-            PushAudioOutputStream::from_handle(handle)
+            PushAudioOutputStream::from_handle(handle.assume_init())
         }
     }
 

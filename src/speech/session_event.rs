@@ -25,7 +25,9 @@ impl fmt::Debug for SessionEvent {
 }
 
 impl SessionEvent {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
+    /// # Safety
+    /// `handle` must be a valid reference to a live session event.
+    pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<SessionEvent> {
         let mut c_buf = [0; 37];
 
         unsafe {

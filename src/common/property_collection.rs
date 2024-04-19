@@ -14,7 +14,10 @@ pub struct PropertyCollection {
 
 impl PropertyCollection {
     /// Creates a PropertyCollection from a handle (for internal use)
-    pub fn from_handle(handle: SPXPROPERTYBAGHANDLE) -> PropertyCollection {
+    ///
+    /// # Safety
+    /// `handle` must be a valid handle to a live property collection.
+    pub unsafe fn from_handle(handle: SPXPROPERTYBAGHANDLE) -> PropertyCollection {
         PropertyCollection {
             handle: SmartHandle::create("PropertyCollection", handle, property_bag_release),
         }

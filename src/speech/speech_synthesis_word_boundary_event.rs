@@ -4,7 +4,6 @@ use crate::ffi::{
     synthesizer_event_handle_release, synthesizer_word_boundary_event_get_values, SmartHandle,
     SpeechSynthesis_BoundaryType, SPXEVENTHANDLE,
 };
-use std::mem::MaybeUninit;
 
 /// Event passed into speech synthetizer's callback set_synthesizer_word_boundary_cb.
 #[derive(Debug)]
@@ -18,14 +17,15 @@ pub struct SpeechSynthesisWordBoundaryEvent {
 }
 
 impl SpeechSynthesisWordBoundaryEvent {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech synthesis word boundary event.
+    pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
         unsafe {
-            let mut audio_offset: u64 = MaybeUninit::uninit().assume_init();
-            let mut duration_ms: u64 = MaybeUninit::uninit().assume_init();
-            let mut text_offset: u32 = MaybeUninit::uninit().assume_init();
-            let mut word_length: u32 = MaybeUninit::uninit().assume_init();
-            let mut boundary_type: SpeechSynthesis_BoundaryType =
-                MaybeUninit::uninit().assume_init();
+            let mut audio_offset: u64 = 0;
+            let mut duration_ms: u64 = 0;
+            let mut text_offset: u32 = 0;
+            let mut word_length: u32 = 0;
+            let mut boundary_type: SpeechSynthesis_BoundaryType = 0;
             let ret = synthesizer_word_boundary_event_get_values(
                 handle,
                 &mut audio_offset,

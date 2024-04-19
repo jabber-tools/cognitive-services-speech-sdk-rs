@@ -4,7 +4,6 @@ use crate::ffi::{
     synthesizer_event_handle_release, SmartHandle, SPXEVENTHANDLE,
 };
 use std::ffi::CStr;
-use std::mem::MaybeUninit;
 
 /// Event passed into speech synthetizer's callback set_synthesizer_bookmark_cb.
 #[derive(Debug)]
@@ -15,9 +14,11 @@ pub struct SpeechSynthesisBookmarkEvent {
 }
 
 impl SpeechSynthesisBookmarkEvent {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech synthesis bookmark event.
+    pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
         unsafe {
-            let mut audio_offset: u64 = MaybeUninit::uninit().assume_init();
+            let mut audio_offset: u64 = 0;
             let mut ret = synthesizer_bookmark_event_get_values(handle, &mut audio_offset);
             convert_err(ret, "SpeechSynthesisBookmarkEvent::from_handle error")?;
 

@@ -14,12 +14,14 @@ pub struct SpeechSynthesisEvent {
 }
 
 impl SpeechSynthesisEvent {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech synthesis event.
+    pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
         unsafe {
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = synthesizer_synthesis_event_get_result(handle, &mut result_handle);
+            let mut result_handle: MaybeUninit<SPXRESULTHANDLE> = MaybeUninit::uninit();
+            let ret = synthesizer_synthesis_event_get_result(handle, result_handle.as_mut_ptr());
             convert_err(ret, "SpeechSynthesisEvent::from_handle error")?;
-            let result = SpeechSynthesisResult::from_handle(result_handle)?;
+            let result = SpeechSynthesisResult::from_handle(result_handle.assume_init())?;
             Ok(SpeechSynthesisEvent {
                 handle: SmartHandle::create(
                     "SpeechSynthesisEvent",

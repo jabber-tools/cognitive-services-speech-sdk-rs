@@ -41,18 +41,18 @@ impl EmbeddedSpeechConfig {
     ///           or direct paths to specific model folders.
     pub fn from_paths<P: AsRef<Path>>(paths: Vec<P>) -> Result<EmbeddedSpeechConfig> {
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();
             convert_err(
-                embedded_speech_config_create(&mut handle),
+                embedded_speech_config_create(handle.as_mut_ptr()),
                 "EmbeddedSpeechConfig::create error",
             )?;
 
-            let config = SpeechConfig::from_handle(handle)?;
+            let config = SpeechConfig::from_handle(handle.assume_init())?;
 
             for path in paths {
                 let c_path = CString::new(path.as_ref().to_string_lossy().as_bytes())?;
                 convert_err(
-                    embedded_speech_config_add_path(handle, c_path.as_ptr()),
+                    embedded_speech_config_add_path(handle.assume_init(), c_path.as_ptr()),
                     "EmbeddedSpeechConfig::add_path error",
                 )?;
             }
@@ -76,16 +76,16 @@ impl EmbeddedSpeechConfig {
 
             let mut models = Vec::with_capacity(usize::try_from(count).unwrap_or(0));
             for i in 0..count {
-                let mut handle: SPXSPEECHRECOMODELHANDLE = MaybeUninit::uninit().assume_init();
+                let mut handle: MaybeUninit<SPXSPEECHRECOMODELHANDLE> = MaybeUninit::uninit();
                 convert_err(
                     embedded_speech_config_get_speech_reco_model(
                         self.config.handle.inner(),
                         i,
-                        &mut handle,
+                        handle.as_mut_ptr(),
                     ),
                     "EmbeddedSpeechConfig::get_model error",
                 )?;
-                models.push(SpeechRecognitionModel::from_handle(handle)?);
+                models.push(SpeechRecognitionModel::from_handle(handle.assume_init())?);
             }
             Ok(models)
         }
@@ -175,7 +175,9 @@ pub struct SpeechRecognitionModel {
 }
 
 impl SpeechRecognitionModel {
-    fn from_handle(handle: SPXSPEECHRECOMODELHANDLE) -> Result<SpeechRecognitionModel> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech recognition model.
+    unsafe fn from_handle(handle: SPXSPEECHRECOMODELHANDLE) -> Result<SpeechRecognitionModel> {
         let handle = SmartHandle::create(
             "SpeechRecognitionModel",
             handle,

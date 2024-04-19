@@ -66,13 +66,19 @@ impl AudioInputStream for PullAudioInputStream {
 impl PullAudioInputStream {
     pub fn from_format(format: &AudioStreamFormat) -> Result<Self> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
-            let ret =
-                audio_stream_create_pull_audio_input_stream(&mut handle, format.handle.inner());
+            let mut handle: MaybeUninit<SPXAUDIOSTREAMHANDLE> = MaybeUninit::uninit();
+            let ret = audio_stream_create_pull_audio_input_stream(
+                handle.as_mut_ptr(),
+                format.handle.inner(),
+            );
             convert_err(ret, "PullAudioInputStream::from_format error")?;
 
             Ok(PullAudioInputStream {
-                handle: SmartHandle::create("PullAudioInputStream", handle, audio_stream_release),
+                handle: SmartHandle::create(
+                    "PullAudioInputStream",
+                    handle.assume_init(),
+                    audio_stream_release,
+                ),
                 callbacks: None,
             })
         }
@@ -104,7 +110,7 @@ impl PullAudioInputStream {
                 "PullAudioInputStream.set_callbacks (pull_audio_input_stream_set_callbacks) error",
             )?;
 
-            if register_get_prop_cb == true {
+            if register_get_prop_cb {
                 ret = pull_audio_input_stream_set_getproperty_callback(
                     self.handle.inner(),
                     self as *const _ as *mut c_void,
