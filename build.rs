@@ -11,7 +11,7 @@ const SPEECH_SDK_VERSION: &str = "1.37.0";
 
 fn download_file(url: &str, dst: &str) {
     Command::new("curl")
-        .args(["-SL", url, "-o", dst])
+        .args(["-SL", url, "-o", dst, "--ssl-no-revoke"])
         .status()
         .expect("failed to download Speech SDK!");
 }
