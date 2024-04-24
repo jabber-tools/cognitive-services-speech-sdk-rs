@@ -123,18 +123,15 @@ sudo apt-get update
 sudo apt-get install clang build-essential libssl1.0.0 libasound2 wget
 ```
 
-Build is generating Rust bindings for Speech SDK native functions. These are already prebuilt and put into *ffi/bindings.rs* file. In most cases it is not necessary to regenerate them. Set following to skip bindings regeneration:
+By default, the build automatically downloads the SDK and generates Rust bindings to the native functions.
 
-```
-export MS_COG_SVC_SPEECH_SKIP_BINDGEN=1
-cargo build
-```
-
-Build process will download MS Speech SDK into target folder. From here you can copy it into other folder, e.g. ./SpeechSDK. When running compiled binary dynamic linking should be used:
+When you ship your compiled executable you must include the SDK library and dynamically link to it at runt ime.
+The build process will download MS Speech SDK into target folder. From here you can copy it into other folder, e.g. ./SpeechSDK.
+If you wish to build against a pre-installed SDK, set the environment variable `MS_COG_SVC_SPEECH_SDK_DIR` to the directory where you downloaded and extracted the SDK.
 
 Linux:
 ```
-export LD_LIBRARY_PATH=/Users/xxx/cognitive-services-speech-sdk-rs/SpeechSDK/macOS/sdk_output/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64
+export LD_LIBRARY_PATH=/home/xxx/cognitive-services-speech-sdk-rs/SpeechSDK/lib/x64/
 ```
 
 MacOS:
@@ -145,6 +142,13 @@ export DYLD_FALLBACK_FRAMEWORK_PATH=/Users/xxx/cognitive-services-speech-sdk-rs/
 Windows (pointing to SpeechSDK directly in target folder):
 ```
 set PATH=%PATH%;"C:\Users\xxx\cognitive-services-speech-sdk-rs\target\debug\build\cognitive-services-speech-sdk-rs-b9c946c378fbb4f1\out\sdk_output\runtimes\win-x64\native"
+```
+
+It's best practice to generate the bindings on your machine so that they match your SDK version and system perfectly, however if you wish to skip this and use the pre-generated bindings, set the environment variable `MS_COG_SVC_SPEECH_SKIP_BINDGEN` to `1` when building.
+For example:
+```
+export MS_COG_SVC_SPEECH_SKIP_BINDGEN=1
+cargo build
 ```
 
 ## Added in this version

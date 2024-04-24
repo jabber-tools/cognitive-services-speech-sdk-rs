@@ -1,6 +1,10 @@
 //! Package ffi contains bindings to underlying C API and thin abstraction for managing C handles.
 #![allow(warnings)]
 #![allow(unaligned_references)]
+
+#[cfg(bindgen)]
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+#[cfg(not(bindgen))]
 include!("ffi/bindings.rs");
 
 // manual entry as API v1.21.0 is using this types as #define so bindings.rs does not contains them

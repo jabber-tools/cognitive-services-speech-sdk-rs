@@ -13,13 +13,14 @@ exclude = [
 repository = "https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/"
 documentation = "https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/1.0.0/cognitive_services_speech_sdk_rs/index.html"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 log = "0.4"
 env_logger = "0.11.3"
-tokio = {version = "1.37.0", features = ["full"]} 
+tokio = { version = "1.37.0", features = ["full"] }
 
 [build-dependencies]
 bindgen = "0.69.4"
-zip = "0.6.6"
+flate2 = "1.0.28"
+tar = "0.4.40"
+ureq = "2.9.6"
+zip = "1.1.1"
