@@ -1,6 +1,6 @@
 [package]
 name = "cognitive-services-speech-sdk-rs"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Adam Bezecny <adam.bezecny@gmail.com>"]
 edition = "2018"
 description = "Rust bindings for Microsoft Speech SDK."

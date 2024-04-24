@@ -114,7 +114,7 @@ For more see github integration tests (*tests* folder) and samples (*examples* f
 
 ## Build prerequisites
 
-Currently build on Linux and MacOS is supported. Uses Clang and Microsoft Speech SDK shared libraries. Details can be found here [here](https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/quickstarts/setup-platform?tabs=dotnet%2Cwindows%2Cjre%2Cbrowser&pivots=programming-language-go).
+Currently build on Windows, Linux and MacOS is supported. Uses Clang and Microsoft Speech SDK shared libraries. Details can be found here [here](https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/quickstarts/setup-platform?tabs=dotnet%2Cwindows%2Cjre%2Cbrowser&pivots=programming-language-go).
 
 Install following prerequisites before running *cargo build*:
 
@@ -142,6 +142,11 @@ MacOS:
 export DYLD_FALLBACK_FRAMEWORK_PATH=/Users/xxx/cognitive-services-speech-sdk-rs/SpeechSDK/macOS/sdk_output/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64
 ```
 
+Windows (pointing to SpeechSDK directly in target folder):
+```
+set PATH=%PATH%;"C:\Users\xxx\cognitive-services-speech-sdk-rs\target\debug\build\cognitive-services-speech-sdk-rs-b9c946c378fbb4f1\out\sdk_output\runtimes\win-x64\native"
+```
+
 ## Added in this version
 
 This version (0.2.0) brings following goodies:
@@ -157,6 +162,8 @@ Version 0.2.1 brings on the top of that support for build on MacOs (target archi
 Version 0.2.2 adds MacOS support for target architecture **arm**.
 
 Version 0.3.0 upgrades to MS Speech SDK 1.37.0 and improves library build process.
+
+Version 0.3.1 windows support!
 
 ### How To Build On MacOS
 
