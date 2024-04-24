@@ -72,10 +72,12 @@ impl AudioStreamFormat {
     ) -> Result<AudioStreamFormat> {
         unsafe {
             let mut handle: SPXAUDIOSTREAMFORMATHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_stream_format_create_from_compressed_format(
-                &mut handle,
-                compressed_format.to_u32(),
-            );
+            #[cfg(not(target_os = "windows"))]
+            let compressed_format = compressed_format.to_u32();
+            #[cfg(target_os = "windows")]
+            let compressed_format = compressed_format.to_i32();
+            let ret =
+                audio_stream_format_create_from_compressed_format(&mut handle, compressed_format);
             convert_err(ret, "AudioStreamFormat::get_compressed_format error")?;
             AudioStreamFormat::from_handle(handle)
         }

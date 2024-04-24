@@ -50,12 +50,24 @@ impl SpeechRecognitionCanceledEvent {
                 error_details = error_details_res.unwrap();
             }
 
-            Ok(SpeechRecognitionCanceledEvent {
-                base,
-                reason: CancellationReason::from_u32(reason),
-                error_code: CancellationErrorCode::from_u32(error_code),
-                error_details,
-            })
+            #[cfg(target_os = "windows")]
+            {
+                Ok(SpeechRecognitionCanceledEvent {
+                    base,
+                    reason: CancellationReason::from_i32(reason),
+                    error_code: CancellationErrorCode::from_i32(error_code),
+                    error_details,
+                })
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                Ok(SpeechRecognitionCanceledEvent {
+                    base,
+                    reason: CancellationReason::from_u32(reason),
+                    error_code: CancellationErrorCode::from_u32(error_code),
+                    error_details,
+                })
+            }
         }
     }
 }
