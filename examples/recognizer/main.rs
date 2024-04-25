@@ -24,4 +24,5 @@ async fn main() {
 
     // not available in public release yet
     //embedded_recognize_once_async_from_file::run_example().await;
+    //embedded_continuous_recognition_from_file::run_example().await;
 }
