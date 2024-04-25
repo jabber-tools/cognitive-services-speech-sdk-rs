@@ -27,7 +27,7 @@ pub struct AudioConfig {
 impl AudioConfig {
     /// # Safety
     /// `handle` must be a valid handle to a live audio config.
-    fn from_handle(handle: SPXAUDIOCONFIGHANDLE) -> Result<AudioConfig> {
+    unsafe fn from_handle(handle: SPXAUDIOCONFIGHANDLE) -> Result<AudioConfig> {
         unsafe {
             let mut prop_bag_handle: MaybeUninit<SPXPROPERTYBAGHANDLE> = MaybeUninit::uninit();
             let ret = audio_config_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
