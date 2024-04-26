@@ -127,7 +127,7 @@ By default, the build automatically downloads the SDK and generates Rust binding
 
 When you ship your compiled executable you must include the SDK library and dynamically link to it at runt ime.
 The build process will download MS Speech SDK into target folder. From here you can copy it into other folder, e.g. ./SpeechSDK.
-If you wish to build against a pre-installed SDK, set the environment variable `MS_COG_SVC_SPEECH_SDK_DIR` to the directory where you downloaded and extracted the SDK.
+If you wish to build against a pre-installed SDK, set the environment variable `MS_COG_SVC_SPEECH_LIB_DIR` to a directory containing the Speech SDK native library and `MS_COG_SVC_SPEECH_INCLUDE_DIR` to a directory containing the Speech SDK C API header files.
 
 Linux:
 ```

@@ -18,10 +18,27 @@ fn main() {
         return;
     }
 
-    let sdk_dir = if let Some(sdk_dir) = env_var("MS_COG_SVC_SPEECH_SDK_DIR") {
-        // If the user has specified an SDK directory then use that and don't
-        // try and download another one.
-        PathBuf::from(sdk_dir)
+    let link_params = if let Some(lib_dir) = env_var("MS_COG_SVC_SPEECH_LIB_DIR") {
+        // If the user has specified an SDK lib directory then use that and
+        // don't try and download another one.
+        let include_dir = env_var("MS_COG_SVC_SPEECH_INCLUDE_DIR").map(PathBuf::from);
+        match TargetOs::get() {
+            TargetOs::Linux => LinkParams {
+                lib_arg: "dylib=Microsoft.CognitiveServices.Speech.core".to_owned(),
+                search_arg: format!("native={}", lib_dir.to_str().unwrap()),
+                include_dir,
+            },
+            TargetOs::MacOS => LinkParams {
+                lib_arg: "framework=MicrosoftCognitiveServicesSpeech".to_owned(),
+                search_arg: format!("framework={}", lib_dir.to_str().unwrap()),
+                include_dir,
+            },
+            TargetOs::Windows => LinkParams {
+                lib_arg: "dylib=Microsoft.CognitiveServices.Speech.core".to_owned(),
+                search_arg: format!("native={}", lib_dir.to_str().unwrap()),
+                include_dir,
+            },
+        }
     } else {
         let download_dir = {
             let mut dir = PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
@@ -37,17 +54,15 @@ fn main() {
             fs::create_dir_all(&download_dir).unwrap();
             download_sdk(&download_dir);
         }
-        // Point the SDK dir at the thing that a user is most likely to point at
-        // if they download it themselves.
-        match TargetOs::get() {
+        let sdk_dir = match TargetOs::get() {
             TargetOs::Linux => download_dir.join(format!("SpeechSDK-Linux-{}", SPEECH_SDK_VERSION)),
             TargetOs::MacOS => download_dir.join("MicrosoftCognitiveServicesSpeech.xcframework"),
             TargetOs::Windows => download_dir,
-        }
+        };
+        link_params(&sdk_dir)
     };
 
-    let link_params = link_params(&sdk_dir);
-    println!("cargo:rustc-link-search={}", link_params.search_dir);
+    println!("cargo:rustc-link-search={}", link_params.search_arg);
     println!("cargo:rustc-link-lib={}", link_params.lib_arg);
 
     if env_var("MS_COG_SVC_SPEECH_SKIP_BINDGEN").is_some() {
@@ -55,13 +70,10 @@ fn main() {
     }
     println!("cargo::rustc-cfg=bindgen");
 
-    let include_dir = match TargetOs::get() {
-        TargetOs::Linux | TargetOs::Windows => sdk_dir.join("include/c_api"),
-        TargetOs::MacOS => {
-            sdk_dir.join("macos-arm64_x86_64/MicrosoftCognitiveServicesSpeech.framework/Headers")
-        }
+    let Some(include_dir) = link_params.include_dir else {
+        // Note this is only possible to hit if the user has specified the lib dir.
+        panic!("Include directory must be specified with MS_COG_SVC_SPEECH_INCLUDE_DIR");
     };
-
     let bindings_builder = bindgen::Builder::default()
         .header("c_api/wrapper.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
@@ -134,7 +146,8 @@ fn download_sdk(path: &Path) {
 
 struct LinkParams {
     lib_arg: String,
-    search_dir: String,
+    search_arg: String,
+    include_dir: Option<PathBuf>,
 }
 
 /// Get the link parameters for the Speech SDK based on the target OS and architecture.
@@ -155,14 +168,19 @@ fn link_params(sdk_dir: &Path) -> LinkParams {
             }
             LinkParams {
                 lib_arg: "dylib=Microsoft.CognitiveServices.Speech.core".to_owned(),
-                search_dir: format!("native={}", lib_dir.to_str().unwrap()),
+                search_arg: format!("native={}", lib_dir.to_str().unwrap()),
+                include_dir: Some(sdk_dir.join("include/c_api")),
             }
         }
         TargetOs::MacOS => LinkParams {
             lib_arg: "framework=MicrosoftCognitiveServicesSpeech".to_owned(),
-            search_dir: format!(
+            search_arg: format!(
                 "framework={}",
                 sdk_dir.join("macos-arm64_x86_64").to_str().unwrap()
+            ),
+            include_dir: Some(
+                sdk_dir
+                    .join("macos-arm64_x86_64/MicrosoftCognitiveServicesSpeech.framework/Headers"),
             ),
         },
         TargetOs::Windows => {
@@ -181,7 +199,8 @@ fn link_params(sdk_dir: &Path) -> LinkParams {
             lib_dir.push("Release");
             LinkParams {
                 lib_arg: "dylib=Microsoft.CognitiveServices.Speech.core".to_owned(),
-                search_dir: format!("native={}", lib_dir.to_str().unwrap()),
+                search_arg: format!("native={}", lib_dir.to_str().unwrap()),
+                include_dir: Some(sdk_dir.join("build/native/include/c_api")),
             }
         }
     }
