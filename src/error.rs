@@ -32,7 +32,7 @@ impl std::error::Error for Error {}
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} caused by: {:?}", self.message, self.caused_by)
+        write!(f, "{}", self.message)
     }
 }
 
