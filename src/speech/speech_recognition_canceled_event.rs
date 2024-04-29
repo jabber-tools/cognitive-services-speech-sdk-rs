@@ -1,9 +1,6 @@
 use crate::common::{CancellationErrorCode, CancellationReason, PropertyId};
 use crate::error::{convert_err, Result};
-use crate::ffi::{
-    result_get_canceled_error_code, result_get_reason_canceled, Result_CancellationErrorCode,
-    Result_CancellationReason, SPXEVENTHANDLE,
-};
+use crate::ffi::{result_get_canceled_error_code, result_get_reason_canceled, SPXEVENTHANDLE};
 use crate::speech::SpeechRecognitionEvent;
 use log::*;
 
@@ -22,14 +19,14 @@ impl SpeechRecognitionCanceledEvent {
     pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionCanceledEvent> {
         unsafe {
             let base = SpeechRecognitionEvent::from_handle(handle)?;
-            let mut reason: Result_CancellationReason = 0;
+            let mut reason = 0;
             let ret = result_get_reason_canceled(base.result.handle.inner(), &mut reason);
             convert_err(
                 ret,
                 "SpeechRecognitionCanceledEvent::from_handle(result_get_reason_canceled) error",
             )?;
 
-            let mut error_code: Result_CancellationErrorCode = 0;
+            let mut error_code = 0;
             let ret = result_get_canceled_error_code(base.result.handle.inner(), &mut error_code);
             convert_err(
                 ret,

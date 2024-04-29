@@ -9,7 +9,7 @@ use std::convert::TryFrom;
 use std::ffi::CStr;
 use std::fmt;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::c_char;
 
 /// Represents speech synthetis result contained in SpeechSynthesisEvent callback event.
 pub struct SpeechSynthesisResult {
@@ -72,7 +72,7 @@ impl SpeechSynthesisResult {
             )?;
             let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
 
-            let mut reason: c_uint = 0;
+            let mut reason = 0;
             ret = synth_result_get_reason(handle, &mut reason);
             convert_err(
                 ret,

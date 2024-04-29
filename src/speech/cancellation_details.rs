@@ -2,7 +2,6 @@ use crate::common::{CancellationErrorCode, CancellationReason, PropertyId};
 use crate::error::{convert_err, Result};
 use crate::ffi::{synth_result_get_canceled_error_code, synth_result_get_reason_canceled};
 use crate::speech::SpeechSynthesisResult;
-use std::os::raw::c_uint;
 
 /// CancellationDetails contains detailed information about why a result was canceled.
 /// Added in version 1.17.0
@@ -18,7 +17,7 @@ impl CancellationDetails {
         speech_synthesis_result: SpeechSynthesisResult,
     ) -> Result<Self> {
         unsafe {
-            let mut reason: c_uint = 0;
+            let mut reason = 0;
             let mut ret = synth_result_get_reason_canceled(
                 speech_synthesis_result.handle.inner(),
                 &mut reason,
@@ -28,7 +27,7 @@ impl CancellationDetails {
                 "CancellationDetails::from_speech_synthesis_result(reason) error",
             )?;
 
-            let mut error_code: c_uint = 0;
+            let mut error_code = 0;
             ret = synth_result_get_canceled_error_code(
                 speech_synthesis_result.handle.inner(),
                 &mut error_code,

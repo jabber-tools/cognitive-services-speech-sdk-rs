@@ -8,7 +8,6 @@ use crate::ffi::{
 };
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
-use std::os::raw::c_uint;
 
 #[derive(Debug)]
 pub struct VoiceInfo {
@@ -49,7 +48,7 @@ impl VoiceInfo {
             let c_voice_path = voice_info_get_voice_path(handle);
             let voice_path = CStr::from_ptr(c_voice_path).to_str()?.to_owned();
 
-            let mut voice_type: c_uint = 0;
+            let mut voice_type = 0;
             let mut ret = voice_info_get_voice_type(handle, &mut voice_type);
             convert_err(
                 ret,

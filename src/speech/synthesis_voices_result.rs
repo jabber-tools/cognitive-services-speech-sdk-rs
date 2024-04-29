@@ -9,7 +9,7 @@ use crate::ffi::{
 use crate::speech::VoiceInfo;
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::c_char;
 
 #[derive(Debug)]
 pub struct SynthesisVoicesResult {
@@ -34,7 +34,7 @@ impl SynthesisVoicesResult {
             )?;
             let result_id = CStr::from_ptr(c_buf).to_str()?.to_owned();
 
-            let mut reason: c_uint = 0;
+            let mut reason = 0;
             ret = synthesis_voices_result_get_reason(handle, &mut reason);
             convert_err(
                 ret,
