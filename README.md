@@ -10,7 +10,7 @@
 [crates-badge]: https://img.shields.io/crates/v/cognitive-services-speech-sdk-rs.svg
 [crates-url]: https://crates.io/crates/cognitive-services-speech-sdk-rs
 [rustdoc-badge]: https://img.shields.io/badge/rustdoc-0.2.2-green.svg
-[rustdoc-url]: https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/0.3.0/cognitive_services_speech_sdk_rs/index.html
+[rustdoc-url]: https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/1.0.0/cognitive_services_speech_sdk_rs/index.html
 
 Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
 
@@ -164,6 +164,8 @@ Version 0.2.2 adds MacOS support for target architecture **arm**.
 Version 0.3.0 upgrades to MS Speech SDK 1.37.0 and improves library build process.
 
 Version 0.3.1 windows support!
+
+Version 1.0.0 Some internal stability fixes. All **from_handle** methods are now unsafe. This is breaking change as it requires to call **from_handle** within unsafe block. 
 
 ### How To Build On MacOS
 

@@ -10,7 +10,7 @@
 [crates-badge]: https://img.shields.io/crates/v/cognitive-services-speech-sdk-rs.svg
 [crates-url]: https://crates.io/crates/cognitive-services-speech-sdk-rs
 [rustdoc-badge]: https://img.shields.io/badge/rustdoc-0.2.2-green.svg
-[rustdoc-url]: https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/0.3.0/cognitive_services_speech_sdk_rs/index.html
+[rustdoc-url]: https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/1.0.0/cognitive_services_speech_sdk_rs/index.html
 
 ## Repository location
 
