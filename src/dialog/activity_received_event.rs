@@ -20,16 +20,16 @@ pub struct ActivityReceivedEvent {
 }
 
 impl ActivityReceivedEvent {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<ActivityReceivedEvent> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live activity received event.
+    pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<ActivityReceivedEvent> {
         unsafe {
-            let mut size = MaybeUninit::uninit();
+            let mut size = 0;
             let mut ret = dialog_service_connector_activity_received_event_get_activity_size(
-                handle,
-                size.as_mut_ptr(),
+                handle, &mut size,
             );
             convert_err(ret, "ActivityReceivedEvent::from_handle(get size) error")?;
 
-            let size = size.assume_init();
             // cannot initiate array with dynamic size (i.e. [0u8; size + 1] )
             // -> allocate vector and convert it to slice
             let mut buf_vec = vec![0u8; size + 1];
@@ -58,13 +58,13 @@ impl ActivityReceivedEvent {
 
     pub fn get_audio(&self) -> Result<PullAudioOutputStream> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOSTREAMHANDLE> = MaybeUninit::uninit();
             let ret = dialog_service_connector_activity_received_event_get_audio(
                 self.handle.inner(),
-                &mut handle,
+                handle.as_mut_ptr(),
             );
             convert_err(ret, "ActivityReceivedEvent.get_audio error")?;
-            PullAudioOutputStream::from_handle(handle)
+            PullAudioOutputStream::from_handle(handle.assume_init())
         }
     }
 }

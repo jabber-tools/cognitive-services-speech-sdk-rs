@@ -21,7 +21,9 @@ impl AudioOutputStream for PullAudioOutputStream {
 }
 
 impl PullAudioOutputStream {
-    pub fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live pull audio output stream.
+    pub unsafe fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
         Ok(PullAudioOutputStream {
             handle: SmartHandle::create("PullAudioOutputStream", handle, audio_stream_release),
         })
@@ -29,10 +31,10 @@ impl PullAudioOutputStream {
 
     pub fn create_pull_stream() -> Result<Self> {
         unsafe {
-            let mut handle: SPXAUDIOSTREAMHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_stream_create_pull_audio_output_stream(&mut handle);
+            let mut handle: MaybeUninit<SPXAUDIOSTREAMHANDLE> = MaybeUninit::uninit();
+            let ret = audio_stream_create_pull_audio_output_stream(handle.as_mut_ptr());
             convert_err(ret, "PullAudioOutputStream::create_pull_stream error")?;
-            PullAudioOutputStream::from_handle(handle)
+            PullAudioOutputStream::from_handle(handle.assume_init())
         }
     }
 
@@ -44,7 +46,7 @@ impl PullAudioOutputStream {
             let mut buf_vec = vec![0u8; size as usize];
             let c_buf: *mut u8 = &mut buf_vec[..] as *const _ as *mut u8;
 
-            let mut filled_size: u32 = MaybeUninit::uninit().assume_init();
+            let mut filled_size: u32 = 0;
             let ret =
                 pull_audio_output_stream_read(self.handle.inner(), c_buf, size, &mut filled_size);
             convert_err(ret, "PullAudioOutputStream.read error")?;

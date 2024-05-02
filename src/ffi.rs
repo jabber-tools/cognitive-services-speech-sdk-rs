@@ -15,7 +15,7 @@ use std::fmt::Formatter;
 use std::os::raw::c_char;
 pub const NULL_C_STR_PTR: *const c_char = 0 as *const c_char;
 
-// using std::mem::MaybeUninit::uninit().assume_init(); instead
+// using std::mem::MaybeUninit::uninit(); instead
 // pub const SPXHANDLE_EMPTY: SPXHANDLE = 0 as SPXHANDLE;
 
 /// Wrapper struct around underlying native handles

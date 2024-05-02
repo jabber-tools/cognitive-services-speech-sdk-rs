@@ -27,13 +27,16 @@ impl From<EmbeddedSpeechConfig> for SpeechConfig {
 
 impl SpeechConfig {
     /// Creates a SpeechConfig instance from a valid handle. This is for internal use only.
-    pub fn from_handle(handle: SPXHANDLE) -> Result<SpeechConfig> {
+    ///
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech config.
+    pub unsafe fn from_handle(handle: SPXHANDLE) -> Result<SpeechConfig> {
         unsafe {
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = speech_config_get_property_bag(handle, &mut prop_bag_handle);
+            let mut prop_bag_handle: MaybeUninit<SPXPROPERTYBAGHANDLE> = MaybeUninit::uninit();
+            let ret = speech_config_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
             convert_err(ret, "SpeechConfig::from_handle error")?;
 
-            let mut property_bag = PropertyCollection::from_handle(prop_bag_handle);
+            let mut property_bag = PropertyCollection::from_handle(prop_bag_handle.assume_init());
 
             property_bag
                 .set_property_by_string("SPEECHSDK-SPEECH-CONFIG-SYSTEM-LANGUAGE", "Rust")?;
@@ -55,11 +58,14 @@ impl SpeechConfig {
         let c_region = CString::new(region)?;
 
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret =
-                speech_config_from_subscription(&mut handle, c_sub.as_ptr(), c_region.as_ptr());
+            let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();
+            let ret = speech_config_from_subscription(
+                handle.as_mut_ptr(),
+                c_sub.as_ptr(),
+                c_region.as_ptr(),
+            );
             convert_err(ret, "SpeechConfig::from_subscription error")?;
-            SpeechConfig::from_handle(handle)
+            SpeechConfig::from_handle(handle.assume_init())
         }
     }
 
@@ -79,14 +85,14 @@ impl SpeechConfig {
         let c_region = CString::new(region)?;
 
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();
             let ret = speech_config_from_authorization_token(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_auth_token.as_ptr(),
                 c_region.as_ptr(),
             );
             convert_err(ret, "SpeechConfig::from_auth_token error")?;
-            SpeechConfig::from_handle(handle)
+            SpeechConfig::from_handle(handle.assume_init())
         }
     }
 
@@ -108,14 +114,14 @@ impl SpeechConfig {
         let c_subscription = CString::new(subscription)?;
 
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();
             let ret = speech_config_from_endpoint(
-                &mut handle,
+                handle.as_mut_ptr(),
                 c_endpoint.as_ptr(),
                 c_subscription.as_ptr(),
             );
             convert_err(ret, "SpeechConfig::from_endpoint_with_subscription error")?;
-            SpeechConfig::from_handle(handle)
+            SpeechConfig::from_handle(handle.assume_init())
         }
     }
 
@@ -137,11 +143,14 @@ impl SpeechConfig {
         let c_endpoint = CString::new(endpoint)?;
 
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret =
-                speech_config_from_endpoint(&mut handle, c_endpoint.as_ptr(), std::ptr::null());
+            let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();
+            let ret = speech_config_from_endpoint(
+                handle.as_mut_ptr(),
+                c_endpoint.as_ptr(),
+                std::ptr::null(),
+            );
             convert_err(ret, "SpeechConfig::from_endpoint error")?;
-            SpeechConfig::from_handle(handle)
+            SpeechConfig::from_handle(handle.assume_init())
         }
     }
 
@@ -159,11 +168,14 @@ impl SpeechConfig {
         let c_subscription = CString::new(subscription)?;
 
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret =
-                speech_config_from_host(&mut handle, c_host.as_ptr(), c_subscription.as_ptr());
+            let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();
+            let ret = speech_config_from_host(
+                handle.as_mut_ptr(),
+                c_host.as_ptr(),
+                c_subscription.as_ptr(),
+            );
             convert_err(ret, "SpeechConfig::from_host_with_subscription error")?;
-            SpeechConfig::from_handle(handle)
+            SpeechConfig::from_handle(handle.assume_init())
         }
     }
 
@@ -174,7 +186,7 @@ impl SpeechConfig {
     /// Note: If the host requires a subscription key for authentication, use NewSpeechConfigFromHostWithSubscription to pass
     /// the subscription key as parameter.
     /// To use an authorization token with FromHost, use this method to create a SpeechConfig instance, and then
-    /// call SetAuthorizationToken() on the created SpeechConfig instance.    
+    /// call SetAuthorizationToken() on the created SpeechConfig instance.
     pub fn from_host<S>(host: S) -> Result<SpeechConfig>
     where
         S: Into<Vec<u8>>,
@@ -182,10 +194,11 @@ impl SpeechConfig {
         let c_host = CString::new(host)?;
 
         unsafe {
-            let mut handle: SPXSPEECHCONFIGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = speech_config_from_host(&mut handle, c_host.as_ptr(), std::ptr::null());
+            let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();
+            let ret =
+                speech_config_from_host(handle.as_mut_ptr(), c_host.as_ptr(), std::ptr::null());
             convert_err(ret, "SpeechConfig::from_host error")?;
-            SpeechConfig::from_handle(handle)
+            SpeechConfig::from_handle(handle.assume_init())
         }
     }
 

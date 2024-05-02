@@ -12,16 +12,17 @@ pub struct SpeechRecognitionEvent {
 }
 
 impl SpeechRecognitionEvent {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionEvent> {
-        let base = RecognitionEvent::from_handle(handle)?;
-
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech recognition event.
+    pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<SpeechRecognitionEvent> {
         unsafe {
-            let mut result_handle: SPXRESULTHANDLE = MaybeUninit::uninit().assume_init();
+            let base = RecognitionEvent::from_handle(handle)?;
+            let mut result_handle: MaybeUninit<SPXRESULTHANDLE> = MaybeUninit::uninit();
             trace!("calling recognizer_recognition_event_get_result");
-            let ret = recognizer_recognition_event_get_result(handle, &mut result_handle);
+            let ret = recognizer_recognition_event_get_result(handle, result_handle.as_mut_ptr());
             convert_err(ret, "SpeechRecognitionEvent::from_handle error")?;
             trace!("called recognizer_recognition_event_get_result");
-            let result = SpeechRecognitionResult::from_handle(result_handle)?;
+            let result = SpeechRecognitionResult::from_handle(result_handle.assume_init())?;
             Ok(SpeechRecognitionEvent { base, result })
         }
     }

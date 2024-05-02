@@ -25,13 +25,15 @@ pub struct AudioConfig {
 }
 
 impl AudioConfig {
-    fn from_handle(handle: SPXAUDIOCONFIGHANDLE) -> Result<AudioConfig> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live audio config.
+    unsafe fn from_handle(handle: SPXAUDIOCONFIGHANDLE) -> Result<AudioConfig> {
         unsafe {
-            let mut prop_bag_handle: SPXPROPERTYBAGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_config_get_property_bag(handle, &mut prop_bag_handle);
+            let mut prop_bag_handle: MaybeUninit<SPXPROPERTYBAGHANDLE> = MaybeUninit::uninit();
+            let ret = audio_config_get_property_bag(handle, prop_bag_handle.as_mut_ptr());
             convert_err(ret, "AudioConfig::from_handle error")?;
 
-            let property_bag = PropertyCollection::from_handle(prop_bag_handle);
+            let property_bag = PropertyCollection::from_handle(prop_bag_handle.assume_init());
 
             let result = AudioConfig {
                 handle: SmartHandle::create("AudioConfig", handle, audio_config_release),
@@ -43,103 +45,108 @@ impl AudioConfig {
 
     pub fn from_stream_input(stream: &dyn AudioInputStream) -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret = audio_config_create_audio_input_from_stream(&mut handle, stream.get_handle());
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
+            let ret = audio_config_create_audio_input_from_stream(
+                handle.as_mut_ptr(),
+                stream.get_handle(),
+            );
             convert_err(ret, "AudioConfig::from_stream_input error")?;
             info!("from_stream_input ok");
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 
     pub fn from_wav_file_input(file_name: &str) -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
             let c_file_name = CString::new(file_name)?;
             convert_err(
                 audio_config_create_audio_input_from_wav_file_name(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     c_file_name.as_ptr(),
                 ),
                 "AudioConfig::from_wav_file_input error",
             )?;
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 
     pub fn from_default_microphone_input() -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
             convert_err(
-                audio_config_create_audio_input_from_default_microphone(&mut handle),
+                audio_config_create_audio_input_from_default_microphone(handle.as_mut_ptr()),
                 "AudioConfig::from_default_microphone_input",
             )?;
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 
     pub fn from_microphone_input(device_name: &str) -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
             let c_device_name = CString::new(device_name)?;
             convert_err(
                 audio_config_create_audio_input_from_a_microphone(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     c_device_name.as_ptr(),
                 ),
                 "AudioConfig::from_microphone_input",
             )?;
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 
     pub fn from_speaker_output(device_name: &str) -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
             let c_device_name = CString::new(device_name)?;
             convert_err(
                 audio_config_create_audio_output_from_a_speaker(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     c_device_name.as_ptr(),
                 ),
                 "AudioConfig::from_speaker_output",
             )?;
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 
     pub fn from_default_speaker_output() -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
             convert_err(
-                audio_config_create_audio_output_from_default_speaker(&mut handle),
+                audio_config_create_audio_output_from_default_speaker(handle.as_mut_ptr()),
                 "AudioConfig::from_default_speaker_output",
             )?;
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 
     pub fn from_wav_file_output(file_name: &str) -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
             let c_file_name = CString::new(file_name)?;
             convert_err(
                 audio_config_create_audio_output_from_wav_file_name(
-                    &mut handle,
+                    handle.as_mut_ptr(),
                     c_file_name.as_ptr(),
                 ),
                 "AudioConfig::from_wav_file_output",
             )?;
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 
     pub fn from_stream_output(stream: &dyn AudioOutputStream) -> Result<AudioConfig> {
         unsafe {
-            let mut handle: SPXAUDIOCONFIGHANDLE = MaybeUninit::uninit().assume_init();
-            let ret =
-                audio_config_create_audio_output_from_stream(&mut handle, stream.get_handle());
+            let mut handle: MaybeUninit<SPXAUDIOCONFIGHANDLE> = MaybeUninit::uninit();
+            let ret = audio_config_create_audio_output_from_stream(
+                handle.as_mut_ptr(),
+                stream.get_handle(),
+            );
             convert_err(ret, "AudioConfig::from_stream_output error")?;
-            AudioConfig::from_handle(handle)
+            AudioConfig::from_handle(handle.assume_init())
         }
     }
 

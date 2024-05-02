@@ -5,7 +5,6 @@ use crate::ffi::{
     SPXEVENTHANDLE,
 };
 use std::ffi::CStr;
-use std::mem::MaybeUninit;
 
 /// Event passed into speech synthetizer's callback set_synthesizer_viseme_cb.
 #[derive(Debug)]
@@ -17,10 +16,12 @@ pub struct SpeechSynthesisVisemeEvent {
 }
 
 impl SpeechSynthesisVisemeEvent {
-    pub fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
+    /// # Safety
+    /// `handle` must be a valid handle to a live speech synthesis viseme event.
+    pub unsafe fn from_handle(handle: SPXEVENTHANDLE) -> Result<Self> {
         unsafe {
-            let mut audio_offset: u64 = MaybeUninit::uninit().assume_init();
-            let mut viseme_id: u32 = MaybeUninit::uninit().assume_init();
+            let mut audio_offset: u64 = 0;
+            let mut viseme_id: u32 = 0;
             let mut ret =
                 synthesizer_viseme_event_get_values(handle, &mut audio_offset, &mut viseme_id);
             convert_err(ret, "SpeechSynthesisVisemeEvent::from_handle error")?;
