@@ -70,9 +70,12 @@ fn main() {
     }
     println!("cargo::rustc-cfg=bindgen");
 
-    let Some(include_dir) = link_params.include_dir else {
-        // Note this is only possible to hit if the user has specified the lib dir.
-        panic!("Include directory must be specified with MS_COG_SVC_SPEECH_INCLUDE_DIR");
+    let include_dir = match link_params.include_dir {
+        Some(include_dir) => include_dir,
+        _ => {
+            // Note this is only possible to hit if the user has specified the lib dir.
+            panic!("Include directory must be specified with MS_COG_SVC_SPEECH_INCLUDE_DIR");
+        }
     };
     let bindings_builder = bindgen::Builder::default()
         .header("c_api/wrapper.h")
@@ -86,7 +89,7 @@ fn main() {
     let bindings_builder = bindings_builder
         // use gcc to find correct include path for stddef.h
         .clang_arg(
-            Command::new("gcc")
+            std::process::Command::new("gcc")
                 .arg("--print-file-name=include")
                 .output()
                 .map(|o| format!("-I{}", String::from_utf8_lossy(&o.stdout).trim()))
