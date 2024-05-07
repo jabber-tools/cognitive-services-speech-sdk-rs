@@ -13,6 +13,10 @@ use flate2::read::GzDecoder;
 const SPEECH_SDK_VERSION: &str = "1.37.0";
 
 fn main() {
+    // Tell cargo that we might emit the `bindgen` cfg flag so it gets linted
+    // correctly.
+    println!("cargo::rustc-check-cfg=cfg(bindgen)");
+
     if env_var("DOCS_RS").is_some() {
         // Skip linking and bindgen when building docs as docs.rs won't have the
         // dependency present and can't download it.
