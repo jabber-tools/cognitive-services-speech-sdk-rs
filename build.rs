@@ -1,6 +1,7 @@
 use std::{
     ffi::OsString,
     fs,
+    io::Cursor,
     path::{Path, PathBuf},
     str,
 };
@@ -131,20 +132,16 @@ fn download_sdk(path: &Path) {
         TargetOs::MacOS => format!("https://csspeechstorage.blob.core.windows.net/drop/{SPEECH_SDK_VERSION}/MicrosoftCognitiveServicesSpeech-MacOSXCFramework-{SPEECH_SDK_VERSION}.zip"),
         TargetOs::Windows => format!("https://www.nuget.org/api/v2/package/Microsoft.CognitiveServices.Speech/{SPEECH_SDK_VERSION}"),
     };
-    let mut sdk = ureq::get(&zip_url)
+    let mut zip_archive = Vec::new();
+    let response = ureq::get(&zip_url)
         .call()
-        .expect("Failed to download Speech SDK")
-        .into_reader();
-    while let Some(mut zip_file) = zip::read::read_zipfile_from_stream(&mut sdk).unwrap() {
-        if zip_file.is_dir() {
-            fs::create_dir_all(path.join(zip_file.enclosed_name().unwrap())).unwrap();
-        } else {
-            let file_path = path.join(zip_file.enclosed_name().unwrap());
-            fs::create_dir_all(file_path.parent().unwrap()).unwrap();
-            let mut file = fs::File::create(file_path).unwrap();
-            std::io::copy(&mut zip_file, &mut file).unwrap();
-        }
-    }
+        .expect("Failed to download Speech SDK");
+    response
+        .into_reader()
+        .read_to_end(&mut zip_archive)
+        .expect("Failed to download Speech SDK ZIP");
+    let mut zip_archive = zip::ZipArchive::new(Cursor::new(zip_archive)).unwrap();
+    zip_archive.extract(path).expect("Failed to extract ZIP");
 }
 
 struct LinkParams {
