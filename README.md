@@ -165,7 +165,9 @@ Version 0.3.0 upgrades to MS Speech SDK 1.37.0 and improves library build proces
 
 Version 0.3.1 windows support!
 
-Version 1.0.0 Some internal stability fixes. All **from_handle** methods are now unsafe. This is breaking change as it requires to call **from_handle** within unsafe block. 
+Version 1.0.0 Some internal stability fixes. All **from_handle** methods are now unsafe. This is breaking change as it requires to call **from_handle** within unsafe block.
+
+Version 1.0.1 Implemented trait **std::error::Error** for **cognitive_services_speech_sdk_rs::error::Error** so that it works well with **anyhow::Result<T>**. See [PR16](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/pull/16).
 
 ### How To Build On MacOS
 
