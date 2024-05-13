@@ -169,6 +169,8 @@ Version 1.0.0 Some internal stability fixes. All **from_handle** methods are now
 
 Version 1.0.1 Implemented trait **std::error::Error** for **cognitive_services_speech_sdk_rs::error::Error** so that it works well with **anyhow::Result<T>**. See [PR16](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/pull/16).
 
+Version 1.0.2 Extended PropertyId with kissing values
+
 ### How To Build On MacOS
 
 We are supporting MacOS **arm** and **aarch64** and **x86_64** architectures.
