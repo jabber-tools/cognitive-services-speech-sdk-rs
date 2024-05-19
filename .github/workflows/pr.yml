@@ -61,9 +61,17 @@ jobs:
           cargo test --lib --verbose
 
       - name: List FS
+        if: matrix.os != 'macos-latest'
         id: list-fs
         run: tree
-        
+
+      - name: List FS (mac)
+        if: matrix.os == 'macos-latest'
+        id: list-fs
+        run: |
+          brew install --force --quiet tree
+          tree
+
       - name: Add SpeechSDK DLL folder to PATH (windows)
         if: matrix.os == 'windows-latest'
         # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#adding-a-system-path
