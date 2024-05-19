@@ -4,7 +4,7 @@ use std::env;
 
 #[tokio::test]
 // ignored so that these tests are not run by CI during build without subscription key
-#[ignore]
+//#[ignore]
 async fn speech_to_text() {
     let filename = env::var("WAVFILENAME").unwrap();
     let audio_config = msspeech::audio::AudioConfig::from_wav_file_input(&filename).unwrap();
