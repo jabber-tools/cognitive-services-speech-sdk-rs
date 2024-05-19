@@ -68,4 +68,7 @@ jobs:
           $speechSdkDLLFolder="$speechSdkDir\runtimes\win-x64\native"
           echo $speechSdkDir
           echo $speechSdkDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo 123
+          echo $env:PATH
+          echo 456          
           cargo test --test integration_test
