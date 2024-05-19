@@ -37,7 +37,7 @@ jobs:
   unit-tests:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-latest]
         #os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     #needs: ["lint"]
@@ -47,6 +47,7 @@ jobs:
         id: list-fs
         run: |
           tree
+
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: cargo test --verbose
@@ -55,15 +56,14 @@ jobs:
         #env:
         #  PATH: ${{ github.workspace }}\\target\\debug;$PATH
         run: cargo test --lib --verbose -- --skip bindgen_test_layout__azac_empty
-
-      - name: List FS2
-        id: list-fs
-        run: |
-          tree
-
       - name: Run tests on macos
         if: matrix.os == 'macos-latest'
         env:
           LD_LIBRARY_PATH: ${{ github.workspace }}/target/debug
           DYLD_LIBRARY_PATH: ${{ github.workspace }}/target/debug
         run: cargo test --lib --verbose
+
+      - name: List FS2
+        id: list-fs
+        run: |
+          tree
