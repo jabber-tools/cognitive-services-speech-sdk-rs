@@ -44,7 +44,6 @@ jobs:
       - name: List FS
         id: list-fs
         run: |
-          pwd
           tree
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -53,7 +52,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         env:
           PATH: ${{ github.workspace }}\\target\\debug;$PATH
-        run: cargo test --lib --verbose -- --skip bindgen_test_layout__azac_empty
+        run: cargo test --verbose
+        #run: cargo test --lib --verbose -- --skip bindgen_test_layout__azac_empty
       - name: Run tests on macos
         if: matrix.os == 'macos-latest'
         env:
