@@ -73,4 +73,5 @@ jobs:
       - name: Run integration tests on windows
         if: matrix.os == 'windows-latest'
         run: |
+          echo $env:Path
           cargo test --test integration_test
