@@ -68,7 +68,7 @@ jobs:
           $speechSdkDir=Get-ChildItem -Path ./target/debug/build -Recurse -Directory -Filter sdk_output| Select-Object -ExpandProperty FullName
           $speechSdkDLLFolder="$speechSdkDir\runtimes\win-x64\native"
           echo 123
-          echo $speechSdkDLLFolder
+          echo $speechSdkDir
           echo 456
           echo $speechSdkDLLFolder
           echo 789
