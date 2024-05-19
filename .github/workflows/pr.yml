@@ -1,6 +1,8 @@
 name: PR Checks
 
 on:
+  push:
+    branches: readme
   pull_request:
 permissions:
   contents: read
