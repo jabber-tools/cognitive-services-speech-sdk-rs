@@ -1,8 +1,6 @@
 name: PR Checks
 
 on:
-  push:
-    branches: readme
   pull_request:
 permissions:
   contents: read
@@ -17,8 +15,18 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
-
     steps:
       - uses: actions/checkout@v4
       - name: Build
         run: cargo build --verbose
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: ["build"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run fmt
+        run: cargo fmt -- --check
+      - name: Run clippy
+        run: cargo clippy -- -Dwarnings
