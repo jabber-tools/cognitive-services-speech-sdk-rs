@@ -53,8 +53,6 @@ jobs:
         run: cargo test --verbose
       - name: Run tests on windows
         if: matrix.os == 'windows-latest'
-        #env:
-        #  PATH: ${{ github.workspace }}\\target\\debug;$PATH
         run: cargo test --lib --verbose -- --skip bindgen_test_layout__azac_empty
       - name: Run tests on macos
         if: matrix.os == 'macos-latest'
@@ -67,3 +65,7 @@ jobs:
         id: list-fs-2
         run: |
           tree
+
+      - name: Run integration tests on windows
+        if: matrix.os == 'windows-latest'
+        run: cargo test --test integration_test
