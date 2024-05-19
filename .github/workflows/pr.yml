@@ -90,7 +90,6 @@ jobs:
           speechSdkDLLFolder="$speechSdkDir/lib/x64"
           echo $speechSdkDLLFolder
           ls -la $speechSdkDLLFolder
-          echo $speechSdkDLLFolder >> $GITHUB_PATH
 
       - name: Run integration tests on windows
         if: matrix.os == 'windows-latest'
