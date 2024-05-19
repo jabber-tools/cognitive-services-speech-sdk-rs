@@ -15,7 +15,7 @@
 Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
 
 Pull requests welcome!
-TEST
+TEST1
 ### Speech to text 
 ```rust
 use cognitive_services_speech_sdk_rs as msspeech;
