@@ -59,7 +59,7 @@ jobs:
           speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
           speechSdkFrameworkPath="$speechSdkDir/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64"
           export DYLD_FALLBACK_FRAMEWORK_PATH="$speechSdkFrameworkPath"
-          echo "{DYLD_FALLBACK_FRAMEWORK_PATH}=$speechSdkFrameworkPath" >> $GITHUB_OUTPUT
+          echo "DYLD_FALLBACK_FRAMEWORK_PATH=$speechSdkFrameworkPath" >> $GITHUB_OUTPUT
           cargo test --lib --verbose
 
       - name: List FS
