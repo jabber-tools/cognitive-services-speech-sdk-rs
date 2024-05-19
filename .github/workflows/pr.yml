@@ -67,7 +67,7 @@ jobs:
 
       - name: List FS (mac)
         if: matrix.os == 'macos-latest'
-        id: list-fs
+        id: list-fs-mac
         run: |
           brew install --force --quiet tree
           tree
