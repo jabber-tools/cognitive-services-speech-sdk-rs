@@ -77,7 +77,7 @@ jobs:
           speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
           speechSdkDLLFolder="$speechSdkDir/linux/SpeechSDK-Linux-1.37.0/lib/x64"
           echo $speechSdkDLLFolder
-          ll $speechSdkDLLFolder
+          ls -la $speechSdkDLLFolder
           echo $speechSdkDLLFolder >> $GITHUB_PATH
 
       - name: Add SpeechSDK DLL folder to PATH (mac)
@@ -86,7 +86,7 @@ jobs:
           speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
           speechSdkDLLFolder="$speechSdkDir/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64"
           echo $speechSdkDLLFolder
-          ll $speechSdkDLLFolder
+          ls -la $speechSdkDLLFolder
           echo $speechSdkDLLFolder >> $GITHUB_PATH
 
       - name: Run integration tests on windows
