@@ -37,7 +37,7 @@ jobs:
   unit-tests:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest]
         #os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     #needs: ["lint"]
@@ -61,21 +61,32 @@ jobs:
         run: |
           tree
         
-      - name: Add SpeechSDK DLL folder to PATH
+      - name: Add SpeechSDK DLL folder to PATH (Windows)
         if: matrix.os == 'windows-latest'
         # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#adding-a-system-path
         run: |
           $speechSdkDir=Get-ChildItem -Path ./target/debug/build -Recurse -Directory -Filter sdk_output| Select-Object -ExpandProperty FullName
           $speechSdkDLLFolder="$speechSdkDir\runtimes\win-x64\native"
-          echo 123
-          echo $speechSdkDir
-          echo 456
           echo $speechSdkDLLFolder
-          echo 789
           echo $speechSdkDLLFolder | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Add SpeechSDK DLL folder to PATH (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
+          speechSdkDLLFolder="$speechSdkDir/linux/SpeechSDK-Linux-1.37.0/lib/x64"
+          echo $speechSdkDLLFolder
+          echo $speechSdkDLLFolder >> $GITHUB_PATH
+
 
       - name: Run integration tests on windows
         if: matrix.os == 'windows-latest'
         run: |
           echo $env:Path
+          cargo test --test integration_test
+
+      - name: Run integration tests on ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo $PATH
           cargo test --test integration_test
