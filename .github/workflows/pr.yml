@@ -48,16 +48,17 @@ jobs:
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: cargo test --verbose
-
-      - name: WINDOWS CARGO
-        run: cargo test --lib --verbose -- --skip bindgen_test_layout__azac_empty
-
       - name: Run tests on windows
         if: matrix.os == 'windows-latest'
-        env:
-          PATH: ${{ github.workspace }}\\target\\debug;$PATH
-        run: cargo test --verbose
-        #run: cargo test --lib --verbose -- --skip bindgen_test_layout__azac_empty
+        #env:
+        #  PATH: ${{ github.workspace }}\\target\\debug;$PATH
+        run: cargo test --lib --verbose -- --skip bindgen_test_layout__azac_empty
+
+      - name: List FS2
+        id: list-fs
+        run: |
+          tree
+
       - name: Run tests on macos
         if: matrix.os == 'macos-latest'
         env:
