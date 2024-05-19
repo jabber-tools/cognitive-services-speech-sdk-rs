@@ -43,11 +43,6 @@ jobs:
     #needs: ["lint"]
     steps:
       - uses: actions/checkout@v4
-      - name: List FS
-        id: list-fs
-        run: |
-          tree
-
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: cargo test --verbose
@@ -61,11 +56,16 @@ jobs:
           DYLD_LIBRARY_PATH: ${{ github.workspace }}/target/debug
         run: cargo test --lib --verbose
 
-      - name: List FS2
-        id: list-fs-2
+      - name: List FS
+        id: list-fs
         run: |
           tree
 
       - name: Run integration tests on windows
         if: matrix.os == 'windows-latest'
-        run: cargo test --test integration_test
+        run: |
+          $speechSdkDir=Get-ChildItem -Path ./target/debug/build -Recurse -Directory -Filter sdk_output| Select-Object -ExpandProperty FullName
+          $speechSdkDLLFolder="$speechSdkDir\runtimes\win-x64\native"
+          echo $speechSdkDir
+          echo $speechSdkDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          cargo test --test integration_test
