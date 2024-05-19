@@ -106,7 +106,8 @@ jobs:
 
       - name: Run integration tests on macos
         if: matrix.os == 'macos-latest'
+        env:
+          DYLD_FALLBACK_FRAMEWORK_PATH: ${{ steps.run-tests-on-macos.outputs.DYLD_FALLBACK_FRAMEWORK_PATH }}
         run: |
-          export DYLD_FALLBACK_FRAMEWORK_PATH=${{ steps.run-tests-on-macos.outputs.DYLD_FALLBACK_FRAMEWORK_PATH }}
           echo $DYLD_FALLBACK_FRAMEWORK_PATH
           cargo test --test integration_test
