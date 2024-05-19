@@ -107,5 +107,5 @@ jobs:
         run: |
           speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
           speechSdkFrameworkPath="$speechSdkDir/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64"
-          export DYLD_FALLBACK_FRAMEWORK_PATH="$speechSdkFrameworkPath"
+          ls -la $speechSdkFrameworkPath
           cargo test --test integration_test
