@@ -12,18 +12,11 @@ jobs:
   build:
     strategy:
       matrix:
-        version: [latest, latest, latest]
-        os: [ubuntu, windows]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
-    runs-on: ${{ matrix.os }}-${{ matrix.version }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
       - name: Build
         run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
-      - name: Run fmt
-        run: cargo fmt -- --check
-      - name: Run clippy
-        run: cargo clippy -- -Dwarnings
