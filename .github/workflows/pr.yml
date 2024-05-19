@@ -44,6 +44,7 @@ jobs:
       - name: List FS
         id: list-fs
         run: |
+          pwd
           tree
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
