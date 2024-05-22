@@ -15,7 +15,7 @@
 Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
 
 Pull requests welcome!
-TEST1111111
+
 ### Speech to text 
 ```rust
 use cognitive_services_speech_sdk_rs as msspeech;
@@ -147,30 +147,6 @@ Windows (pointing to SpeechSDK directly in target folder):
 set PATH=%PATH%;"C:\Users\xxx\cognitive-services-speech-sdk-rs\target\debug\build\cognitive-services-speech-sdk-rs-b9c946c378fbb4f1\out\sdk_output\runtimes\win-x64\native"
 ```
 
-## Added in this version
-
-This version (0.2.0) brings following goodies:
-
-* Build support for ARM architecture.
-* Upgrade of Microsoft Speech SDK version to 1.22.0.
-* Preview of Embedded Speech Config (Details [here](https://docs.microsoft.com/en-us/cpp/cognitive-services/speech/embeddedspeechconfig)). See also *examples/recognizer/embedded_recognize_once_async_from_file*. 
-  *EmbeddedSpeechConfig* class is not yet available in public release (there are no tutorials/doc available how to create embedded speech models for this API) but Microsoft will be revealing this information in the near future (initially for selected customers only). 
-  This will hopefully make possible to run embedded speech models (possibly on ARM devices) in offline mode emerging some very interesting applications of this library.
-
-Version 0.2.1 brings on the top of that support for build on MacOs (target architecture **aarch64**), see below.
-
-Version 0.2.2 adds MacOS support for target architecture **arm**.
-
-Version 0.3.0 upgrades to MS Speech SDK 1.37.0 and improves library build process.
-
-Version 0.3.1 windows support!
-
-Version 1.0.0 Some internal stability fixes. All **from_handle** methods are now unsafe. This is breaking change as it requires to call **from_handle** within unsafe block.
-
-Version 1.0.1 Implemented trait **std::error::Error** for **cognitive_services_speech_sdk_rs::error::Error** so that it works well with **anyhow::Result<T>**. See [PR16](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/pull/16).
-
-Version 1.0.2 Extended PropertyId with kissing values
-
 ### How To Build On MacOS
 
 We are supporting MacOS **arm** and **aarch64** and **x86_64** architectures.
@@ -190,3 +166,7 @@ Then run your application utilizing **cognitive-services-speech-sdk-rs** or exam
 ```
 cargo run --example recognizer
 ```
+
+## Added in this version
+
+See [changelog](./changelog.md)
