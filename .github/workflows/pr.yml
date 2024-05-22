@@ -46,7 +46,7 @@ jobs:
 
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: cargo test --verbose
+        run: cargo test --lib --verbose
 
       - name: Run tests on windows
         if: matrix.os == 'windows-latest'
@@ -60,7 +60,6 @@ jobs:
           speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
           speechSdkFrameworkPath="$speechSdkDir/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64"
           export DYLD_FALLBACK_FRAMEWORK_PATH="$speechSdkFrameworkPath"
-          echo "DYLD_FALLBACK_FRAMEWORK_PATH=$speechSdkFrameworkPath" >> $GITHUB_OUTPUT
           cargo test --lib --verbose
 
   integration-tests:
