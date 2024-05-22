@@ -74,17 +74,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: List FS
-        if: matrix.os != 'macos-latest'
-        id: list-fs
-        run: tree
+      - name: Build tests
+        run: cargo build --tests
 
-      - name: List FS (mac)
+      - name: Install tree on mac
         if: matrix.os == 'macos-latest'
-        id: list-fs-mac
-        run: |
-          brew install --force --quiet tree
-          tree
+        run: brew install --force --quiet tree
+
+      - name: List FS
+        run: tree
 
       - name: Add SpeechSDK DLL folder to PATH (windows)
         if: matrix.os == 'windows-latest'
@@ -95,7 +93,7 @@ jobs:
           echo $speechSdkDLLFolder
           echo $speechSdkDLLFolder | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Add SpeechSDK DLL folder to PATH (ubuntu)
+      - name: Add SpeechSDK LIB folder to PATH (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
           speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
@@ -103,6 +101,16 @@ jobs:
           echo $speechSdkDLLFolder
           ls -la $speechSdkDLLFolder
           echo $speechSdkDLLFolder >> $GITHUB_PATH
+
+      - name: Add SpeechSDK LIB folder to DYLD_FALLBACK_FRAMEWORK_PATH
+        id: populate-dyld-fallback-framework
+        if: matrix.os == 'macos-latest'
+        run: |
+          speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
+          speechSdkFrameworkPath="$speechSdkDir/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64"
+          export DYLD_FALLBACK_FRAMEWORK_PATH="$speechSdkFrameworkPath"
+          echo "DYLD_FALLBACK_FRAMEWORK_PATH=$speechSdkFrameworkPath" >> $GITHUB_OUTPUT
+          
 
       - name: Run integration tests on windows
         if: matrix.os == 'windows-latest'
@@ -116,20 +124,10 @@ jobs:
           echo $PATH
           cargo test --test integration_test
 
-      - name: Build tests
-        id: run-tests-on-macos
-        if: matrix.os == 'macos-latest'
-        run: |
-          cargo build --tests
-          speechSdkDir=$(find ./target/debug/build -type d -name "sdk_output")
-          speechSdkFrameworkPath="$speechSdkDir/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64"
-          export DYLD_FALLBACK_FRAMEWORK_PATH="$speechSdkFrameworkPath"
-          echo "DYLD_FALLBACK_FRAMEWORK_PATH=$speechSdkFrameworkPath" >> $GITHUB_OUTPUT
-
       - name: Run integration tests on macos
         if: matrix.os == 'macos-latest'
         env:
-          DYLD_FALLBACK_FRAMEWORK_PATH: ${{ steps.run-tests-on-macos.outputs.DYLD_FALLBACK_FRAMEWORK_PATH }}
+          DYLD_FALLBACK_FRAMEWORK_PATH: ${{ steps.populate-dyld-fallback-framework.outputs.DYLD_FALLBACK_FRAMEWORK_PATH }}
         run: |
           echo $DYLD_FALLBACK_FRAMEWORK_PATH
           cargo test --test integration_test          
