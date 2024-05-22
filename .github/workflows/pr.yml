@@ -1,10 +1,7 @@
-name: PR Checks
+# same as main workflow github-actions-rust-ci.yml (copied), just triggers are different
+name: Pull Request Checks
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - wf
   pull_request:
 
 permissions:
@@ -102,7 +99,7 @@ jobs:
           ls -la $speechSdkDLLFolder
           echo $speechSdkDLLFolder >> $GITHUB_PATH
 
-      - name: Add SpeechSDK LIB folder to DYLD_FALLBACK_FRAMEWORK_PATH
+      - name: Add SpeechSDK LIB folder to DYLD_FALLBACK_FRAMEWORK_PATH (macos)
         id: populate-dyld-fallback-framework
         if: matrix.os == 'macos-latest'
         run: |
@@ -110,7 +107,7 @@ jobs:
           speechSdkFrameworkPath="$speechSdkDir/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64"
           export DYLD_FALLBACK_FRAMEWORK_PATH="$speechSdkFrameworkPath"
           echo "DYLD_FALLBACK_FRAMEWORK_PATH=$speechSdkFrameworkPath" >> $GITHUB_OUTPUT
-          
+
 
       - name: Run integration tests on windows
         if: matrix.os == 'windows-latest'
