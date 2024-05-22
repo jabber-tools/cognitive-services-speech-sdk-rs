@@ -12,6 +12,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  MSServiceRegion: westeurope
 
 jobs:
   #  build:
@@ -39,6 +40,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    environment: integration
+    env:
+      MSSubscriptionKey: ${{ secrets.MSSubscriptionKey }}
     #needs: ["lint"]
     steps:
       - uses: actions/checkout@v4

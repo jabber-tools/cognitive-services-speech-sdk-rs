@@ -1,22 +1,29 @@
 use cognitive_services_speech_sdk_rs as msspeech;
 use log::*;
+use rust_embed::Embed;
 use std::env;
+use std::path::PathBuf;
+
+#[derive(Embed)]
+#[folder = "examples/sample_files"]
+struct Asset;
 
 #[tokio::test]
-// ignored so that these tests are not run by CI during build without subscription key
-//#[ignore]
 async fn speech_to_text() {
-    let filename = env::var("WAVFILENAME").unwrap();
-    let audio_config = msspeech::audio::AudioConfig::from_wav_file_input(&filename).unwrap();
+    let current_dir = std::env::current_dir().expect("Failed to get current directory");
+    let mut file_path = PathBuf::from(&current_dir);
+    file_path.push("examples");
+    file_path.push("sample_files");
+    file_path.push("myVoiceIsMyPassportVerifyMe01.wav");
+    let file_path_str = &file_path.into_os_string().into_string().unwrap();
+    let audio_config = msspeech::audio::AudioConfig::from_wav_file_input(file_path_str).unwrap();
 
     // before running this text export the below listed variables. Example:
     // export MSSubscriptionKey=32...
     // export MSServiceRegion=westeurope
-    // export WAVFILENAME=/tmp/hello_rust.wav
-    // cargo test
     let speech_config = msspeech::speech::SpeechConfig::from_subscription(
         env::var("MSSubscriptionKey").unwrap(),
-        env::var("MSServiceRegion").unwrap(),
+        env::var("MSServiceRegion").unwrap_or("westeurope".to_string()),
     )
     .unwrap();
     let mut speech_recognizer =
@@ -52,8 +59,7 @@ async fn speech_to_text() {
 
     let result = speech_recognizer.recognize_once_async().await.unwrap();
     info!("got recognition {:?}", result);
-    // actual result might differ as the speech api evolves :)
-    // assert_eq!(result.text, "Hello rust.");
+    assert_eq!(result.text, "By voice is my passport verify me.");
 }
 
 #[tokio::test]
