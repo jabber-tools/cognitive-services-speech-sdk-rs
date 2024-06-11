@@ -1,6 +1,6 @@
 [package]
 name = "cognitive-services-speech-sdk-rs"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["Adam Bezecny <adam.bezecny@gmail.com>"]
 edition = "2018"
 description = "Rust bindings for Microsoft Speech SDK."
@@ -11,7 +11,8 @@ exclude = [
     "examples/*"
 ]
 repository = "https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/"
-documentation = "https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/1.0.0/cognitive_services_speech_sdk_rs/index.html"
+#documentation = "https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/1.0.0/cognitive_services_speech_sdk_rs/index.html"
+documentation = "https://docs.rs/jabber-tools/1.0.3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

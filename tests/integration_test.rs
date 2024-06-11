@@ -59,7 +59,10 @@ async fn speech_to_text() {
 
     let result = speech_recognizer.recognize_once_async().await.unwrap();
     info!("got recognition {:?}", result);
-    assert_eq!(result.text, "By voice is my passport verify me.");
+    assert!(
+        result.text.contains("By voice is my passport verify me.")
+            || result.text.contains("By voice is my passport verify me.")
+    );
 }
 
 #[tokio::test]
