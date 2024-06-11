@@ -1,4 +1,5 @@
 // build.rs
+use std::ffi::OsString;
 #[allow(unused_imports)]
 use std::{
     env, fs,
@@ -16,8 +17,21 @@ fn download_file(url: &str, dst: &str) {
         .expect("failed to download Speech SDK!");
 }
 
+/// Get an environment variable and register it with cargo so the build is rerun
+/// if it's changed.
+fn env_var(name: &str) -> Option<OsString> {
+    println!("cargo::rerun-if-env-changed={name}");
+    std::env::var_os(name)
+}
+
 #[cfg(target_os = "linux")]
 fn main() {
+    if env_var("DOCS_RS").is_some() {
+        // Skip linking and bindgen when building docs as docs.rs won't have the
+        // dependency present and can't download it.
+        return;
+    }
+
     let linux_sdk_url = format!(
         "https://csspeechstorage.blob.core.windows.net/drop/{SPEECH_SDK_VERSION}/SpeechSDK-Linux-{SPEECH_SDK_VERSION}.tar.gz");
 
@@ -139,6 +153,12 @@ fn main() {
     all(target_os = "macos", target_arch = "x86_64")
 ))]
 fn main() {
+    if env_var("DOCS_RS").is_some() {
+        // Skip linking and bindgen when building docs as docs.rs won't have the
+        // dependency present and can't download it.
+        return;
+    }
+
     let mac_sdk_url = format!("https://csspeechstorage.blob.core.windows.net/drop/{SPEECH_SDK_VERSION}/MicrosoftCognitiveServicesSpeech-MacOSXCFramework-{SPEECH_SDK_VERSION}.zip");
 
     // Build scripts should not modify any files outside of the `OUT_DIR` directory,
@@ -199,6 +219,12 @@ fn main() {
 fn main() {
     use std::{fs::File, io::BufReader};
     use zip::ZipArchive;
+
+    if env_var("DOCS_RS").is_some() {
+        // Skip linking and bindgen when building docs as docs.rs won't have the
+        // dependency present and can't download it.
+        return;
+    }
 
     let nuget_package_url = format!("https://www.nuget.org/api/v2/package/Microsoft.CognitiveServices.Speech/{SPEECH_SDK_VERSION}");
 
