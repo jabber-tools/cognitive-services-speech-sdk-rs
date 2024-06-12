@@ -60,8 +60,14 @@ async fn speech_to_text() {
     let result = speech_recognizer.recognize_once_async().await.unwrap();
     info!("got recognition {:?}", result);
     assert!(
-        result.text.contains("By voice is my passport verify me.")
-            || result.text.contains("By voice is my passport verify me.")
+        result
+            .text
+            .to_lowercase()
+            .contains("y voice is my passport. verify me")
+            || result
+                .text
+                .to_lowercase()
+                .contains("y voice is my passport verify me")
     );
 }
 

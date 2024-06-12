@@ -189,6 +189,14 @@ fn main() {
         Command::new("unzip").args(args).status().unwrap();
     }
 
+    let skip_bindgen = env::var("MS_COG_SVC_SPEECH_SKIP_BINDGEN")
+        .map(|v| v == "1")
+        .unwrap_or(false);
+
+    if skip_bindgen {
+        return;
+    }
+
     println!("cargo:rustc-link-search=framework={}/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64", sdk_output_dir.display());
     println!("cargo:rustc-link-lib=framework=MicrosoftCognitiveServicesSpeech");
 
