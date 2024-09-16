@@ -12,11 +12,11 @@
 [rustdoc-badge]: https://img.shields.io/badge/docs.rs-1.0.4-green.svg
 [rustdoc-url]: https://docs.rs/cognitive-services-speech-sdk-rs
 
-Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 
+Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities.
 
 Pull requests welcome!
 
-### Speech to text 
+### Speech to text
 ```rust
 use cognitive_services_speech_sdk_rs as msspeech;
 use log::*;
@@ -119,7 +119,7 @@ Currently build on Windows, Linux and MacOS is supported. Uses Clang and Microso
 Install following prerequisites before running *cargo build*:
 
 ```
-sudo apt-get update 
+sudo apt-get update
 sudo apt-get install clang build-essential libssl1.0.0 libasound2 wget
 ```
 
@@ -134,7 +134,7 @@ Build process will download MS Speech SDK into target folder. From here you can 
 
 Linux:
 ```
-export LD_LIBRARY_PATH=/Users/xxx/cognitive-services-speech-sdk-rs/SpeechSDK/macOS/sdk_output/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64
+export LD_LIBRARY_PATH=/Users/xxx/cognitive-services-speech-sdk-rs/SpeechSDK/macOS/sdk_output/lib/x64 # or x86, arm32, arm64, centos7-x64
 ```
 
 MacOS:
