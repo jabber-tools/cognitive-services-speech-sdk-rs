@@ -2,8 +2,9 @@ use crate::common::SpeechSynthesisBoundaryType;
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     synthesizer_event_handle_release, synthesizer_word_boundary_event_get_values, SmartHandle,
-    SpeechSynthesis_BoundaryType, SPXEVENTHANDLE,
+    SpeechSynthesis_BoundaryType, SPXEVENTHANDLE, synthesizer_event_get_text, property_bag_free_string,
 };
+use std::ffi::CStr;
 
 /// Event passed into speech synthetizer's callback set_synthesizer_word_boundary_cb.
 #[derive(Debug)]
@@ -11,9 +12,10 @@ pub struct SpeechSynthesisWordBoundaryEvent {
     pub handle: SmartHandle<SPXEVENTHANDLE>,
     pub audio_offset: u64,
     pub duration_ms: u64,
-    pub text_offset: u32,
+    pub text_offset: Option<u32>,
     pub word_length: u32,
     pub boundary_type: SpeechSynthesisBoundaryType,
+    pub text: String,
 }
 
 impl SpeechSynthesisWordBoundaryEvent {
@@ -36,10 +38,21 @@ impl SpeechSynthesisWordBoundaryEvent {
             );
             convert_err(ret, "SpeechSynthesisWordBoundaryEvent::from_handle error")?;
 
+            // The text_offset is set to -1 (u32::MAX) if the event's text
+            // doesn't exactly match the input SSML. For example, if the event's
+            // text is "cat's" and the input SSML contains "cat&apos;s". In this
+            // case, we should make the programmer aware and map to Option<u32>.
+            let text_offset = if text_offset == u32::MAX { None } else { Some(text_offset) };
+
             #[cfg(target_os = "windows")]
             let boundary_type = SpeechSynthesisBoundaryType::from_i32(boundary_type);
             #[cfg(not(target_os = "windows"))]
             let boundary_type = SpeechSynthesisBoundaryType::from_u32(boundary_type);
+
+            let c_text = synthesizer_event_get_text(handle);
+            let text = CStr::from_ptr(c_text).to_str()?.to_owned();
+            let ret = property_bag_free_string(c_text);
+            convert_err(ret, "SpeechSynthesisWordBoundaryEvent::from_handle(property_bag_free_string) error")?;
 
             Ok(SpeechSynthesisWordBoundaryEvent {
                 handle: SmartHandle::create(
@@ -52,6 +65,7 @@ impl SpeechSynthesisWordBoundaryEvent {
                 text_offset,
                 word_length,
                 boundary_type,
+                text,
             })
         }
     }
