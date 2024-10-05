@@ -40,6 +40,10 @@ pub fn set_callbacks(speech_synthesizer: &mut SpeechSynthesizer) {
     speech_synthesizer
         .set_synthesizer_canceled_cb(|event| info!(">synthesizer_canceled_cb {:?}", event))
         .unwrap();
+
+    speech_synthesizer
+        .set_synthesizer_word_boundary_cb(|event| info!(">set_synthesizer_word_boundary_cb {:?}", event))
+        .unwrap();
 }
 
 pub fn set_callbacks_all(speech_synthesizer: &mut SpeechSynthesizer) {

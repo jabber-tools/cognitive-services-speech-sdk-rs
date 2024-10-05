@@ -12,6 +12,7 @@ async fn main() {
     helpers::set_env_vars("/tmp/path/to/subscription/key");
     env_logger::init();
 
+    audio_data_stream::run_example().await;
     speak_text_async::run_example().await;
     speak_text_async_2::run_example().await;
     speak_ssml_async::run_example().await;
