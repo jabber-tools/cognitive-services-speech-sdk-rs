@@ -25,3 +25,5 @@ Version 1.0.2 Extended PropertyId with missing values
 Version 1.0.3 documentation moved to docs.rs
 
 Version 1.0.4 minor fixes in readme files (badges, etc.), integration test **speech_to_text** made more resilient, assertion improved
+
+Version 1.0.5 SpeechSynthesisWordBoundaryEvent extended with **text** property.
