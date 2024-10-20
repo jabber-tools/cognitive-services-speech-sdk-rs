@@ -134,7 +134,7 @@ Build process will download MS Speech SDK into target folder. From here you can 
 
 Linux:
 ```
-export LD_LIBRARY_PATH=/Users/xxx/cognitive-services-speech-sdk-rs/SpeechSDK/macOS/sdk_output/MicrosoftCognitiveServicesSpeech.xcframework/macos-arm64_x86_64
+export LD_LIBRARY_PATH=/Users/xxx/cognitive-services-speech-sdk-rs/SpeechSDK/lib/x64 # or  arm32, arm64
 ```
 
 MacOS:
