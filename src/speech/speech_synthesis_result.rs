@@ -28,7 +28,7 @@ impl fmt::Debug for SpeechSynthesisResult {
         } else {
             &self.audio_data[..]
         };
-        f.debug_struct("SpeechRecognitionResult")
+        f.debug_struct("SpeechSynthesisResult")
             .field("result_id", &self.result_id)
             .field("reason", &self.reason)
             .field(
