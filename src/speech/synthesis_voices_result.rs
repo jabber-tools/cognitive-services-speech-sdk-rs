@@ -59,7 +59,6 @@ impl SynthesisVoicesResult {
                 ret,
                 "SynthesisVoicesResult::from_handle(synthesis_voices_result_get_voice_num) error",
             )?;
-            voice_num -= 1;
             let mut voices = vec![];
             for idx in 0..voice_num {
                 let mut voice_info_handle: MaybeUninit<SPXRESULTHANDLE> = MaybeUninit::uninit();
