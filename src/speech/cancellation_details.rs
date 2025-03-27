@@ -41,23 +41,11 @@ impl CancellationDetails {
                 .properties
                 .get_property(PropertyId::CancellationDetailsReasonDetailedText, "")?;
 
-            #[cfg(target_os = "windows")]
-            {
-                Ok(CancellationDetails {
-                    reason: CancellationReason::from_i32(reason),
-                    error_code: CancellationErrorCode::from_i32(error_code),
-                    error_details,
-                })
-            }
-
-            #[cfg(not(target_os = "windows"))]
-            {
-                Ok(CancellationDetails {
-                    reason: CancellationReason::from_u32(reason),
-                    error_code: CancellationErrorCode::from_u32(error_code),
-                    error_details,
-                })
-            }
+            Ok(CancellationDetails {
+                reason: reason.into(),
+                error_code: error_code.into(),
+                error_details,
+            })
         }
     }
 }

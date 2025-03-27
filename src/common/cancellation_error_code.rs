@@ -42,8 +42,16 @@ impl CancellationErrorCode {
             _ => CancellationErrorCode::RuntimeError,
         }
     }
+}
 
-    pub fn from_i32(code: i32) -> Self {
-        CancellationErrorCode::from_u32(code as u32)
+impl From<u32> for CancellationErrorCode {
+    fn from(value: u32) -> Self {
+        CancellationErrorCode::from_u32(value)
+    }
+}
+
+impl From<i32> for CancellationErrorCode {
+    fn from(value: i32) -> Self {
+        CancellationErrorCode::from_u32(value as u32)
     }
 }

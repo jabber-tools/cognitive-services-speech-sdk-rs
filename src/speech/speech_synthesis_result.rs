@@ -99,11 +99,6 @@ impl SpeechSynthesisResult {
             )?;
             let properties = PropertyCollection::from_handle(properties_handle.assume_init());
 
-            #[cfg(target_os = "windows")]
-            let reason = ResultReason::from_i32(reason);
-            #[cfg(not(target_os = "windows"))]
-            let reason = ResultReason::from_u32(reason);
-
             let speech_synthesis_result = SpeechSynthesisResult {
                 handle: SmartHandle::create(
                     "SpeechSynthesisResult",
@@ -111,7 +106,7 @@ impl SpeechSynthesisResult {
                     synthesizer_result_handle_release,
                 ),
                 result_id,
-                reason,
+                reason: reason.into(),
                 audio_data: slice_buffer.to_vec(),
                 audio_duration_ms: audio_duration,
                 properties,

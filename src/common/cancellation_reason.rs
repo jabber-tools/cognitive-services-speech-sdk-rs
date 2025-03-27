@@ -17,8 +17,16 @@ impl CancellationReason {
             _ => CancellationReason::CancelledByUser,
         }
     }
+}
 
-    pub fn from_i32(code: i32) -> Self {
-        CancellationReason::from_u32(code as u32)
+impl From<u32> for CancellationReason {
+    fn from(value: u32) -> Self {
+        CancellationReason::from_u32(value)
+    }
+}
+
+impl From<i32> for CancellationReason {
+    fn from(value: i32) -> Self {
+        CancellationReason::from_u32(value as u32)
     }
 }

@@ -70,10 +70,7 @@ impl AudioDataStream {
             let ret = audio_data_stream_get_status(self.handle.inner(), &mut status);
             convert_err(ret, "AudioDataStream.get_status error")?;
 
-            #[cfg(target_os = "windows")]
-            return Ok(StreamStatus::from_i32(status));
-            #[cfg(not(target_os = "windows"))]
-            return Ok(StreamStatus::from_u32(status));
+            Ok(status.into())
         }
     }
 

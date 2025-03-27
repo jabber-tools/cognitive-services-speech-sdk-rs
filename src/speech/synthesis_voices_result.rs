@@ -76,11 +76,6 @@ impl SynthesisVoicesResult {
                 voices.push(voice_info);
             }
 
-            #[cfg(target_os = "windows")]
-            let reason = ResultReason::from_i32(reason);
-            #[cfg(not(target_os = "windows"))]
-            let reason = ResultReason::from_u32(reason);
-
             Ok(SynthesisVoicesResult {
                 handle: SmartHandle::create(
                     "SynthesisVoicesResult",
@@ -89,7 +84,7 @@ impl SynthesisVoicesResult {
                 ),
                 voices,
                 result_id,
-                reason,
+                reason: reason.into(),
                 error_details,
                 properties,
             })

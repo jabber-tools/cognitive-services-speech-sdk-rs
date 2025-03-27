@@ -27,8 +27,16 @@ impl StreamStatus {
             _ => StreamStatus::StreamStatusCanceled,
         }
     }
+}
 
-    pub fn from_i32(status: i32) -> Self {
-        StreamStatus::from_u32(status as u32)
+impl From<u32> for StreamStatus {
+    fn from(value: u32) -> Self {
+        StreamStatus::from_u32(value)
+    }
+}
+
+impl From<i32> for StreamStatus {
+    fn from(value: i32) -> Self {
+        StreamStatus::from_u32(value as u32)
     }
 }
