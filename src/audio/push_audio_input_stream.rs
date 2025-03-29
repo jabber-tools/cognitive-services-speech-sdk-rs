@@ -95,10 +95,15 @@ impl PushAudioInputStream {
 
     pub fn set_property_by_name(&mut self, name: String, value: String) -> Result<()> {
         unsafe {
-            let c_name = CString::new(name)?.as_ptr();
-            let c_value = CString::new(value)?.as_ptr();
-            let ret =
-                push_audio_input_stream_set_property_by_name(self.handle.inner(), c_name, c_value);
+            let c_name = CString::new(name)?;
+            let c_name_ptr = c_name.as_ptr();
+            let c_value = CString::new(value)?;
+            let c_value_ptr = c_value.as_ptr();
+            let ret = push_audio_input_stream_set_property_by_name(
+                self.handle.inner(),
+                c_name_ptr,
+                c_value_ptr,
+            );
             convert_err(ret, "PushAudioInputStream.set_property_by_name error")?;
             Ok(())
         }
@@ -106,11 +111,12 @@ impl PushAudioInputStream {
 
     pub fn set_property(&mut self, id: PropertyId, value: String) -> Result<()> {
         unsafe {
-            let c_value = CString::new(value)?.as_ptr();
+            let c_value = CString::new(value)?;
+            let c_value_ptr = c_value.as_ptr();
             let ret = push_audio_input_stream_set_property_by_id(
                 self.handle.inner(),
                 id.to_i32(),
-                c_value,
+                c_value_ptr,
             );
             convert_err(ret, "PushAudioInputStream.set_property error")?;
             Ok(())

@@ -65,12 +65,13 @@ impl PropertyCollection {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let c_default_val = CString::new(default_val)?.as_ptr();
+            let c_default_val = CString::new(default_val)?;
+            let c_default_val_ptr = c_default_val.as_ptr();
             let ret = property_bag_get_string(
                 self.handle.inner(),
                 prop_id.to_i32(),
                 std::ptr::null(),
-                c_default_val,
+                c_default_val_ptr,
             );
             if ret == NULL_C_STR_PTR {
                 Ok("".to_owned())
@@ -99,9 +100,12 @@ impl PropertyCollection {
         S: Into<Vec<u8>>,
     {
         unsafe {
-            let c_name = CString::new(prop_name)?.as_ptr();
-            let c_default_val = CString::new(default_val)?.as_ptr();
-            let ret = property_bag_get_string(self.handle.inner(), -1, c_name, c_default_val);
+            let c_name = CString::new(prop_name)?;
+            let c_name_ptr = c_name.as_ptr();
+            let c_default_val = CString::new(default_val)?;
+            let c_default_val_ptr = c_default_val.as_ptr();
+            let ret =
+                property_bag_get_string(self.handle.inner(), -1, c_name_ptr, c_default_val_ptr);
             if ret == NULL_C_STR_PTR {
                 Ok("".to_owned())
             } else {
