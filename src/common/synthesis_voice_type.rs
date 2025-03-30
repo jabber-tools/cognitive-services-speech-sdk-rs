@@ -23,8 +23,16 @@ impl SynthesisVoiceType {
             _ => SynthesisVoiceType::OfflineStandard,
         }
     }
+}
 
-    pub fn from_i32(reason: i32) -> Self {
-        SynthesisVoiceType::from_u32(reason as u32)
+impl From<u32> for SynthesisVoiceType {
+    fn from(value: u32) -> Self {
+        SynthesisVoiceType::from_u32(value)
+    }
+}
+
+impl From<i32> for SynthesisVoiceType {
+    fn from(value: i32) -> Self {
+        SynthesisVoiceType::from_u32(value as u32)
     }
 }

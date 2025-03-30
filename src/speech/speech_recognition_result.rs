@@ -82,11 +82,6 @@ impl SpeechRecognitionResult {
             )?;
             let properties = PropertyCollection::from_handle(properties_handle.assume_init());
 
-            #[cfg(target_os = "windows")]
-            let reason = ResultReason::from_i32(reason);
-            #[cfg(not(target_os = "windows"))]
-            let reason = ResultReason::from_u32(reason);
-
             Ok(SpeechRecognitionResult {
                 handle: SmartHandle::create(
                     "SpeechRecognitionResult",
@@ -94,7 +89,7 @@ impl SpeechRecognitionResult {
                     recognizer_result_handle_release,
                 ),
                 result_id,
-                reason,
+                reason: reason.into(),
                 text: result_text,
                 duration: (duration).to_string(),
                 offset: (offset).to_string(),

@@ -15,23 +15,14 @@ pub enum AudioStreamContainerFormat {
     Amrwb = 263,
 }
 
-impl AudioStreamContainerFormat {
-    /// Converts enum instance to respective u32 value.
-    pub fn to_u32(&self) -> u32 {
-        match self {
-            AudioStreamContainerFormat::OggOpus => 257,
-            AudioStreamContainerFormat::Mp3 => 258,
-            AudioStreamContainerFormat::Flac => 259,
-            AudioStreamContainerFormat::Alaw => 260,
-            AudioStreamContainerFormat::Mulaw => 261,
-            /// Currently not supported
-            AudioStreamContainerFormat::Amrnb => 262,
-            /// Currently not supported
-            AudioStreamContainerFormat::Amrwb => 263,
-        }
+impl From<AudioStreamContainerFormat> for u32 {
+    fn from(format: AudioStreamContainerFormat) -> Self {
+        format as u32
     }
+}
 
-    pub fn to_i32(&self) -> i32 {
-        self.to_u32() as i32
+impl From<AudioStreamContainerFormat> for i32 {
+    fn from(format: AudioStreamContainerFormat) -> Self {
+        format as i32
     }
 }
