@@ -27,3 +27,5 @@ Version 1.0.3 documentation moved to docs.rs
 Version 1.0.4 minor fixes in readme files (badges, etc.), integration test **speech_to_text** made more resilient, assertion improved
 
 Version 1.0.5 SpeechSynthesisWordBoundaryEvent extended with **text** property.
+
+Version 1.0.6 Minor fixes: fix panic when getting list of voices, linter fixes (dangling_pointers_from_temporaries), use From trait instead of custom to_u32, to _i32 methods. See [PR26](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/pull/26) and [PR28](https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/pull/28).
