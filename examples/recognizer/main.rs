@@ -16,9 +16,9 @@ async fn main() {
 
     recognize_once_async_from_file::run_example().await;
     continuous_recognition_from_file::run_example().await;
-     continuous_recognition_push_stream::run_example().await;
-     recognize_once_async_from_push_stream::run_example().await;
-     continuous_recognition_pull_stream::run_example().await;
+    continuous_recognition_push_stream::run_example().await;
+    recognize_once_async_from_push_stream::run_example().await;
+    continuous_recognition_pull_stream::run_example().await;
     // works only on system with properly configured microphone
     // from_microphone::run_example().await;
 
