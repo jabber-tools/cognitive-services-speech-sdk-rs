@@ -10,6 +10,8 @@ struct Asset;
 
 #[tokio::test]
 async fn speech_to_text() {
+    env::set_var("RUST_LOG", "info");
+    env_logger::init();
     let current_dir = std::env::current_dir().expect("Failed to get current directory");
     let mut file_path = PathBuf::from(&current_dir);
     file_path.push("examples");
@@ -72,9 +74,9 @@ async fn speech_to_text() {
 }
 
 #[tokio::test]
-// ignored so that these tests are not run by CI during build without subscription key
-#[ignore]
 async fn text_to_speech() {
+    env::set_var("RUST_LOG", "info");
+    env_logger::init();
     let pull_stream = msspeech::audio::PullAudioOutputStream::create_pull_stream().unwrap();
     let audio_config = msspeech::audio::AudioConfig::from_stream_output(&pull_stream).unwrap();
 
