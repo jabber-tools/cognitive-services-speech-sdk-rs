@@ -26,4 +26,5 @@ bindgen = "0.69.4"
 zip = "2.6.1"
 
 [dev-dependencies]
+rust-embed = "8.4.0"
 rodio = "0.20.1"
