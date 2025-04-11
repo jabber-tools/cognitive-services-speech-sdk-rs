@@ -28,8 +28,8 @@ impl EmbeddedSpeechConfig {
     /// for speech recognition and/or synthesis.
     ///
     /// * `path`: the folder path to search for offline models.
-    ///           This can be a root path under which several models are located in sub-folders,
-    ///           or a direct path to a specific model folder.
+    ///   This can be a root path under which several models are located in sub-folders,
+    ///   or a direct path to a specific model folder.
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<EmbeddedSpeechConfig> {
         EmbeddedSpeechConfig::from_paths(vec![path])
     }
@@ -37,8 +37,8 @@ impl EmbeddedSpeechConfig {
     /// Creates an instance of the embedded speech config with specified offline model paths
     /// for speech recognition and/or synthesis.
     /// * `paths`: The folder paths to search for offline models.
-    ///           These can be root paths under which several models are located in sub-folders,
-    ///           or direct paths to specific model folders.
+    ///   These can be root paths under which several models are located in sub-folders,
+    ///   or direct paths to specific model folders.
     pub fn from_paths<P: AsRef<Path>>(paths: Vec<P>) -> Result<EmbeddedSpeechConfig> {
         unsafe {
             let mut handle: MaybeUninit<SPXSPEECHCONFIGHANDLE> = MaybeUninit::uninit();

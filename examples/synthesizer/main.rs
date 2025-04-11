@@ -1,5 +1,6 @@
 mod audio_data_stream;
 mod helpers;
+mod input_text_streaming;
 mod speak_ssml_async;
 mod speak_ssml_async_bm_viseme;
 mod speak_text_async;
@@ -18,4 +19,5 @@ async fn main() {
     speak_ssml_async::run_example().await;
     speak_ssml_async_bm_viseme::run_example().await;
     audio_data_stream::run_example().await;
+    input_text_streaming::run_example().await;
 }
