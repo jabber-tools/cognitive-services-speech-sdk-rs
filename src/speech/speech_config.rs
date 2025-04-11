@@ -1,12 +1,14 @@
 use crate::common::{
     OutputFormat, ProfanityOption, PropertyCollection, PropertyId, ServicePropertyChannel,
+    SpeechSynthesisOutputFormat,
 };
 use crate::error::{convert_err, Result};
 use crate::ffi::{
     speech_config_from_authorization_token, speech_config_from_endpoint, speech_config_from_host,
     speech_config_from_subscription, speech_config_get_property_bag, speech_config_release,
-    speech_config_set_profanity, speech_config_set_service_property, SmartHandle, SPXHANDLE,
-    SPXPROPERTYBAGHANDLE, SPXSPEECHCONFIGHANDLE,
+    speech_config_set_audio_output_format, speech_config_set_profanity,
+    speech_config_set_service_property, SmartHandle, SPXHANDLE, SPXPROPERTYBAGHANDLE,
+    SPXSPEECHCONFIGHANDLE,
 };
 use crate::speech::EmbeddedSpeechConfig;
 use std::ffi::CString;
@@ -253,6 +255,16 @@ impl SpeechConfig {
             convert_err(ret, "SpeechConfig.set_profanity_option error")?;
             Ok(())
         }
+    }
+
+    pub fn set_speech_synthesis_output_format(
+        &mut self,
+        format: SpeechSynthesisOutputFormat,
+    ) -> Result<()> {
+        let ret =
+            unsafe { speech_config_set_audio_output_format(self.handle.inner(), format.into()) };
+        convert_err(ret, "SpeechConfig.set_speech_synthesis_output_format error")?;
+        Ok(())
     }
 
     pub fn enable_audio_logging(&mut self) -> Result<()> {
