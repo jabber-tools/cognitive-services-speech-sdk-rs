@@ -7,7 +7,7 @@ pub enum StreamStatus {
     /// StreamStatusNoData indicates that the audio data stream contains no data.
     StreamStatusNoData = 1,
 
-    /// StreamStatusNoData indicates that the audio data stream contains partial data of a speak request.
+    /// StreamStatusPartialData indicates that the audio data stream contains partial data of a speak request.
     StreamStatusPartialData = 2,
 
     /// StreamStatusAllData indicates the audio data stream contains all data of a speak request.
