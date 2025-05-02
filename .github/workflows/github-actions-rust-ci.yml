@@ -43,9 +43,11 @@ jobs:
     needs: ["lint"]
     steps:
       - uses: actions/checkout@v4
+      
       - name: Install libasound2-dev (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: cargo test --lib --verbose
@@ -75,6 +77,10 @@ jobs:
     needs: ["unit-tests"]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install libasound2-dev (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
 
       - name: Build tests
         run: cargo build --tests
