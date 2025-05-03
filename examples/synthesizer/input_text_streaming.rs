@@ -57,7 +57,7 @@ pub async fn run_example() {
             std::thread::spawn(move || {
                 for response in AiResponse::new() {
                     info!("++++++ Writing input text stream: {}", response);
-                    request.send_text_piece(&response).unwrap();
+                    request.send_text_piece(response).unwrap();
                 }
                 request.finish_input().unwrap();
                 info!("====== Input text stream closed");

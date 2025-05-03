@@ -52,8 +52,8 @@ impl SpeechSynthesisRequest {
     }
 
     /// Send a piece of text to the speech synthesis service to be synthesized, used in text streaming mode.
-    pub fn send_text_piece(&self, text: &str) -> Result<()> {
-        let c_text = CString::new(text)?;
+    pub fn send_text_piece<S: AsRef<str>>(&self, text: S) -> Result<()> {
+        let c_text = CString::new(text.as_ref())?;
         let text_len = c_text.as_bytes().len();
         unsafe {
             let ret = speech_synthesis_request_send_text_piece(
