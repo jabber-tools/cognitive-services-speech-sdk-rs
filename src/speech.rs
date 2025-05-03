@@ -39,7 +39,6 @@ pub use self::speech_recognizer::SpeechRecognizer;
 pub use self::speech_synthesis_bookmark_event::SpeechSynthesisBookmarkEvent;
 pub use self::speech_synthesis_event::SpeechSynthesisEvent;
 pub use self::speech_synthesis_request::SpeechSynthesisRequest;
-pub use self::speech_synthesis_request::TextInputStream;
 pub use self::speech_synthesis_result::SpeechSynthesisResult;
 pub use self::speech_synthesis_viseme_event::SpeechSynthesisVisemeEvent;
 pub use self::speech_synthesis_word_boundary_event::SpeechSynthesisWordBoundaryEvent;

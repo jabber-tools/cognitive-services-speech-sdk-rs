@@ -55,13 +55,12 @@ pub async fn run_example() {
             let buffer = &mut [0u8; 32000]; // Buffer to receive audio data
 
             std::thread::spawn(move || {
-                let input_stream = request.get_text_input_stream();
                 for response in AiResponse::new() {
-                    info!("++++++ Writing input text: {}", response);
-                    input_stream.write(response).unwrap();
+                    info!("++++++ Writing input text stream: {}", response);
+                    request.send_text_piece(&response).unwrap();
                 }
-                input_stream.close().unwrap();
-                info!("====== Text input stream closed");
+                request.finish_input().unwrap();
+                info!("====== Input text stream closed");
             });
 
             loop {

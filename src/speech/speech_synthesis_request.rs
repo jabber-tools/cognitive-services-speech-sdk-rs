@@ -10,31 +10,6 @@ use std::mem::MaybeUninit;
 
 /// Represents an input stream for speech synthesis request.
 #[derive(Debug)]
-pub struct TextInputStream<'a> {
-    parent: &'a SpeechSynthesisRequest,
-}
-
-impl<'a> TextInputStream<'a> {
-    /// Create a new `TextInputStream` instance.
-    fn new(parent: &'a SpeechSynthesisRequest) -> Self {
-        Self { parent }
-    }
-
-    /// Send a piece of text to the speech synthesis service to be synthesized.
-    pub fn write<S: AsRef<str>>(&self, text: S) -> Result<()> {
-        let text_ref = text.as_ref();
-        self.parent.send_text_piece(text_ref)
-    }
-
-    /// Finish the text input.
-    pub fn close(&self) -> Result<()> {
-        log::info!("Closing text input stream");
-        self.parent.finish_input()
-    }
-}
-
-/// Represents an input stream for speech synthesis request.
-#[derive(Debug)]
 pub struct SpeechSynthesisRequest {
     pub handle: SmartHandle<SPXREQUESTHANDLE>,
     pub properties: PropertyCollection,
@@ -76,13 +51,8 @@ impl SpeechSynthesisRequest {
         }
     }
 
-    /// Gets the input stream for the speech synthesis request.
-    pub fn get_text_input_stream(&self) -> TextInputStream {
-        TextInputStream::new(self)
-    }
-
     /// Send a piece of text to the speech synthesis service to be synthesized, used in text streaming mode.
-    fn send_text_piece(&self, text: &str) -> Result<()> {
+    pub fn send_text_piece(&self, text: &str) -> Result<()> {
         let c_text = CString::new(text)?;
         let text_len = c_text.as_bytes().len();
         unsafe {
@@ -96,7 +66,7 @@ impl SpeechSynthesisRequest {
     }
 
     /// Finish the text input, used in text streaming mode.
-    fn finish_input(&self) -> Result<()> {
+    pub fn finish_input(&self) -> Result<()> {
         unsafe {
             let ret = speech_synthesis_request_finish(self.handle.inner());
             convert_err(ret, "Failed to finish input")
