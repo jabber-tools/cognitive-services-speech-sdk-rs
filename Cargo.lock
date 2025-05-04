@@ -309,7 +309,7 @@ checksum = "4bfbf56724aa9eca8afa4fcfadeb479e722935bb2a0900c2d37e0cc477af0688"
 
 [[package]]
 name = "cognitive-services-speech-sdk-rs"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "bindgen 0.69.5",
  "env_logger",

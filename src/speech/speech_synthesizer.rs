@@ -97,7 +97,7 @@ impl SpeechSynthesizer {
         }
     }
 
-    pub fn from_optional_config(
+    pub fn from_optional_audio_config(
         speech_config: SpeechConfig,
         audio_config: Option<AudioConfig>,
     ) -> Result<Self> {
@@ -109,7 +109,7 @@ impl SpeechSynthesizer {
                     speech_config.handle.inner(),
                     audio_config.map_or(std::ptr::null_mut(), |a| a.handle.inner()),
                 ),
-                "SpeechSynthesizer.from_optional_config error",
+                "SpeechSynthesizer.from_optional_audio_config error",
             )?;
             SpeechSynthesizer::from_handle(handle.assume_init())
         }

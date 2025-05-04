@@ -9,7 +9,7 @@
 
 [crates-badge]: https://img.shields.io/crates/v/cognitive-services-speech-sdk-rs.svg
 [crates-url]: https://crates.io/crates/cognitive-services-speech-sdk-rs
-[rustdoc-badge]: https://img.shields.io/badge/docs.rs-1.0.6-green.svg
+[rustdoc-badge]: https://img.shields.io/badge/docs.rs-1.1.0-green.svg
 [rustdoc-url]: https://docs.rs/cognitive-services-speech-sdk-rs
 
 Rust bindings for Microsoft Cognitive Speech Services SDK. Provides thin abstraction around native C API. Heavily inspired by official [Go library](https://github.com/microsoft/cognitive-services-speech-sdk-go). Provides speech-to-text, text-to-speech and bot framework dialog management capabilities. 

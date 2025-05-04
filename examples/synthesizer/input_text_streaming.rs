@@ -42,7 +42,7 @@ pub async fn run_example() {
         .unwrap();
 
     // Set the audio_config parameter to None to control the audio play ourselves.
-    let speech_synthesizer = SpeechSynthesizer::from_optional_config(speech_config, None).unwrap();
+    let speech_synthesizer = SpeechSynthesizer::from_optional_audio_config(speech_config, None).unwrap();
 
     let request = SpeechSynthesisRequest::new_text_streaming_request().unwrap();
 

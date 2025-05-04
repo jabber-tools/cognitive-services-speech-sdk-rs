@@ -9,7 +9,7 @@
 
 [crates-badge]: https://img.shields.io/crates/v/cognitive-services-speech-sdk-rs.svg
 [crates-url]: https://crates.io/crates/cognitive-services-speech-sdk-rs
-[rustdoc-badge]: https://img.shields.io/badge/docs.rs-1.0.6-green.svg
+[rustdoc-badge]: https://img.shields.io/badge/docs.rs-1.1.0-green.svg
 [rustdoc-url]: https://docs.rs/cognitive-services-speech-sdk-rs
 
 
