@@ -128,3 +128,15 @@ pub enum SpeechSynthesisOutputFormat {
     /// (Added in 1.22.0)
     Riff44100Hz16BitMonoPcm = 37,
 }
+
+impl From<SpeechSynthesisOutputFormat> for i32 {
+    fn from(format: SpeechSynthesisOutputFormat) -> Self {
+        format as i32
+    }
+}
+
+impl From<SpeechSynthesisOutputFormat> for u32 {
+    fn from(format: SpeechSynthesisOutputFormat) -> Self {
+        format as u32
+    }
+}

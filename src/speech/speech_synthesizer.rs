@@ -7,16 +7,16 @@ use crate::ffi::{
     synthesizer_create_speech_synthesizer_from_auto_detect_source_lang_config,
     synthesizer_create_speech_synthesizer_from_config, synthesizer_get_property_bag,
     synthesizer_get_voices_list, synthesizer_handle_release, synthesizer_speak_ssml,
-    synthesizer_speak_text, synthesizer_start_speaking_ssml, synthesizer_start_speaking_text,
-    synthesizer_started_set_callback, synthesizer_stop_speaking,
+    synthesizer_speak_text, synthesizer_start_speaking_request, synthesizer_start_speaking_ssml,
+    synthesizer_start_speaking_text, synthesizer_started_set_callback, synthesizer_stop_speaking,
     synthesizer_synthesizing_set_callback, synthesizer_viseme_received_set_callback,
     synthesizer_word_boundary_set_callback, SmartHandle, SPXEVENTHANDLE, SPXPROPERTYBAGHANDLE,
     SPXRESULTHANDLE, SPXSYNTHHANDLE,
 };
 use crate::speech::{
     AutoDetectSourceLanguageConfig, SpeechConfig, SpeechSynthesisBookmarkEvent,
-    SpeechSynthesisEvent, SpeechSynthesisResult, SpeechSynthesisVisemeEvent,
-    SpeechSynthesisWordBoundaryEvent, SynthesisVoicesResult,
+    SpeechSynthesisEvent, SpeechSynthesisRequest, SpeechSynthesisResult,
+    SpeechSynthesisVisemeEvent, SpeechSynthesisWordBoundaryEvent, SynthesisVoicesResult,
 };
 use log::*;
 use std::boxed::Box;
@@ -92,6 +92,24 @@ impl SpeechSynthesizer {
                     audio_config.handle.inner(),
                 ),
                 "SpeechSynthesizer.from_config error",
+            )?;
+            SpeechSynthesizer::from_handle(handle.assume_init())
+        }
+    }
+
+    pub fn from_optional_config(
+        speech_config: SpeechConfig,
+        audio_config: Option<AudioConfig>,
+    ) -> Result<Self> {
+        unsafe {
+            let mut handle: MaybeUninit<SPXSYNTHHANDLE> = MaybeUninit::uninit();
+            convert_err(
+                synthesizer_create_speech_synthesizer_from_config(
+                    handle.as_mut_ptr(),
+                    speech_config.handle.inner(),
+                    audio_config.map_or(std::ptr::null_mut(), |a| a.handle.inner()),
+                ),
+                "SpeechSynthesizer.from_optional_config error",
             )?;
             SpeechSynthesizer::from_handle(handle.assume_init())
         }
@@ -185,6 +203,26 @@ impl SpeechSynthesizer {
                 result_handle.as_mut_ptr(),
             );
             convert_err(ret, "SpeechSynthesizer.start_speaking_ssml_async error")?;
+            SpeechSynthesisResult::from_handle(result_handle.assume_init())
+        }
+    }
+
+    /// Queue the speech synthesis on request, as an asynchronous operation. This API
+    /// could be used to synthesize speech from an input text stream, to reduce latency
+    /// for text generation scenarios. Note: the feature is in preview and is subject
+    /// to change. Added in version 1.37.0
+    pub async fn start_speaking_async(
+        &self,
+        request: &SpeechSynthesisRequest,
+    ) -> Result<SpeechSynthesisResult> {
+        unsafe {
+            let mut result_handle: MaybeUninit<SPXRESULTHANDLE> = MaybeUninit::uninit();
+            let ret = synthesizer_start_speaking_request(
+                self.handle.inner(),
+                request.handle.inner(),
+                result_handle.as_mut_ptr(),
+            );
+            convert_err(ret, "SpeechSynthesizer.start_speaking_async error")?;
             SpeechSynthesisResult::from_handle(result_handle.assume_init())
         }
     }

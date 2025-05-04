@@ -43,6 +43,10 @@ jobs:
     needs: ["lint"]
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Install libasound2-dev (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
 
       - name: Run tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -73,6 +77,10 @@ jobs:
     needs: ["unit-tests"]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install libasound2-dev (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
 
       - name: Build tests
         run: cargo build --tests
@@ -131,4 +139,4 @@ jobs:
           DYLD_FALLBACK_FRAMEWORK_PATH: ${{ steps.populate-dyld-fallback-framework.outputs.DYLD_FALLBACK_FRAMEWORK_PATH }}
         run: |
           echo $DYLD_FALLBACK_FRAMEWORK_PATH
-          cargo test --test integration_test -- --show-output      
+          cargo test --test integration_test -- --show-output
