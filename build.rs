@@ -8,7 +8,7 @@ use std::{
     str,
 };
 
-const SPEECH_SDK_VERSION: &str = "1.37.0";
+const SPEECH_SDK_VERSION: &str = "1.45.0";
 
 fn download_file(url: &str, dst: &str) {
     Command::new("curl")
