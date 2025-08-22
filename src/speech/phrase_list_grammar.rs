@@ -65,14 +65,14 @@ struct GrammarPhrase {
 
 impl GrammarPhrase {
     /// Creates a grammar phrase using the specified phrase text.
-    // # Arguments
+    /// # Arguments
     /// * `text` - The text representing a phrase that may be spoken by the user.
     fn from_text(text: impl AsRef<str>) -> Result<GrammarPhrase> {
         unsafe {
             let mut handle: MaybeUninit<SPXPHRASEHANDLE> = MaybeUninit::uninit();
             let c_text = CString::new(text.as_ref())?;
             let ret = grammar_phrase_create_from_text(handle.as_mut_ptr(), c_text.as_ptr());
-            convert_err(ret, "GrammarPhrase::grammar_pharse_from_text error")?;
+            convert_err(ret, "GrammarPhrase::grammar_phrase_from_text error")?;
             Ok(GrammarPhrase {
                 handle: SmartHandle::create(
                     "GrammarPhrase",
