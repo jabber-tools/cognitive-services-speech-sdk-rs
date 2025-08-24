@@ -30,6 +30,20 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::c_void;
 
+/// A separate internal struct to hold all the callback closures for the speech recognizer events.
+/// By creating a separate struct, and then boxing this struct inside our SpeechRecognizer,
+/// we can ensure the SpeechRecognizer itself can be moved freely by end users,
+/// and the callbacks will remain at a fixed memory address on the heap.
+struct CallbackBag {
+    session_started_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
+    session_stopped_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
+    speech_start_detected_cb: Option<Box<dyn Fn(RecognitionEvent) + Send>>,
+    speech_end_detected_cb: Option<Box<dyn Fn(RecognitionEvent) + Send>>,
+    canceled_cb: Option<Box<dyn Fn(SpeechRecognitionCanceledEvent) + Send>>,
+    recognizing_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
+    recognized_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
+}
+
 /// SpeechRecognizer struct holds functionality for speech-to-text recognition.
 pub struct SpeechRecognizer {
     handle: SmartHandle<SPXRECOHANDLE>,
@@ -38,13 +52,7 @@ pub struct SpeechRecognizer {
     handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
     handle_async_start_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
     handle_async_stop_keyword: Option<SmartHandle<SPXASYNCHANDLE>>,
-    session_started_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
-    session_stopped_cb: Option<Box<dyn Fn(SessionEvent) + Send>>,
-    speech_start_detected_cb: Option<Box<dyn Fn(RecognitionEvent) + Send>>,
-    speech_end_detected_cb: Option<Box<dyn Fn(RecognitionEvent) + Send>>,
-    canceled_cb: Option<Box<dyn Fn(SpeechRecognitionCanceledEvent) + Send>>,
-    recognizing_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
-    recognized_cb: Option<Box<dyn Fn(SpeechRecognitionEvent) + Send>>,
+    callbacks: Box<CallbackBag>,
 }
 
 impl fmt::Debug for SpeechRecognizer {
@@ -74,13 +82,18 @@ impl SpeechRecognizer {
                 handle_async_stop_continuous: None,
                 handle_async_start_keyword: None,
                 handle_async_stop_keyword: None,
-                session_started_cb: None,
-                session_stopped_cb: None,
-                speech_start_detected_cb: None,
-                speech_end_detected_cb: None,
-                canceled_cb: None,
-                recognizing_cb: None,
-                recognized_cb: None,
+                // Here we return a boxed instance of the CallbackBag,
+                // ensure that the pointer we provide to the C library
+                // points to a stable, heap-allocated location that holds the callbacks.
+                callbacks: Box::new(CallbackBag {
+                    session_started_cb: None,
+                    session_stopped_cb: None,
+                    speech_start_detected_cb: None,
+                    speech_end_detected_cb: None,
+                    canceled_cb: None,
+                    recognizing_cb: None,
+                    recognized_cb: None,
+                }),
             };
             Ok(result)
         }
@@ -164,12 +177,12 @@ impl SpeechRecognizer {
     where
         F: Fn(SessionEvent) + 'static + Send,
     {
-        self.session_started_cb = Some(Box::new(f));
+        self.callbacks.session_started_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_session_started_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_session_started),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_session_started_cb error")?;
             Ok(())
@@ -180,12 +193,12 @@ impl SpeechRecognizer {
     where
         F: Fn(SessionEvent) + 'static + Send,
     {
-        self.session_stopped_cb = Some(Box::new(f));
+        self.callbacks.session_stopped_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_session_stopped_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_session_stopped),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_session_stopped_cb error")?;
             Ok(())
@@ -196,12 +209,12 @@ impl SpeechRecognizer {
     where
         F: Fn(RecognitionEvent) + 'static + Send,
     {
-        self.speech_start_detected_cb = Some(Box::new(f));
+        self.callbacks.speech_start_detected_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_speech_start_detected_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_speech_start_detected),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_speech_start_detected_cb error")?;
             Ok(())
@@ -212,12 +225,12 @@ impl SpeechRecognizer {
     where
         F: Fn(RecognitionEvent) + 'static + Send,
     {
-        self.speech_end_detected_cb = Some(Box::new(f));
+        self.callbacks.speech_end_detected_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_speech_end_detected_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_speech_end_detected),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_speech_end_detected_cb error")?;
             Ok(())
@@ -231,12 +244,12 @@ impl SpeechRecognizer {
     where
         F: Fn(SpeechRecognitionCanceledEvent) + 'static + Send,
     {
-        self.canceled_cb = Some(Box::new(f));
+        self.callbacks.canceled_cb = Some(Box::new(f));
         unsafe {
             let ret = recognizer_canceled_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_canceled),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_canceled_cb error")?;
             Ok(())
@@ -247,13 +260,13 @@ impl SpeechRecognizer {
     where
         F: Fn(SpeechRecognitionEvent) + 'static + Send,
     {
-        self.recognizing_cb = Some(Box::new(f));
+        self.callbacks.recognizing_cb = Some(Box::new(f));
         unsafe {
             trace!("calling recognizer_recognizing_set_callback");
             let ret = recognizer_recognizing_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_recognizing),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_recognizing_cb error")?;
             trace!("called recognizer_recognizing_set_callback");
@@ -265,13 +278,13 @@ impl SpeechRecognizer {
     where
         F: Fn(SpeechRecognitionEvent) + 'static + Send,
     {
-        self.recognized_cb = Some(Box::new(f));
+        self.callbacks.recognized_cb = Some(Box::new(f));
         unsafe {
             trace!("calling recognizer_recognized_set_callback");
             let ret = recognizer_recognized_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_recognized),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechRecognizer.set_recognized_cb error")?;
             trace!("called recognizer_recognized_set_callback");
@@ -287,9 +300,8 @@ impl SpeechRecognizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechRecognizer::cb_session_started called");
-        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        trace!("speech_recognizer {:?}", speech_recognizer);
-        if let Some(cb) = &speech_recognizer.session_started_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.session_started_cb {
             trace!("session_started_cb defined");
             match SessionEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -311,8 +323,8 @@ impl SpeechRecognizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechRecognizer::cb_session_stopped called");
-        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        if let Some(cb) = &speech_recognizer.session_stopped_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.session_stopped_cb {
             trace!("cb_session_stopped defined");
             match SessionEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -334,9 +346,8 @@ impl SpeechRecognizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechRecognizer::cb_speech_start_detected called");
-        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        trace!("speech_recognizer {:?}", speech_recognizer);
-        if let Some(cb) = &speech_recognizer.speech_start_detected_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.speech_start_detected_cb {
             trace!("speech_start_detected_cb defined");
             match RecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -358,8 +369,8 @@ impl SpeechRecognizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechRecognizer::cb_speech_end_detected called");
-        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        if let Some(cb) = &speech_recognizer.speech_end_detected_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.speech_end_detected_cb {
             trace!("speech_end_detected_cb defined");
             match RecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -381,8 +392,8 @@ impl SpeechRecognizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechRecognizer::cb_canceled called");
-        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        if let Some(cb) = &speech_recognizer.canceled_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.canceled_cb {
             trace!("canceled_cb defined");
             match SpeechRecognitionCanceledEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -404,9 +415,8 @@ impl SpeechRecognizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechRecognizer::cb_recognizing called");
-        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        trace!("speech_recognizer {:?}", speech_recognizer);
-        if let Some(cb) = &speech_recognizer.recognizing_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.recognizing_cb {
             trace!("recognizing_cb defined");
             match SpeechRecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -428,8 +438,8 @@ impl SpeechRecognizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechRecognizer::cb_recognized called");
-        let speech_recognizer = &mut *(pvContext as *mut SpeechRecognizer);
-        if let Some(cb) = &speech_recognizer.recognized_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.recognized_cb {
             trace!("recognized_cb defined");
             match SpeechRecognitionEvent::from_handle(hevent) {
                 Ok(event) => {
