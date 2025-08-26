@@ -29,11 +29,15 @@ pub trait PushAudioOutputStreamCallbacks: Send {
     fn close(&mut self);
 }
 
+struct CallbackBag {
+    callbacks: Option<Box<dyn PushAudioOutputStreamCallbacks>>,
+}
+
 /// PushAudioOutputStream represents audio output stream with audio data pushed by Speech Synthetizer via *write* method.
 /// Speech Synthetizer's caller is passivelly receiving already synthetized audio data via registered *write* callback.
 pub struct PushAudioOutputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
-    callbacks: Option<Box<dyn PushAudioOutputStreamCallbacks>>,
+    callbacks: Box<CallbackBag>,
 }
 
 impl fmt::Debug for PushAudioOutputStream {
@@ -56,7 +60,7 @@ impl PushAudioOutputStream {
     pub unsafe fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
         Ok(PushAudioOutputStream {
             handle: SmartHandle::create("PushAudioOutputStream", handle, audio_stream_release),
-            callbacks: None,
+            callbacks: Box::new(CallbackBag { callbacks: None }),
         })
     }
 
@@ -74,11 +78,11 @@ impl PushAudioOutputStream {
         &mut self,
         callbacks: Box<dyn PushAudioOutputStreamCallbacks>,
     ) -> Result<()> {
-        self.callbacks = Some(callbacks);
+        self.callbacks.callbacks = Some(callbacks);
         unsafe {
             let ret = push_audio_output_stream_set_callbacks(
                 self.handle.inner(),
-                self as *const _ as *mut c_void,
+                &*self.callbacks as *const _ as *mut c_void,
                 Some(Self::cb_write),
                 Some(Self::cb_close),
             );
@@ -90,33 +94,34 @@ impl PushAudioOutputStream {
     #[allow(non_snake_case)]
     #[allow(unused_variables)]
     unsafe extern "C" fn cb_write(pvContext: *mut c_void, buffer: *mut u8, size: u32) -> c_int {
-        let pushstream = &mut *(pvContext as *mut PushAudioOutputStream);
-        let callbacks: &mut Option<Box<(dyn PushAudioOutputStreamCallbacks)>> =
-            &mut pushstream.callbacks;
-        let callbacks = callbacks.as_mut().unwrap();
-
-        let converted_size = usize::try_from(size);
-        if let Err(conv_err) = converted_size {
-            error!(
-                "PushAudioOutputStream::cb_write errror when converting size to usize: {}",
-                conv_err
-            );
-            0 // return 0 as we did not write anything
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(callbacks) = &mut callback_bag.callbacks {
+            let converted_size = usize::try_from(size);
+            if let Err(conv_err) = converted_size {
+                error!(
+                    "PushAudioOutputStream::cb_write errror when converting size to usize: {}",
+                    conv_err
+                );
+                0 // return 0 as we did not write anything
+            } else {
+                let slice_buffer = std::slice::from_raw_parts_mut(buffer, converted_size.unwrap());
+                let bytes_written = callbacks.write(slice_buffer);
+                bytes_written as i32
+            }
         } else {
-            let slice_buffer = std::slice::from_raw_parts_mut(buffer, converted_size.unwrap());
-            let bytes_written = callbacks.write(slice_buffer);
-            bytes_written as i32
+            error!("PushAudioOutputStream::cb_write callbacks not defined");
+            0 // return 0 as we did not write anything
         }
     }
 
     #[allow(non_snake_case)]
     #[allow(unused_variables)]
     unsafe extern "C" fn cb_close(pvContext: *mut c_void) {
-        let pushstream = &mut *(pvContext as *mut PushAudioOutputStream);
-        let callbacks: &mut Option<Box<(dyn PushAudioOutputStreamCallbacks)>> =
-            &mut pushstream.callbacks;
-        let callbacks = callbacks.as_mut().unwrap();
-
-        callbacks.close();
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(callbacks) = &mut callback_bag.callbacks {
+            callbacks.close();
+        } else {
+            error!("PushAudioOutputStream::cb_close callbacks not defined");
+        }
     }
 }
