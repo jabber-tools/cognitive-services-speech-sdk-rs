@@ -1562,6 +1562,7 @@ pub const PropertyId_SpeechServiceConnection_ProxyPort: PropertyId = 1101;
 pub const PropertyId_SpeechServiceConnection_ProxyUserName: PropertyId = 1102;
 pub const PropertyId_SpeechServiceConnection_ProxyPassword: PropertyId = 1103;
 pub const PropertyId_SpeechServiceConnection_Url: PropertyId = 1104;
+pub const PropertyId_SpeechServiceConnection_ProxyHostBypass: PropertyId = 1105;
 pub const PropertyId_SpeechServiceConnection_TranslationToLanguages: PropertyId = 2000;
 pub const PropertyId_SpeechServiceConnection_TranslationVoice: PropertyId = 2001;
 pub const PropertyId_SpeechServiceConnection_TranslationFeatures: PropertyId = 2002;
@@ -1588,6 +1589,7 @@ pub const PropertyId_SpeechServiceConnection_InitialSilenceTimeoutMs: PropertyId
 pub const PropertyId_SpeechServiceConnection_EndSilenceTimeoutMs: PropertyId = 3201;
 pub const PropertyId_SpeechServiceConnection_EnableAudioLogging: PropertyId = 3202;
 pub const PropertyId_SpeechServiceConnection_LanguageIdMode: PropertyId = 3205;
+pub const PropertyId_SpeechServiceConnection_TranslationCategoryId: PropertyId = 3206;
 pub const PropertyId_SpeechServiceConnection_AutoDetectSourceLanguages: PropertyId = 3300;
 pub const PropertyId_SpeechServiceConnection_AutoDetectSourceLanguageResult: PropertyId = 3301;
 pub const PropertyId_SpeechServiceResponse_RequestDetailedResultTrueFalse: PropertyId = 4000;
@@ -1613,6 +1615,7 @@ pub const PropertyId_SpeechServiceResponse_SynthesisUnderrunTimeMs: PropertyId =
 pub const PropertyId_SpeechServiceResponse_SynthesisConnectionLatencyMs: PropertyId = 5013;
 pub const PropertyId_SpeechServiceResponse_SynthesisNetworkLatencyMs: PropertyId = 5014;
 pub const PropertyId_SpeechServiceResponse_SynthesisServiceLatencyMs: PropertyId = 5015;
+pub const PropertyId_SpeechServiceResponse_DiarizeIntermediateResults: PropertyId = 5025;
 pub const PropertyId_CancellationDetails_Reason: PropertyId = 6000;
 pub const PropertyId_CancellationDetails_ReasonText: PropertyId = 6001;
 pub const PropertyId_CancellationDetails_ReasonDetailedText: PropertyId = 6002;
@@ -1626,6 +1629,8 @@ pub const PropertyId_AudioConfig_DeviceNameForRender: PropertyId = 8005;
 pub const PropertyId_AudioConfig_PlaybackBufferLengthInMs: PropertyId = 8006;
 pub const PropertyId_Speech_LogFilename: PropertyId = 9001;
 pub const PropertyId_Speech_SegmentationSilenceTimeoutMs: PropertyId = 9002;
+pub const PropertyId_Speech_SegmentationMaximumTimeMs: PropertyId = 9003;
+pub const PropertyId_Speech_SegmentationStrategy: PropertyId = 9004;
 pub const PropertyId_Conversation_ApplicationId: PropertyId = 10000;
 pub const PropertyId_Conversation_DialogType: PropertyId = 10001;
 pub const PropertyId_Conversation_Initial_Silence_Timeout: PropertyId = 10002;
@@ -1652,6 +1657,8 @@ pub const PropertyId_SpeechTranslation_ModelKey: PropertyId = 13101;
 pub const PropertyId_KeywordRecognition_ModelName: PropertyId = 13200;
 pub const PropertyId_KeywordRecognition_ModelKey: PropertyId = 13201;
 pub const PropertyId_EmbeddedSpeech_EnablePerformanceMetrics: PropertyId = 13300;
+pub const PropertyId_SpeechSynthesis_FrameTimeoutInterval: PropertyId = 14101;
+pub const PropertyId_SpeechSynthesis_RtfTimeoutThreshold: PropertyId = 14102;
 pub type PropertyId = ::std::os::raw::c_uint;
 pub const _ParticipantChangedReason_JoinedConversation: _ParticipantChangedReason = 0;
 pub const _ParticipantChangedReason_LeftConversation: _ParticipantChangedReason = 1;
@@ -1896,6 +1903,8 @@ pub const Audio_Stream_Wave_Format_StreamWaveFormat_PCM: Audio_Stream_Wave_Forma
 pub const Audio_Stream_Wave_Format_StreamWaveFormat_ALAW: Audio_Stream_Wave_Format = 6;
 #[doc = " <summary>\n Stream WaveFormat definition for Mu-law-encoded format.\n </summary>"]
 pub const Audio_Stream_Wave_Format_StreamWaveFormat_MULAW: Audio_Stream_Wave_Format = 7;
+#[doc = " <summary>\n Stream WaveFormat definition for G.722-encoded format.\n </summary>"]
+pub const Audio_Stream_Wave_Format_StreamWaveFormat_G722: Audio_Stream_Wave_Format = 655;
 #[doc = " <summary>\n Defines supported audio stream wave format in WAV container.\n </summary>"]
 pub type Audio_Stream_Wave_Format = ::std::os::raw::c_uint;
 extern "C" {
@@ -2027,6 +2036,9 @@ extern "C" {
 }
 extern "C" {
     pub fn result_get_duration(hresult: SPXRESULTHANDLE, duration: *mut u64) -> AZACHR;
+}
+extern "C" {
+    pub fn result_get_channel(hresult: SPXRESULTHANDLE, channel: *mut u32) -> AZACHR;
 }
 extern "C" {
     pub fn result_get_property_bag(hresult: SPXRESULTHANDLE, hpropbag: *mut AZAC_HANDLE) -> AZACHR;
@@ -2311,6 +2323,9 @@ extern "C" {
         requestedSize: u32,
         position: u32,
     ) -> bool;
+}
+extern "C" {
+    pub fn audio_data_stream_get_available_size(haudioStream: SPXAUDIOSTREAMHANDLE) -> u32;
 }
 extern "C" {
     pub fn audio_data_stream_read(
@@ -2793,6 +2808,9 @@ pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_Riff44100Hz
 #[doc = " amr-wb-16000hz\n AMR-WB audio at 16kHz sampling rate.\n (Added in 1.24.0)"]
 pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_AmrWb16000Hz:
     Speech_Synthesis_Output_Format = 38;
+#[doc = " g722-16khz-64kbps\n G.722 audio at 16kHz sampling rate and 64kbps bitrate.\n (Added in 1.38.0)"]
+pub const Speech_Synthesis_Output_Format_SpeechSynthesisOutputFormat_G72216Khz64Kbps:
+    Speech_Synthesis_Output_Format = 39;
 pub type Speech_Synthesis_Output_Format = ::std::os::raw::c_uint;
 pub const SpeechConfig_ServicePropertyChannel_SpeechConfig_ServicePropertyChannel_UriQueryParameter : SpeechConfig_ServicePropertyChannel = 0 ;
 pub const SpeechConfig_ServicePropertyChannel_SpeechConfig_ServicePropertyChannel_HttpHeader:
@@ -2951,6 +2969,34 @@ extern "C" {
     ) -> AZACHR;
 }
 extern "C" {
+    pub fn embedded_speech_config_set_speech_recognition_model(
+        hconfig: SPXSPEECHCONFIGHANDLE,
+        name: *const ::std::os::raw::c_char,
+        license: *const ::std::os::raw::c_char,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn embedded_speech_config_set_speech_synthesis_voice(
+        hconfig: SPXSPEECHCONFIGHANDLE,
+        name: *const ::std::os::raw::c_char,
+        license: *const ::std::os::raw::c_char,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn embedded_speech_config_set_speech_translation_model(
+        hconfig: SPXSPEECHCONFIGHANDLE,
+        name: *const ::std::os::raw::c_char,
+        license: *const ::std::os::raw::c_char,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn embedded_speech_config_set_keyword_recognition_model(
+        hconfig: SPXSPEECHCONFIGHANDLE,
+        name: *const ::std::os::raw::c_char,
+        license: *const ::std::os::raw::c_char,
+    ) -> AZACHR;
+}
+extern "C" {
     pub fn hybrid_speech_config_create(
         hconfig: *mut SPXSPEECHCONFIGHANDLE,
         hcloudSpeechConfig: SPXSPEECHCONFIGHANDLE,
@@ -2995,6 +3041,12 @@ extern "C" {
     pub fn speech_translation_config_remove_target_language(
         configHandle: SPXSPEECHCONFIGHANDLE,
         language: *const ::std::os::raw::c_char,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn speech_translation_config_set_custom_model_category_id(
+        configHandle: SPXSPEECHCONFIGHANDLE,
+        categoryId: *const ::std::os::raw::c_char,
     ) -> AZACHR;
 }
 extern "C" {
@@ -3288,6 +3340,13 @@ extern "C" {
         pvContext: *mut ::std::os::raw::c_void,
     ) -> AZACHR;
 }
+extern "C" {
+    pub fn recognizer_token_requested_set_callback(
+        hreco: SPXRECOHANDLE,
+        pCallback: PSESSION_CALLBACK_FUNC,
+        pvContext: *mut ::std::os::raw::c_void,
+    ) -> AZACHR;
+}
 pub type PRECOGNITION_CALLBACK_FUNC = ::std::option::Option<
     unsafe extern "C" fn(
         hreco: SPXRECOHANDLE,
@@ -3362,6 +3421,14 @@ extern "C" {
         inputText: *const ::std::os::raw::c_char,
         textLength: u32,
         hrequest: *mut SPXREQUESTHANDLE,
+    ) -> AZACHR;
+}
+extern "C" {
+    pub fn speech_synthesis_request_set_voice(
+        hrequest: SPXREQUESTHANDLE,
+        voice: *const ::std::os::raw::c_char,
+        personalVoice: *const ::std::os::raw::c_char,
+        modelName: *const ::std::os::raw::c_char,
     ) -> AZACHR;
 }
 extern "C" {
@@ -3709,6 +3776,13 @@ extern "C" {
     ) -> AZACHR;
 }
 extern "C" {
+    pub fn synthesizer_token_request_set_callback(
+        hsynth: SPXSYNTHHANDLE,
+        pCallback: PSYNTHESIS_CALLBACK_FUNC,
+        pvContext: *mut ::std::os::raw::c_void,
+    ) -> AZACHR;
+}
+extern "C" {
     pub fn synthesizer_synthesizing_set_callback(
         hsynth: SPXSYNTHHANDLE,
         pCallback: PSYNTHESIS_CALLBACK_FUNC,
@@ -3828,6 +3902,9 @@ extern "C" {
         hgrammar: SPXGRAMMARHANDLE,
         hphrase: SPXPHRASEHANDLE,
     ) -> AZACHR;
+}
+extern "C" {
+    pub fn phrase_list_grammar_set_weight(hgrammar: SPXGRAMMARHANDLE, weight: f64) -> AZACHR;
 }
 extern "C" {
     pub fn phrase_list_grammar_clear(hgrammar: SPXGRAMMARHANDLE) -> AZACHR;
