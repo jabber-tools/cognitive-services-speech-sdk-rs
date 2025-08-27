@@ -42,11 +42,15 @@ pub trait PullAudioInputStreamCallbacks: Send {
     fn get_property(&mut self, id: i32) -> Result<String>;
 }
 
+struct CallbackBag {
+    callbacks: Option<Box<dyn PullAudioInputStreamCallbacks>>,
+}
+
 /// PullAudioInputStream represents audio input stream with audio data pulled (read) by Speech Recognizer when needed via *read* method.
 /// Passing audio input is controlled by receiver.
 pub struct PullAudioInputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
-    callbacks: Option<Box<dyn PullAudioInputStreamCallbacks>>,
+    callback_bag: Box<CallbackBag>,
 }
 
 impl fmt::Debug for PullAudioInputStream {
@@ -79,7 +83,7 @@ impl PullAudioInputStream {
                     handle.assume_init(),
                     audio_stream_release,
                 ),
-                callbacks: None,
+                callback_bag: Box::new(CallbackBag { callbacks: None }),
             })
         }
     }
@@ -97,11 +101,11 @@ impl PullAudioInputStream {
         callbacks: Box<dyn PullAudioInputStreamCallbacks>,
         register_get_prop_cb: bool,
     ) -> Result<()> {
-        self.callbacks = Some(callbacks);
+        self.callback_bag.callbacks = Some(callbacks);
         unsafe {
             let mut ret = pull_audio_input_stream_set_callbacks(
                 self.handle.inner(),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
                 Some(Self::cb_read),
                 Some(Self::cb_close),
             );
@@ -113,7 +117,7 @@ impl PullAudioInputStream {
             if register_get_prop_cb {
                 ret = pull_audio_input_stream_set_getproperty_callback(
                     self.handle.inner(),
-                    self as *const _ as *mut c_void,
+                    &*self.callback_bag as *const _ as *mut c_void,
                     Some(Self::cb_get_property),
                 );
                 convert_err(
@@ -129,34 +133,35 @@ impl PullAudioInputStream {
     #[allow(non_snake_case)]
     #[allow(unused_variables)]
     unsafe extern "C" fn cb_read(pvContext: *mut c_void, buffer: *mut u8, size: u32) -> c_int {
-        let pullstream = &mut *(pvContext as *mut PullAudioInputStream);
-        let callbacks: &mut Option<Box<(dyn PullAudioInputStreamCallbacks)>> =
-            &mut pullstream.callbacks;
-        let callbacks = callbacks.as_mut().unwrap();
-
-        let converted_size = usize::try_from(size);
-        if let Err(conv_err) = converted_size {
-            error!(
-                "PullAudioInputStream::cb_read errror when converting size to usize: {}",
-                conv_err
-            );
-            0 // return 0 as we did not read anything
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(callbacks) = &mut callback_bag.callbacks {
+            let converted_size = usize::try_from(size);
+            if let Err(conv_err) = converted_size {
+                error!(
+                    "PullAudioInputStream::cb_read errror when converting size to usize: {}",
+                    conv_err
+                );
+                0 // return 0 as we did not read anything
+            } else {
+                let slice_buffer = std::slice::from_raw_parts_mut(buffer, converted_size.unwrap());
+                let bytes_read = callbacks.read(slice_buffer);
+                bytes_read as i32
+            }
         } else {
-            let slice_buffer = std::slice::from_raw_parts_mut(buffer, converted_size.unwrap());
-            let bytes_read = callbacks.read(slice_buffer);
-            bytes_read as i32
+            error!("PullAudioInputStream::cb_read callbacks not defined");
+            0 // return 0 as we did not read anything
         }
     }
 
     #[allow(non_snake_case)]
     #[allow(unused_variables)]
     unsafe extern "C" fn cb_close(pvContext: *mut c_void) {
-        let pullstream = &mut *(pvContext as *mut PullAudioInputStream);
-        let callbacks: &mut Option<Box<(dyn PullAudioInputStreamCallbacks)>> =
-            &mut pullstream.callbacks;
-        let callbacks = callbacks.as_mut().unwrap();
-
-        callbacks.close();
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(callbacks) = &mut callback_bag.callbacks {
+            callbacks.close();
+        } else {
+            error!("PullAudioInputStream::cb_close callbacks not defined");
+        }
     }
 
     #[allow(non_snake_case)]
@@ -167,49 +172,46 @@ impl PullAudioInputStream {
         value: *mut u8,
         size: u32,
     ) {
-        let pullstream = &mut *(pvContext as *mut PullAudioInputStream);
-        let callbacks: &mut Option<Box<(dyn PullAudioInputStreamCallbacks)>> =
-            &mut pullstream.callbacks;
-        let callbacks = callbacks.as_mut().unwrap();
-
-        let converted_size = usize::try_from(size);
-        if let Err(conv_err) = converted_size {
-            error!(
-                "PullAudioInputStream::cb_get_property errror when converting size to usize: {}",
-                conv_err
-            );
-            return;
-        }
-        let converted_size = converted_size.unwrap();
-
-        match callbacks.get_property(id) {
-            Ok(prop_value) => match CString::new(prop_value) {
-                Ok(c_prop_value) => {
-                    let c_prop_value_bytes_count = c_prop_value.as_bytes().len();
-                    let bytes_count_to_copy = if c_prop_value_bytes_count < converted_size {
-                        c_prop_value_bytes_count
-                    } else {
-                        converted_size
-                    };
-                    std::ptr::copy_nonoverlapping(
-                        c_prop_value.as_ptr(),
-                        value as *mut c_char,
-                        bytes_count_to_copy,
-                    );
-                }
-                Err(cstr_err) => {
-                    error!(
-                        "PullAudioInputStream.cb_get_property error(CString::new): {:?}",
-                        cstr_err
-                    );
-                }
-            },
-            Err(get_prop_err) => {
-                error!(
-                    "PullAudioInputStream.cb_get_property error(callbacks.get_property): {:?}",
-                    get_prop_err
-                );
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(callbacks) = &mut callback_bag.callbacks {
+            let converted_size = usize::try_from(size);
+            if let Err(conv_err) = converted_size {
+                error!("PullAudioInputStream::cb_get_property errror when converting size to usize: {}", conv_err);
+                return;
             }
+            let converted_size = converted_size.unwrap();
+
+            match callbacks.get_property(id) {
+                Ok(prop_value) => match CString::new(prop_value) {
+                    Ok(c_prop_value) => {
+                        let c_prop_value_bytes_count = c_prop_value.as_bytes().len();
+                        let bytes_count_to_copy = if c_prop_value_bytes_count < converted_size {
+                            c_prop_value_bytes_count
+                        } else {
+                            converted_size
+                        };
+                        std::ptr::copy_nonoverlapping(
+                            c_prop_value.as_ptr(),
+                            value as *mut c_char,
+                            bytes_count_to_copy,
+                        );
+                    }
+                    Err(cstr_err) => {
+                        error!(
+                            "PullAudioInputStream.cb_get_property error(CString::new): {:?}",
+                            cstr_err
+                        );
+                    }
+                },
+                Err(get_prop_err) => {
+                    error!(
+                        "PullAudioInputStream.cb_get_property error(callbacks.get_property): {:?}",
+                        get_prop_err
+                    );
+                }
+            }
+        } else {
+            error!("PullAudioInputStream::cb_get_property callbacks not defined");
         }
     }
 }
