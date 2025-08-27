@@ -3,10 +3,10 @@ use std::mem::MaybeUninit;
 
 use crate::error::{convert_err, Result};
 use crate::ffi::{
-    grammar_handle_release, grammar_phrase_create_from_text, grammar_phrase_handle_release,
-    phrase_list_grammar_add_phrase, phrase_list_grammar_clear,
-    phrase_list_grammar_from_recognizer_by_name, SmartHandle, SPXGRAMMARHANDLE, SPXPHRASEHANDLE,
+    grammar_handle_release, phrase_list_grammar_add_phrase, phrase_list_grammar_clear,
+    phrase_list_grammar_from_recognizer_by_name, SmartHandle, SPXGRAMMARHANDLE,
 };
+use crate::speech::grammar_phrase::GrammarPhrase;
 use crate::speech::SpeechRecognizer;
 
 /// Represents a phrase list grammar for dynamic grammar scenarios. \
@@ -53,33 +53,5 @@ impl PhraseListGrammar {
         let ret = unsafe { phrase_list_grammar_clear(self.handle.inner()) };
         convert_err(ret, "PhraseListGrammar::clear error")?;
         Ok(())
-    }
-}
-
-/// Represents base class grammar for customizing speech recognition. \
-/// Added in version 1.5.0.
-#[derive(Debug)]
-struct GrammarPhrase {
-    handle: SmartHandle<SPXPHRASEHANDLE>,
-}
-
-impl GrammarPhrase {
-    /// Creates a grammar phrase using the specified phrase text.
-    /// # Arguments
-    /// * `text` - The text representing a phrase that may be spoken by the user.
-    fn from_text(text: impl AsRef<str>) -> Result<GrammarPhrase> {
-        unsafe {
-            let mut handle: MaybeUninit<SPXPHRASEHANDLE> = MaybeUninit::uninit();
-            let c_text = CString::new(text.as_ref())?;
-            let ret = grammar_phrase_create_from_text(handle.as_mut_ptr(), c_text.as_ptr());
-            convert_err(ret, "GrammarPhrase::grammar_phrase_from_text error")?;
-            Ok(GrammarPhrase {
-                handle: SmartHandle::create(
-                    "GrammarPhrase",
-                    handle.assume_init(),
-                    grammar_phrase_handle_release,
-                ),
-            })
-        }
     }
 }

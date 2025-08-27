@@ -3,6 +3,7 @@ mod audio_data_stream;
 mod auto_detect_source_language_config;
 mod cancellation_details;
 mod embedded_speech_config;
+mod grammar_phrase;
 mod keyword_recognition_model;
 mod phrase_list_grammar;
 mod recognition_event;
