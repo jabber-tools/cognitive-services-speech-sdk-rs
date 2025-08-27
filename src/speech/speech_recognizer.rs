@@ -32,7 +32,7 @@ use std::os::raw::c_void;
 
 /// SpeechRecognizer struct holds functionality for speech-to-text recognition.
 pub struct SpeechRecognizer {
-    handle: SmartHandle<SPXRECOHANDLE>,
+    pub(crate) handle: SmartHandle<SPXRECOHANDLE>,
     properties: PropertyCollection,
     handle_async_start_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
     handle_async_stop_continuous: Option<SmartHandle<SPXASYNCHANDLE>>,
