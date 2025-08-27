@@ -37,7 +37,7 @@ struct CallbackBag {
 /// Speech Synthetizer's caller is passivelly receiving already synthetized audio data via registered *write* callback.
 pub struct PushAudioOutputStream {
     pub handle: SmartHandle<SPXAUDIOSTREAMHANDLE>,
-    callbacks: Box<CallbackBag>,
+    callback_bag: Box<CallbackBag>,
 }
 
 impl fmt::Debug for PushAudioOutputStream {
@@ -60,7 +60,7 @@ impl PushAudioOutputStream {
     pub unsafe fn from_handle(handle: SPXAUDIOSTREAMHANDLE) -> Result<Self> {
         Ok(PushAudioOutputStream {
             handle: SmartHandle::create("PushAudioOutputStream", handle, audio_stream_release),
-            callbacks: Box::new(CallbackBag { callbacks: None }),
+            callback_bag: Box::new(CallbackBag { callbacks: None }),
         })
     }
 
@@ -78,11 +78,11 @@ impl PushAudioOutputStream {
         &mut self,
         callbacks: Box<dyn PushAudioOutputStreamCallbacks>,
     ) -> Result<()> {
-        self.callbacks.callbacks = Some(callbacks);
+        self.callback_bag.callbacks = Some(callbacks);
         unsafe {
             let ret = push_audio_output_stream_set_callbacks(
                 self.handle.inner(),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
                 Some(Self::cb_write),
                 Some(Self::cb_close),
             );

@@ -43,7 +43,7 @@ struct CallbackBag {
 pub struct SpeechSynthesizer {
     handle: SmartHandle<SPXSYNTHHANDLE>,
     properties: PropertyCollection,
-    callbacks: Box<CallbackBag>,
+    callback_bag: Box<CallbackBag>,
 }
 
 // to allow to move synthetizer to tokio::spawn
@@ -82,7 +82,7 @@ impl SpeechSynthesizer {
                 // Here we return a boxed instance of the CallbackBag,
                 // ensure that the pointer we provide to the C library
                 // points to a stable, heap-allocated location that holds the callbacks.
-                callbacks: Box::new(CallbackBag {
+                callback_bag: Box::new(CallbackBag {
                     synthesizer_started_cb: None,
                     synthesizer_synthesizing_cb: None,
                     synthesizer_completed_cb: None,
@@ -284,12 +284,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.callbacks.synthesizer_started_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_started_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_started_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_started),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_started_cb error")?;
             Ok(())
@@ -300,12 +300,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.callbacks.synthesizer_synthesizing_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_synthesizing_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_synthesizing_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_synthesizing),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(
                 ret,
@@ -319,12 +319,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.callbacks.synthesizer_completed_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_completed_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_completed_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_completed),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_completed_cb error")?;
             Ok(())
@@ -335,12 +335,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.callbacks.synthesizer_canceled_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_canceled_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_canceled_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_canceled),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_canceled_cb error")?;
             Ok(())
@@ -351,12 +351,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisWordBoundaryEvent) + 'static + Send,
     {
-        self.callbacks.synthesizer_word_boundary_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_word_boundary_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_word_boundary_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_word_boundary),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(
                 ret,
@@ -370,12 +370,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisVisemeEvent) + 'static + Send,
     {
-        self.callbacks.synthesizer_viseme_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_viseme_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_viseme_received_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_viseme),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_viseme_cb error")?;
             Ok(())
@@ -386,12 +386,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisBookmarkEvent) + 'static + Send,
     {
-        self.callbacks.synthesizer_bookmark_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_bookmark_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_bookmark_reached_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_bookmark),
-                &*self.callbacks as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_bookmark_cb error")?;
             Ok(())
