@@ -120,8 +120,6 @@ impl PushAudioOutputStream {
         let callback_bag = &mut *(pvContext as *mut CallbackBag);
         if let Some(callbacks) = &mut callback_bag.callbacks {
             callbacks.close();
-        } else {
-            error!("PushAudioOutputStream::cb_close callbacks not defined");
         }
     }
 }
