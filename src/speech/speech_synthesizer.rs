@@ -25,10 +25,11 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::c_void;
 
-/// SpeechSynthesizer struct holds functionality for text-to-speech synthesis.
-pub struct SpeechSynthesizer {
-    handle: SmartHandle<SPXSYNTHHANDLE>,
-    properties: PropertyCollection,
+/// A separate internal struct to hold all the callback closures for the speech synthesizer events.
+/// By creating a separate struct, and then boxing this struct inside our SpeechSynthesizer,
+/// we can ensure the SpeechSynthesizer itself can be moved freely by end users,
+/// and the callbacks will remain at a fixed memory address on the heap.
+struct CallbackBag {
     synthesizer_started_cb: Option<Box<dyn Fn(SpeechSynthesisEvent) + Send>>,
     synthesizer_synthesizing_cb: Option<Box<dyn Fn(SpeechSynthesisEvent) + Send>>,
     synthesizer_completed_cb: Option<Box<dyn Fn(SpeechSynthesisEvent) + Send>>,
@@ -36,6 +37,13 @@ pub struct SpeechSynthesizer {
     synthesizer_word_boundary_cb: Option<Box<dyn Fn(SpeechSynthesisWordBoundaryEvent) + Send>>,
     synthesizer_viseme_cb: Option<Box<dyn Fn(SpeechSynthesisVisemeEvent) + Send>>,
     synthesizer_bookmark_cb: Option<Box<dyn Fn(SpeechSynthesisBookmarkEvent) + Send>>,
+}
+
+/// SpeechSynthesizer struct holds functionality for text-to-speech synthesis.
+pub struct SpeechSynthesizer {
+    handle: SmartHandle<SPXSYNTHHANDLE>,
+    properties: PropertyCollection,
+    callback_bag: Box<CallbackBag>,
 }
 
 // to allow to move synthetizer to tokio::spawn
@@ -71,13 +79,18 @@ impl SpeechSynthesizer {
                     synthesizer_handle_release,
                 ),
                 properties: property_bag,
-                synthesizer_started_cb: None,
-                synthesizer_synthesizing_cb: None,
-                synthesizer_completed_cb: None,
-                synthesizer_canceled_cb: None,
-                synthesizer_word_boundary_cb: None,
-                synthesizer_viseme_cb: None,
-                synthesizer_bookmark_cb: None,
+                // Here we return a boxed instance of the CallbackBag,
+                // ensure that the pointer we provide to the C library
+                // points to a stable, heap-allocated location that holds the callbacks.
+                callback_bag: Box::new(CallbackBag {
+                    synthesizer_started_cb: None,
+                    synthesizer_synthesizing_cb: None,
+                    synthesizer_completed_cb: None,
+                    synthesizer_canceled_cb: None,
+                    synthesizer_word_boundary_cb: None,
+                    synthesizer_viseme_cb: None,
+                    synthesizer_bookmark_cb: None,
+                }),
             })
         }
     }
@@ -271,12 +284,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.synthesizer_started_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_started_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_started_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_started),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_started_cb error")?;
             Ok(())
@@ -287,12 +300,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.synthesizer_synthesizing_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_synthesizing_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_synthesizing_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_synthesizing),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(
                 ret,
@@ -306,12 +319,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.synthesizer_completed_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_completed_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_completed_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_completed),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_completed_cb error")?;
             Ok(())
@@ -322,12 +335,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisEvent) + 'static + Send,
     {
-        self.synthesizer_canceled_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_canceled_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_canceled_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_canceled),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_canceled_cb error")?;
             Ok(())
@@ -338,12 +351,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisWordBoundaryEvent) + 'static + Send,
     {
-        self.synthesizer_word_boundary_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_word_boundary_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_word_boundary_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_word_boundary),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(
                 ret,
@@ -357,12 +370,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisVisemeEvent) + 'static + Send,
     {
-        self.synthesizer_viseme_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_viseme_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_viseme_received_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_viseme),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_viseme_cb error")?;
             Ok(())
@@ -373,12 +386,12 @@ impl SpeechSynthesizer {
     where
         F: Fn(SpeechSynthesisBookmarkEvent) + 'static + Send,
     {
-        self.synthesizer_bookmark_cb = Some(Box::new(f));
+        self.callback_bag.synthesizer_bookmark_cb = Some(Box::new(f));
         unsafe {
             let ret = synthesizer_bookmark_reached_set_callback(
                 self.handle.inner(),
                 Some(Self::cb_synthesizer_bookmark),
-                self as *const _ as *mut c_void,
+                &*self.callback_bag as *const _ as *mut c_void,
             );
             convert_err(ret, "SpeechSynthesizer.set_synthesizer_bookmark_cb error")?;
             Ok(())
@@ -393,8 +406,8 @@ impl SpeechSynthesizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_started called");
-        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_started_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.synthesizer_started_cb {
             trace!("synthesizer_started_cb defined");
             match SpeechSynthesisEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -419,8 +432,8 @@ impl SpeechSynthesizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_synthesizing called");
-        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_synthesizing_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.synthesizer_synthesizing_cb {
             trace!("synthesizer_synthesizing_cb defined");
             match SpeechSynthesisEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -445,8 +458,8 @@ impl SpeechSynthesizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_completed called");
-        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_completed_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.synthesizer_completed_cb {
             trace!("synthesizer_completed_cb defined");
             match SpeechSynthesisEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -471,8 +484,8 @@ impl SpeechSynthesizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_canceled called");
-        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_canceled_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.synthesizer_canceled_cb {
             trace!("synthesizer_canceled_cb defined");
             match SpeechSynthesisEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -497,8 +510,8 @@ impl SpeechSynthesizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_word_boundary called");
-        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_word_boundary_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.synthesizer_word_boundary_cb {
             trace!("synthesizer_word_boundary_cb defined");
             match SpeechSynthesisWordBoundaryEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -523,8 +536,8 @@ impl SpeechSynthesizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_viseme called");
-        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_viseme_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.synthesizer_viseme_cb {
             trace!("synthesizer_viseme_cb defined");
             match SpeechSynthesisVisemeEvent::from_handle(hevent) {
                 Ok(event) => {
@@ -549,8 +562,8 @@ impl SpeechSynthesizer {
         pvContext: *mut c_void,
     ) {
         trace!("SpeechSynthesizer::cb_synthesizer_bookmark called");
-        let speech_synthesizer = &mut *(pvContext as *mut SpeechSynthesizer);
-        if let Some(cb) = &speech_synthesizer.synthesizer_bookmark_cb {
+        let callback_bag = &mut *(pvContext as *mut CallbackBag);
+        if let Some(cb) = &callback_bag.synthesizer_bookmark_cb {
             trace!("synthesizer_bookmark_cb defined");
             match SpeechSynthesisBookmarkEvent::from_handle(hevent) {
                 Ok(event) => {
