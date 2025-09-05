@@ -23,7 +23,7 @@ tokio = {version = "1.44.2", features = ["full"]}
 
 [build-dependencies]
 bindgen = "0.69.4"
-zip = "2.6.1"
+zip = "4.6.1"
 
 [dev-dependencies]
 rust-embed = "8.4.0"
