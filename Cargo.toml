@@ -7,9 +7,7 @@ description = "Rust bindings for Microsoft Speech SDK."
 license = "MIT OR Apache-2.0"
 keywords = ["speech", "microsoft", "cognitive", "recognition", "synthesizing"]
 categories = ["multimedia", "multimedia::audio", "text-processing"]
-exclude = [
-    "examples/*"
-]
+exclude = ["examples/*"]
 repository = "https://github.com/jabber-tools/cognitive-services-speech-sdk-rs/"
 #documentation = "https://jabber-tools.github.io/cognitive_services_speech_sdk_rs/doc/1.0.0/cognitive_services_speech_sdk_rs/index.html"
 documentation = "https://docs.rs/cognitive-services-speech-sdk-rs"
@@ -19,12 +17,11 @@ documentation = "https://docs.rs/cognitive-services-speech-sdk-rs"
 [dependencies]
 log = "0.4"
 env_logger = "0.11.8"
-tokio = {version = "1.44.2", features = ["full"]} 
+tokio = { version = "1.44.2", features = ["full"] }
 
 [build-dependencies]
 bindgen = "0.69.4"
 zip = "4.6.1"
 
 [dev-dependencies]
-rust-embed = "8.4.0"
 rodio = "0.20.1"
