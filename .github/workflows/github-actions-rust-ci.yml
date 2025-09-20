@@ -131,7 +131,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           echo $PATH
-#          cargo test --test integration_test -- --show-output
+          cargo test --test integration_test -- --show-output
 
       - name: Run integration tests on macos
         if: matrix.os == 'macos-latest'
