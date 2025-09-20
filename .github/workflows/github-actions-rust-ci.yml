@@ -125,13 +125,20 @@ jobs:
         run: |
           echo $env:Path
           cargo test --test integration_test -- --show-output
+          cargo test --test pull_input_segfault_test -- --show-output
+          cargo test --test push_output_segfault_test -- --show-output
+          cargo test --test recognizer_segfault_test -- --show-output
+          cargo test --test synthesizer_segfault_test -- --show-output
 
-      # TODO: failing for some reason in github actions, disabled for now
       - name: Run integration tests on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
           echo $PATH
           cargo test --test integration_test -- --show-output
+          cargo test --test pull_input_segfault_test -- --show-output
+          cargo test --test push_output_segfault_test -- --show-output
+          cargo test --test recognizer_segfault_test -- --show-output
+          cargo test --test synthesizer_segfault_test -- --show-output
 
       - name: Run integration tests on macos
         if: matrix.os == 'macos-latest'
@@ -140,3 +147,7 @@ jobs:
         run: |
           echo $DYLD_FALLBACK_FRAMEWORK_PATH
        #   cargo test --test integration_test -- --show-output
+       #   cargo test --test pull_input_segfault_test -- --show-output
+       #   cargo test --test push_output_segfault_test -- --show-output
+       #   cargo test --test recognizer_segfault_test -- --show-output
+       #   cargo test --test synthesizer_segfault_test -- --show-output
