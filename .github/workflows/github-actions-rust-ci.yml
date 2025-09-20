@@ -150,5 +150,5 @@ jobs:
           cargo test --test push_output_segfault_test -- --show-output
           cargo test --test recognizer_segfault_test -- --show-output
           cargo test --test synthesizer_segfault_test -- --show-output
-       #  cargo test --test integration_test -- --show-output
+          cargo test --test integration_test -- --show-output
 
