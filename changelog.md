@@ -35,3 +35,5 @@ Version 1.1.0 Implements input text streaming for speech synthesis. Implemented 
 Version 1.2.0 Adds phrase list support for speech recognizer, bumps azure sdk to version 1.45.0
 
 Version 1.2.1 Bumped zip dependency to 4.6.1
+
+Version 1.3.0 Fix segmentation fault in callbacks by pinning the callbacks to fixed heap address
